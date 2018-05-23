@@ -1,0 +1,8 @@
+/* You can add global styles to this file, and also import other style files */
+// 1. Import the initial variables
+@import '../node_modules/bulma/sass/utilities/initial-variables';
+@import '../node_modules/bulma/sass/utilities/functions';
+
+
+// 6. Import the rest of Bulma
+@import "../node_modules/bulma/bulma";
