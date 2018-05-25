@@ -50,6 +50,7 @@ export class FlightEditComponent implements OnInit {
       } else {
         const flightList = this.db.list<Flight>('users/' + user.uid + '/flights');
         flightList.push(this.flight);
+        });
       }
 
     });
