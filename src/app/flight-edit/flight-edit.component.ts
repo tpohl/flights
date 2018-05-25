@@ -48,7 +48,7 @@ export class FlightEditComponent implements OnInit {
         const flightObject = this.db.object<Flight>(this.objectRef);
         flightObject.update(this.flight);
       } else {
-        let flightList = this.db.list<Flight>('users/' + user.uid + '/flights');
+        const flightList = this.db.list<Flight>('users/' + user.uid + '/flights');
         flightList.push(this.flight);
       }
 
@@ -61,7 +61,7 @@ export class FlightEditComponent implements OnInit {
       const flightObject = this.db.object<Flight>(this.objectRef);
       flightObject.remove().then(value => {
         this.router.navigateByUrl('/flights');
-      };
+      });
     } else {
       this.router.navigateByUrl('/flights');
     }
