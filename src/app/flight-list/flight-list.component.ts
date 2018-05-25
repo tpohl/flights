@@ -2,6 +2,7 @@ import { Flight } from './../models/flight';
 import { Component, OnInit } from '@angular/core';
 import { AngularFireDatabase } from 'angularfire2/database';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { AngularFireAuth } from 'angularfire2/auth';
 
 @Component({
@@ -17,10 +18,25 @@ export class FlightListComponent implements OnInit {
 
   ngOnInit() {
     this.afAuth.user.subscribe(user => {
-      let flightList = this.db.list<Flight>('users/' + user.uid + '/flights');
-      this.flights = flightList.valueChanges();
-    });
+      const flightList = this.db.list<Flight>('users/' + user.uid + '/flights');
+      this.flights = flightList.snapshotChanges()
+        .pipe(map(snapshots =>
+          snapshots.map(c => {
+            const f = c.payload.val();
+            f._id = c.key;
+            return f;
+          })))
+        .pipe(map(flights => flights.sort((a: Flight, b: Flight) => {
+          if (a.departureTime < b.departureTime) {
+            return 1;
+          } else if (a.departureTime > b.departureTime) {
+            return -1;
+          } else {
+            return 0;
+          }
+        })));
 
+    });
   }
 
 }
