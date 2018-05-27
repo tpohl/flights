@@ -1,4 +1,5 @@
-import { Observable } from 'rxjs';
+import { AirportService } from './../services/airport.service';
+import { Observable , of} from 'rxjs';
 import { BehaviorSubject } from 'rxjs';
 
 import { Component, OnInit } from '@angular/core';
@@ -7,6 +8,7 @@ import { ActivatedRoute, Params, Router } from '@angular/router';
 import { Flight } from '../models/flight';
 import { AngularFireDatabase } from 'angularfire2/database';
 import { AngularFireAuth } from 'angularfire2/auth';
+import { Airport } from '../models/airport';
 
 
 @Component({
@@ -18,8 +20,11 @@ export class FlightEditComponent implements OnInit {
   flight: Flight;
   objectRef: string;
 
+  fromAirport$: BehaviorSubject<Airport> = new BehaviorSubject(null);
+  toAirport$: BehaviorSubject<Airport> = new BehaviorSubject(null);
+
   constructor(private route: ActivatedRoute,
-    private router: Router, private db: AngularFireDatabase, private afAuth: AngularFireAuth) {
+    private router: Router, private db: AngularFireDatabase, private afAuth: AngularFireAuth, private airportService: AirportService) {
   }
 
 
@@ -34,11 +39,34 @@ export class FlightEditComponent implements OnInit {
           this.objectRef = 'users/' + user.uid + '/flights/' + flightId;
           const flightObject = this.db.object<Flight>(this.objectRef);
           flightObject.valueChanges().subscribe(
-            (flight) => { this.flight = flight; }
+            (flight) => { this.flight = flight;
+            this.loadFromAirport(this.flight.from);
+            this.loadToAirport(this.flight.to);
+           }
           );
         }
       });
     });
+  }
+
+
+  loadAirport(code: String): Observable<Airport> {
+    if (code && code.length === 3) {
+      return this.airportService.loadAirport(code);
+    } else {
+      return of(null);
+    }
+  }
+
+  loadFromAirport(code: String): Observable<Airport> {
+    const ap = this.loadAirport(code);
+    ap.subscribe((a) => this.fromAirport$.next(a));
+    return ap;
+  }
+  loadToAirport(code: String): Observable<Airport> {
+    const ap = this.loadAirport(code);
+    ap.subscribe((a) => this.toAirport$.next(a));
+    return ap;
   }
 
   save(): void {
@@ -50,7 +78,7 @@ export class FlightEditComponent implements OnInit {
       } else {
         const flightList = this.db.list<Flight>('users/' + user.uid + '/flights');
         flightList.push(this.flight);
-        });
+
       }
 
     });

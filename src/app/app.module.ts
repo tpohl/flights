@@ -10,6 +10,7 @@ import { FlightListComponent } from './flight-list/flight-list.component';
 import { FormsModule } from '@angular/forms';
 import { RouterModule, Routes } from '@angular/router';
 import { FlightEditComponent } from './flight-edit/flight-edit.component';
+import { AirportService} from './services/airport.service'
 
 
 const appRoutes: Routes = [
@@ -55,7 +56,7 @@ const appRoutes: Routes = [
     AngularFireAuthModule,
     AngularFireDatabaseModule
   ],
-  providers: [],
+  providers: [AirportService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
