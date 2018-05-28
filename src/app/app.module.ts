@@ -10,7 +10,8 @@ import { FlightListComponent } from './flight-list/flight-list.component';
 import { FormsModule } from '@angular/forms';
 import { RouterModule, Routes } from '@angular/router';
 import { FlightEditComponent } from './flight-edit/flight-edit.component';
-import { AirportService} from './services/airport.service'
+import { AirportService} from './services/airport.service';
+import { CesiumDirective } from './cesium.directive';
 
 
 const appRoutes: Routes = [
@@ -41,6 +42,7 @@ const appRoutes: Routes = [
 
 @NgModule({
   declarations: [
+    CesiumDirective,
     AppComponent,
     FlightListComponent,
     FlightEditComponent

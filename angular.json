@@ -20,12 +20,20 @@
             "tsConfig": "src/tsconfig.app.json",
             "assets": [
               "src/favicon.ico",
+              {
+                "glob": "**/*",
+                "input": "node_modules/cesium/Build/Cesium",
+                "output": "./assets/cesium"
+              },
               "src/assets"
             ],
             "styles": [
+              "node_modules/cesium/Build/Cesium/Widgets/widgets.css",
               "src/styles.scss"
             ],
-            "scripts": []
+            "scripts": [
+              "node_modules/cesium/Build/Cesium/Cesium.js"
+            ]
           },
           "configurations": {
             "production": {

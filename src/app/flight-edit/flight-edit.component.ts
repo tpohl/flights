@@ -1,5 +1,5 @@
 import { AirportService } from './../services/airport.service';
-import { Observable , of} from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { BehaviorSubject } from 'rxjs';
 
 import { Component, OnInit } from '@angular/core';
@@ -39,10 +39,11 @@ export class FlightEditComponent implements OnInit {
           this.objectRef = 'users/' + user.uid + '/flights/' + flightId;
           const flightObject = this.db.object<Flight>(this.objectRef);
           flightObject.valueChanges().subscribe(
-            (flight) => { this.flight = flight;
-            this.loadFromAirport(this.flight.from);
-            this.loadToAirport(this.flight.to);
-           }
+            (flight) => {
+              this.flight = flight;
+              this.loadFromAirport(this.flight.from);
+              this.loadToAirport(this.flight.to);
+            }
           );
         }
       });
