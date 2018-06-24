@@ -28,9 +28,7 @@ export class CesiumDirective implements OnInit {
       animation: false,
       timeline: false
     });
-    console.log('FL', this.flights);
     this.flights
-
       .pipe(delay(1))
       .subscribe(flightArray => {
         from(flightArray)
@@ -38,56 +36,61 @@ export class CesiumDirective implements OnInit {
             zip(
               this.airportService.loadAirport(flight.from),
               this.airportService.loadAirport(flight.to),
-              (fromAp: Airport, to: Airport) => { return { fromAp, to }; })
+              (fromAp: Airport, to: Airport) => ({ fromAp, to }))
           )
           )
           //        .pipe(tap(console.log))
-          .pipe(mergeMap(airports => {
-            const route = {
-              name: [airports.fromAp.code, airports.to.code].sort().join(),
-              positions: Cesium.Cartesian3.fromDegreesArray([
+          .pipe(map(airports => {
+            const route = new Route();
+            route.name = [airports.fromAp.code, airports.to.code].sort().join();
+            route.
+              positions= Cesium.Cartesian3.fromDegreesArray([
                 airports.fromAp.longitude, airports.fromAp.latitude,
-                airports.to.longitude, airports.to.latitude]),
-              count: 0
-            };
-            return of(route);
-          }))
-          //.pipe(tap(console.log))
-          .pipe(scan((acc, value, i) => {
-            let route = acc.get(value.name);
-            if (!route) {
-              route = value;
-              acc.set(route.name, route);
-            }
-            route.count++;
-            return acc;
-          }, new Map()))
-       /*   .pipe(tap(mappp => {
-            console.log('MAPP', mappp);
-          }))*/
-          .pipe(debounceTime(100))
-          .subscribe(routes => {
-            const total = routes.size;
-            let i = 0;
-            const colorFunction = interpolateRainbow;
-            routes.forEach(route => {
-              console.log('Adding Route ', route.name);
-              const color = colorFunction(i++ / total);
-              this.viewer.entities.add({
-                polyline: {
-                  name: route.name,
-                  positions: route.positions,
-                  width: Math.min(10, route.count),
-                  material: Cesium.Color.fromCssColorString(color)
-                }
+                airports.to.longitude, airports.to.latitude]);
+              route.count= 0
 
+            return route;
+          }))
+          .pipe(scan(
+            (acc, value: Route) => {
+              let route = acc.get(value.name);
+              if (!route) {
+                route = value;
+                acc.set(route.name, route);
+              }
+              route.count++;
+
+              return acc;
+            }, new Map<String, Route>()))
+            .pipe(debounceTime(10))
+            .subscribe(routes => {
+              const total = routes.size;
+              let i = 0;
+              const colorFunction = interpolateRainbow;
+              routes.forEach(route => {
+               // console.log('Adding Route ', route.name);
+                const color = colorFunction(i++ / total);
+                this.viewer.entities.add({
+                  polyline: {
+                    name: route.name,
+                    positions: route.positions,
+                    width: Math.min(10, route.count),
+                    material: Cesium.Color.fromCssColorString(color)
+                  }
+
+                });
+                this.viewer.zoomTo(this.viewer.entities);
               });
-              this.viewer.zoomTo(this.viewer.entities);
             });
-          });
       });
 
 
   }
 
+}
+
+class Route {
+  name: string;
+  count: number;
+  positions: any;
 }
