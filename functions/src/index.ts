@@ -1,6 +1,6 @@
 import * as functions from 'firebase-functions';
 
-import * as flightAutoComplete from './autocomplete/flight-autocomplete.server.service';
+import flightAutoComplete from './autocomplete/flight-autocomplete.server.service';
 
 // // Start writing Firebase Functions
 // // https://firebase.google.com/docs/functions/typescript
@@ -11,6 +11,7 @@ import * as flightAutoComplete from './autocomplete/flight-autocomplete.server.s
 
 // Listens for new messages added to /messages/:pushId/original and creates an
 // uppercase version of the message to /messages/:pushId/uppercase
+
 exports.flightNoUppercase = functions.database.ref('/users/{userId}/flights/{flightId}/flightno')
   .onUpdate((change, context) => {
     // Grab the current value of what was written to the Realtime Database.
@@ -23,11 +24,18 @@ exports.flightNoUppercase = functions.database.ref('/users/{userId}/flights/{fli
     // Setting an "uppercase" sibling in the Realtime Database returns a Promise.
     return change.after.ref.set(uppercase);
   });
+
 exports.flightAutoComplete = functions.database.ref('/users/{userId}/flights/{flightId}/flightno')
   .onUpdate((change, context) => {
     const flightNo = change.after.val();
-    flightAutoComplete.autocomplete(flightNo).then(flight => {
-      change.after.ref.parent["autocompletes"] = flight;
+    return new Promise((resolve, reject) => {
+      flightAutoComplete.autocomplete(flightNo).subscribe(flight => {
+        console.log('Autocompleted Flight', flight);
+        return change.after.ref.parent.child("autocompletes").set(flight);
+      }, (error) => {
+        console.log("ERROR AC", error);
+        reject(error);
+      });
     });
 
   });
