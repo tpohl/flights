@@ -1,13 +1,18 @@
 'use strict';
 
+import { Airport } from './../models/airport';
+import { Flight } from './../models/flight';
 import { RxHR } from "@akanass/rx-http-request";
 import * as moment from 'moment';
 import { filter, map, tap, flatMap } from "rxjs/operators";
-import { from } from "rxjs";
+import { from, zip, Observable } from "rxjs";
 import * as simpleoauth2 from 'simple-oauth2';
+import { DataSnapshot } from '../../node_modules/firebase-functions/lib/providers/database';
+const admin = require('firebase-admin');
 const functions = require('firebase-functions');
 const config = functions.config();
 
+admin.initializeApp();
 
 const credentials = {
   client: {
@@ -50,55 +55,6 @@ const getLhApiToken = function () {
   return from(promise);
 };
 
-/*
-  var promise = new Promise(function (resolve, reject) {
-    tokenService.token().then(function (token) {
-      var options = {
-        url: 'https://api.lufthansa.com/v1/operations/flightstatus/' + flightNo + '/' + date,
-        headers: {
-          'User-Agent': 'request',
-          'Accept': 'application/json',
-          'Authorization': 'Bearer ' + token.token.access_token
-        }
-      };
-      console.log('AUTH', options.headers.Authorization);
-      request(options,
-        function (error, response, body) {
-          if (!error && response.statusCode === 200) {
-            var apiResponse = JSON.parse(body);
-            if (apiResponse.FlightStatusResource.Flights.Flight) {
-              var lhApiFlight = apiResponse.FlightStatusResource.Flights.Flight;
-              var flight = toFlight(lhApiFlight);
-              flight.flightno = flightNo;
-              if (flight.aircraftType) {
-                exports.loadAircraftType(flight.aircraftType).then(function (acType) {
-                  flight.aircraftType = acType;
-                  resolve(flight);
-                }, function (error) {
-                  resolve(flight);
-                });
-              } else {
-                resolve(flight);
-              }
-            } else {
-              reject('Error: No Flight found in lufthansa api.');
-            }
-
-          } else {
-            console.log("Not found Flight", flightNo, date);
-            reject('Error: Flight not found in lufthansa api.');
-          }
-        });
-    }, function (error) {
-      console.log('ERROR', error);
-    });
-
-
-  });
-  return promise;
-  */
-
-
 const lhApiTypeReplacements = {
   '32V': 'Airbus A 320neo',
 };
@@ -134,52 +90,7 @@ const loadAircraftType = function (acTypeCode) {
 
 };
 
-/*
-exports.loadAircraftType = function (acTypeCode) {
-  var promise = new Promise(function (resolve, reject) {
-    tokenService.token().then(function (token) {
-      var options = {
-        url: 'https://api.lufthansa.com/v1/references/aircraft/' + acTypeCode,
-        headers: {
-          'User-Agent': 'request',
-          'Accept': 'application/json',
-          'Authorization': 'Bearer ' + token.token.access_token
-        }
-      };
-      console.log('AUTH', options.headers.Authorization);
-      request(options,
-        function (error, response, body) {
 
-          if (!error && response.statusCode === 200) {
-            var apiResponse = JSON.parse(body);
-
-            if (apiResponse.AircraftResource.AircraftSummaries.AircraftSummary) {
-              console.log("Aircraft Info", apiResponse.AircraftResource.AircraftSummaries.AircraftSummary);
-              var lhApiType = apiResponse.AircraftResource.AircraftSummaries.AircraftSummary.Names.Name.$;
-              var translatedType = replaceType(lhApiType)
-              console.log("Aircraft Type Name", lhApiType, translatedType);
-              resolve(translatedType);
-            } else {
-              reject('Error: No Aircraft found in lufthansa api.');
-            }
-
-          } else {
-            console.log("Not found Aircraft", acTypeCode);
-            reject('Error: Aircraft Data not found in lufthansa api.');
-          }
-        });
-    });
-  });
-  return promise;
-};
-*/
-class Flight {
-  from: string;
-  to: string;
-  aircraftType: string;
-  departureTime: Date;
-  arrivalTime: Date;
-}
 const toFlight = function (lhApiFlight: any, index) {
   console.log('TO FLIGHT', lhApiFlight)
   const flight = new Flight();
@@ -197,6 +108,29 @@ const toFlight = function (lhApiFlight: any, index) {
   }
   flight.aircraftType = lhApiFlight.Equipment.AircraftCode;
   return flight;
+}
+
+const calculateDistance = function (lat1: number, long1: number, lat2: number, long2: number) {
+  const p = 0.017453292519943295;    // Math.PI / 180
+  const c = Math.cos;
+  const a = 0.5 - c((lat1 - lat2) * p) / 2 + c(lat2 * p) * c((lat1) * p) * (1 - c(((long1 - long2) * p))) / 2;
+  const dis = Math.round((12742 * Math.asin(Math.sqrt(a)))); // 2 * R; R = 6371 km
+  return dis;
+}
+const addDistance = function (flight: Flight) {
+  console.log('Adding Distance', flight);
+  const fromAirport$ = from(admin.database().ref('/airports/' + flight.from).once('value')) as Observable<DataSnapshot>;
+  const toAirport$ = from(admin.database().ref('/airports/' + flight.to).once('value')) as Observable<DataSnapshot>;
+
+  return zip(fromAirport$, toAirport$)
+    .pipe(map(ap => {
+      const ap1 = ap[0].val() as Airport;
+      const ap2 = ap[1].val() as Airport;
+      console.log('AIRPORTS RESOLVED: ', ap1, ap2);
+      flight.distance = calculateDistance(ap1.latitude, ap1.longitude, ap2.latitude, ap2.longitude);
+      return flight;
+    }));
+
 }
 
 const FlightAutoCompleter = {
@@ -225,6 +159,7 @@ const FlightAutoCompleter = {
       .pipe(map(apiResponse => apiResponse.FlightStatusResource.Flights.Flight))
       .pipe(tap(console.log))
       .pipe(map(toFlight))
+      .pipe(flatMap(addDistance))
       .pipe(flatMap((flight) => loadAircraftType(flight.aircraftType)
         .pipe(map(acType => {
           flight.aircraftType = acType;

@@ -1,3 +1,5 @@
+import { flatMap, tap, map } from 'rxjs/operators';
+import { from } from "rxjs";
 import * as functions from 'firebase-functions';
 
 import flightAutoComplete from './autocomplete/flight-autocomplete.server.service';
@@ -11,7 +13,7 @@ import flightAutoComplete from './autocomplete/flight-autocomplete.server.servic
 
 // Listens for new messages added to /messages/:pushId/original and creates an
 // uppercase version of the message to /messages/:pushId/uppercase
-
+/*
 exports.flightNoUppercase = functions.database.ref('/users/{userId}/flights/{flightId}/flightno')
   .onUpdate((change, context) => {
     // Grab the current value of what was written to the Realtime Database.
@@ -23,23 +25,25 @@ exports.flightNoUppercase = functions.database.ref('/users/{userId}/flights/{fli
     // writing to the Firebase Realtime Database.
     // Setting an "uppercase" sibling in the Realtime Database returns a Promise.
     return change.after.ref.set(uppercase);
-  });
+  });*/
 
 exports.flightAutoComplete = functions.database.ref('/users/{userId}/flights/{flightId}/flightno')
   .onUpdate((change, context) => {
     const flightNo = change.after.val();
-    return new Promise((resolve, reject) => {
-      flightAutoComplete.autocomplete(flightNo).subscribe(flight => {
-        console.log('Autocompleted Flight', flight);
+    console.log('AAA-7');
+    return flightAutoComplete.autocomplete(flightNo)
+      .pipe(tap(flight => console.log('Autocompleted Flight', flight)))
+      .pipe(
+        flatMap(flight => from(change.after.ref.parent.once('value'))
+          .pipe(map(snap => snap.val()))
+          .pipe(map(flightInDb => {
+            console.log('Merging flights', flightInDb, flight)
+            return { ...flightInDb, ...flight };
+          }))
+        ))
+      .pipe(
+        flatMap(newFlight => from(change.after.ref.parent.set(newFlight)))
+      ).toPromise();
 
-        return change.after.ref.parent.once('value').then(snap => {
-          const flightInDb = snap.val();
-          console.log('Merging flights', flightInDb, flight)
-          const newFlight = { ...flightInDb, ...flight };
-          return change.after.ref.parent.set(newFlight);
-        })}, (error) => {
-          reject(error);
-        });
-    });
 
   });
