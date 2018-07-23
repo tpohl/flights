@@ -31,11 +31,15 @@ exports.flightAutoComplete = functions.database.ref('/users/{userId}/flights/{fl
     return new Promise((resolve, reject) => {
       flightAutoComplete.autocomplete(flightNo).subscribe(flight => {
         console.log('Autocompleted Flight', flight);
-        return change.after.ref.parent.child("autocompletes").set(flight);
-      }, (error) => {
-        console.log("ERROR AC", error);
-        reject(error);
-      });
+
+        return change.after.ref.parent.once('value').then(snap => {
+          const flightInDb = snap.val();
+          console.log('Merging flights', flightInDb, flight)
+          const newFlight = { ...flightInDb, ...flight };
+          return change.after.ref.parent.set(newFlight);
+        })}, (error) => {
+          reject(error);
+        });
     });
 
   });

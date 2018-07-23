@@ -23,7 +23,7 @@ const credentials = {
 
 
 const tokenConfig = {};
-let token : simpleoauth2.AccessToken;
+let token: simpleoauth2.AccessToken;
 const oauth2 = simpleoauth2.create(credentials);
 
 const getLhApiToken = function () {
@@ -36,20 +36,19 @@ const getLhApiToken = function () {
           console.log('Access Token Error', error);
         }
         const newToken = result;
-
         token = oauth2.accessToken.create(newToken);
         console.log('TOKEN', token);
         resolve(token);
       });
-
-    } else {
+    }
+    else {
       console.log('TOKEN', token);
       resolve(token);
     }
-
-  });
+  }
+  );
   return from(promise);
-}
+};
 
 /*
   var promise = new Promise(function (resolve, reject) {
@@ -110,7 +109,31 @@ const replaceType = function (lhApiType) {
   } else {
     return lhApiType;
   }
-}
+};
+
+
+const loadAircraftType = function (acTypeCode) {
+
+  return getLhApiToken()
+    .pipe(map(apiTokenObj => apiTokenObj.token.access_token))
+    .pipe(flatMap(apiToken =>
+
+      RxHR.get('https://api.lufthansa.com/v1/references/aircraft/' + acTypeCode,
+        {
+          headers: {
+            'User-Agent': 'request',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + apiToken
+          },
+          json: true
+        })
+        .pipe(map(data => data.body))
+        .pipe(map(apiResponse => apiResponse.AircraftResource.AircraftSummaries.AircraftSummary.Names.Name.$))
+        .pipe(map(replaceType))
+    ));
+
+};
+
 /*
 exports.loadAircraftType = function (acTypeCode) {
   var promise = new Promise(function (resolve, reject) {
@@ -159,7 +182,7 @@ class Flight {
 }
 const toFlight = function (lhApiFlight: any, index) {
   console.log('TO FLIGHT', lhApiFlight)
-  var flight = new Flight();
+  const flight = new Flight();
   flight.from = lhApiFlight.Departure.AirportCode;
   if (lhApiFlight.Departure.ActualTimeUTC) {
     flight.departureTime = lhApiFlight.Departure.ActualTimeUTC.DateTime;
@@ -183,28 +206,37 @@ const FlightAutoCompleter = {
 
 
     const flight$ = getLhApiToken()
-    .pipe(map(apiTokenObj => apiTokenObj.token.access_token))
-    .pipe(flatMap(apiToken =>
-      RxHR.get('https://api.lufthansa.com/v1/operations/flightstatus/' + flightNo + '/' + date,
-        {
-          headers: {
-            'User-Agent': 'request',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + apiToken
-          },
-          json: true
-        })
-    ))
-    .pipe(tap(data => console.log('DATA', data)))
+      .pipe(map(apiTokenObj => apiTokenObj.token.access_token))
+      .pipe(flatMap(apiToken =>
+        RxHR.get('https://api.lufthansa.com/v1/operations/flightstatus/' + flightNo + '/' + date,
+          {
+            headers: {
+              'User-Agent': 'request',
+              'Accept': 'application/json',
+              'Authorization': 'Bearer ' + apiToken
+            },
+            json: true
+          })
+      ))
+      .pipe(tap(data => console.log('DATA', data)))
       .pipe(filter(data => data.response.statusCode === 200))
       .pipe(map(data => data.body))
       .pipe(tap(body => console.log('BODY', body)))
       .pipe(map(apiResponse => apiResponse.FlightStatusResource.Flights.Flight))
       .pipe(tap(console.log))
       .pipe(map(toFlight))
+      .pipe(flatMap((flight) => loadAircraftType(flight.aircraftType)
+        .pipe(map(acType => {
+          flight.aircraftType = acType;
+          return flight;
+        }))
+      ))
+
       ;
 
     return flight$;
   }
 }
+
+
 export default FlightAutoCompleter;

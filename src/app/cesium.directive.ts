@@ -1,3 +1,4 @@
+import { filter } from 'rxjs/operators';
 import { Airport } from './models/airport';
 import { AirportService } from './services/airport.service';
 import { Flight } from './models/flight';
@@ -19,6 +20,7 @@ export class CesiumDirective implements OnInit {
 
   constructor(private element: ElementRef, private airportService: AirportService) {
     Cesium.BingMapsApi.defaultKey = 'Arvxz11onv0TmhTvn0mMzbRDEVJ59LI35MI6YScmvQS3jzwzORkEZAv1Xs987i0T';
+    Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJkYWYxNzUzZi0yNjliLTQyYjYtYjJiYy1iZDk0YWUxYjQ4N2QiLCJpZCI6MjI2OCwiaWF0IjoxNTMyMzczMDQ0fQ.oWuIYi0TtUbwYeRHj5rE3nTI53c3v5HF8UJHgjehxoM';
   }
 
   private viewer: any;
@@ -36,39 +38,50 @@ export class CesiumDirective implements OnInit {
             zip(
               this.airportService.loadAirport(flight.from),
               this.airportService.loadAirport(flight.to),
-              (fromAp: Airport, to: Airport) => ({ fromAp, to }))
+              (fromAp: Airport, toAp: Airport) => {
+                const f = new CesiumFlight();
+                f.fromAp = fromAp;
+                f.toAp = toAp;
+                return f;
+              }))
           )
-          )
-          //        .pipe(tap(console.log))
-          .pipe(map(airports => {
-            const route = new Route();
-            route.name = [airports.fromAp.code, airports.to.code].sort().join();
-            route.
-              positions= Cesium.Cartesian3.fromDegreesArray([
-                airports.fromAp.longitude, airports.fromAp.latitude,
-                airports.to.longitude, airports.to.latitude]);
-              route.count= 0
-
-            return route;
+          .pipe(filter(f => {
+            if (f.fromAp && f.toAp) {
+              return true;
+            } else {
+              return false;
+            }
           }))
-          .pipe(scan(
-            (acc, value: Route) => {
-              let route = acc.get(value.name);
-              if (!route) {
-                route = value;
-                acc.set(route.name, route);
-              }
-              route.count++;
+            .pipe(map(f => {
+              const route = new Route();
+              route.name = [f.fromAp.code, f.toAp.code].sort().join();
+              route.
+                positions = Cesium.Cartesian3.fromDegreesArray([
+                  f.fromAp.longitude, f.fromAp.latitude,
+                  f.toAp.longitude, f.toAp.latitude]);
+              route.count = 0;
 
-              return acc;
-            }, new Map<String, Route>()))
+              return route;
+            }))
+            .pipe(scan(
+              (acc, value: Route) => {
+                let route = acc.get(value.name);
+                if (!route) {
+                  route = value;
+                  acc.set(route.name, route);
+                }
+                route.count++;
+
+                return acc;
+              }, new Map<String, Route>()))
             .pipe(debounceTime(10))
             .subscribe(routes => {
               const total = routes.size;
+              console.log('Total Routes', total);
               let i = 0;
               const colorFunction = interpolateRainbow;
               routes.forEach(route => {
-               // console.log('Adding Route ', route.name);
+                // console.log('Adding Route ', route.name);
                 const color = colorFunction(i++ / total);
                 this.viewer.entities.add({
                   polyline: {
@@ -93,4 +106,9 @@ class Route {
   name: string;
   count: number;
   positions: any;
+}
+
+class CesiumFlight {
+  fromAp: Airport;
+  toAp: Airport;
 }
