@@ -31,7 +31,9 @@ exports.flightAutoComplete = functions.database.ref('/users/{userId}/flights/{fl
   .onUpdate((change, context) => {
     const flightNo = change.after.val();
     console.log('AAA-7');
-    return flightAutoComplete.autocomplete(flightNo)
+    return from(change.after.ref.parent.child('date').once('value')).pipe(flatMap((dateStr) =>
+      flightAutoComplete.autocomplete(flightNo, dateStr)
+    ))
       .pipe(tap(flight => console.log('Autocompleted Flight', flight)))
       .pipe(
         flatMap(flight => from(change.after.ref.parent.once('value'))

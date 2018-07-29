@@ -134,7 +134,9 @@ const addDistance = function (flight: Flight) {
 }
 
 const FlightAutoCompleter = {
-  autocomplete: function (flightNo, date = moment().format('YYYY-MM-DD')) {
+  autocomplete: function (flightNo, dateStr: string) {
+    // Default to current Date.
+    const date = dateStr ? dateStr : moment().format('YYYY-MM-DD');
 
     console.log('Autocomplete Flight', flightNo, date);
 

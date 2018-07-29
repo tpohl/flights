@@ -9,6 +9,7 @@ import { Flight } from '../models/flight';
 import { AngularFireDatabase } from 'angularfire2/database';
 import { AngularFireAuth } from 'angularfire2/auth';
 import { Airport } from '../models/airport';
+import { Moment } from '../../../functions/node_modules/moment';
 
 
 @Component({
@@ -50,7 +51,9 @@ export class FlightEditComponent implements OnInit {
     });
   }
 
-
+  selectedDate(momentDate: Moment) {
+    this.flight.date = momentDate.format('YYYY-MM-DD');
+  }
   loadAirport(code: String): Observable<Airport> {
     if (code && code.length === 3) {
       return this.airportService.loadAirport(code);
@@ -68,6 +71,10 @@ export class FlightEditComponent implements OnInit {
     const ap = this.loadAirport(code);
     ap.subscribe((a) => this.toAirport$.next(a));
     return ap;
+  }
+
+  autocomplete(): void {
+    this.save;
   }
 
   save(): void {

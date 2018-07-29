@@ -1,3 +1,4 @@
+import { DatepickerComponent } from './datepicker/datepicker.component';
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 
@@ -45,7 +46,8 @@ const appRoutes: Routes = [
     CesiumDirective,
     AppComponent,
     FlightListComponent,
-    FlightEditComponent
+    FlightEditComponent,
+    DatepickerComponent
   ],
   imports: [
     RouterModule.forRoot(

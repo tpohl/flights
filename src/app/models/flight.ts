@@ -2,6 +2,8 @@ export class Flight {
   _id: string;
   name: string;
 
+  date: string;
+
   flightno: string;
   from: string;
   to: string;
