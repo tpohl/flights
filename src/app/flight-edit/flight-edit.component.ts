@@ -1,3 +1,4 @@
+import { Location, LocationStrategy, PathLocationStrategy } from '@angular/common';
 import { AirportService } from './../services/airport.service';
 import { Observable, of } from 'rxjs';
 import { BehaviorSubject } from 'rxjs';
@@ -8,50 +9,67 @@ import { ActivatedRoute, Params, Router } from '@angular/router';
 import { Flight } from '../models/flight';
 import { AngularFireDatabase } from 'angularfire2/database';
 import { AngularFireAuth } from 'angularfire2/auth';
+import { User } from 'firebase/app';
 import { Airport } from '../models/airport';
-import { Moment } from '../../../functions/node_modules/moment';
+import * as moment from 'moment';
+import { tap } from '../../../node_modules/rxjs/operators';
 
 
 @Component({
   selector: 'app-flight-edit',
+  providers: [Location, { provide: LocationStrategy, useClass: PathLocationStrategy }],
   templateUrl: './flight-edit.component.html',
   styleUrls: ['./flight-edit.component.css']
 })
 export class FlightEditComponent implements OnInit {
   flight: Flight;
+  user: User;
+  //departureLocalTime: Moment;
+
   objectRef: string;
 
   fromAirport$: BehaviorSubject<Airport> = new BehaviorSubject(null);
   toAirport$: BehaviorSubject<Airport> = new BehaviorSubject(null);
 
   constructor(private route: ActivatedRoute,
-    private router: Router, private db: AngularFireDatabase, private afAuth: AngularFireAuth, private airportService: AirportService) {
+    private router: Router, private db: AngularFireDatabase, private afAuth: AngularFireAuth, private airportService: AirportService, private location: Location) {
   }
 
 
   ngOnInit() {
     this.route.params.subscribe(params => {
       this.afAuth.user.subscribe(user => {
+        this.user = user;
         const flightId = params.flightId;
         if (flightId === 'new') {
           this.objectRef = null;
           this.flight = new Flight();
+          this.flight.date = moment().format('YYYY-MM-DD');
         } else {
-          this.objectRef = 'users/' + user.uid + '/flights/' + flightId;
-          const flightObject = this.db.object<Flight>(this.objectRef);
-          flightObject.valueChanges().subscribe(
-            (flight) => {
-              this.flight = flight;
-              this.loadFromAirport(this.flight.from);
-              this.loadToAirport(this.flight.to);
-            }
-          );
+          this.loadFlight(flightId);
         }
       });
     });
   }
 
-  selectedDate(momentDate: Moment) {
+  loadFlight(flightId) {
+    this.objectRef = 'users/' + this.user.uid + '/flights/' + flightId;
+    const flightObject = this.db.object<Flight>(this.objectRef);
+    flightObject.valueChanges().subscribe(
+      (flight) => {
+        console.log('Loaded Flight');
+        this.flight = flight;
+        this.loadFromAirport(this.flight.from);
+        /*
+        .pipe(tap(fromAirport=> {
+        });
+        */
+        this.loadToAirport(this.flight.to);
+      }
+    );
+  }
+
+  selectedDate(momentDate: moment.Moment) {
     this.flight.date = momentDate.format('YYYY-MM-DD');
   }
   loadAirport(code: String): Observable<Airport> {
@@ -74,7 +92,7 @@ export class FlightEditComponent implements OnInit {
   }
 
   autocomplete(): void {
-    this.save;
+    return this.save();
   }
 
   save(): void {
@@ -85,8 +103,14 @@ export class FlightEditComponent implements OnInit {
         flightObject.update(this.flight);
       } else {
         const flightList = this.db.list<Flight>('users/' + user.uid + '/flights');
-        flightList.push(this.flight);
-
+        flightList.push(this.flight).then(reference => {
+          const flightId = reference.getKey();
+          this.loadFlight(flightId);
+          this.location.replaceState('flight/' + flightId);
+        }, error => {
+          console.log(error);
+        }
+        );
       }
 
     });

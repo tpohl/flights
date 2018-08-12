@@ -18,24 +18,16 @@
           <div class="field has-addons">
             <div class="control is-expanded">
               <input class="input" [(ngModel)]="flight.date">
-              <!-- [owlDateTime]="dt1"
-                <owl-date-time [pickerType]="'calendar'" #dt1></owl-date-time>-->
-
-
             </div>
             <div class="control">
               <button class="button">
-                <!--[owlDateTimeTrigger]="dt1" -->
-                <app-datepicker [locale]="en" (emitSelectedDate)="selectedDate($event)"></app-datepicker>
+                <app-datepicker locale="en" (emitSelectedDate)="selectedDate($event)"></app-datepicker>
               </button>
             </div>
 
           </div>
         </div>
       </div>
-      <!--
-        <owl-date-time #dt1 [pickerType]="'calendar'" dateFormat="DD.MM.YYYY"></owl-date-time>
-        -->
       <div class="field">
         <label class="label">Flight Number</label>
         <div class="field has-addons">
@@ -80,7 +72,8 @@
       <div class="field">
         <label class="label">Duration</label>
         <div class="control">
-          <input class="input" type="text" [(ngModel)]="flight.duration" placeholder="Duration" readonly>
+          {{flight.durationMilliseconds | amDuration:'milliseconds' }}
+          <!--<input class="input" type="text" [(ngModel)]="flight.durationMilliseconds" placeholder="Duration" readonly>-->
         </div>
       </div>
 

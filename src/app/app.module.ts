@@ -1,7 +1,7 @@
 import { DatepickerComponent } from './datepicker/datepicker.component';
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
-
+import { MomentModule } from 'ngx-moment';
 import { AppComponent } from './app.component';
 import { AngularFireModule } from 'angularfire2';
 import { environment } from '../environments/environment';
@@ -13,6 +13,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { FlightEditComponent } from './flight-edit/flight-edit.component';
 import { AirportService} from './services/airport.service';
 import { CesiumDirective } from './cesium.directive';
+import { CommonModule } from '@angular/common';
 
 
 const appRoutes: Routes = [
@@ -54,8 +55,10 @@ const appRoutes: Routes = [
       appRoutes,
       { enableTracing: false } // <-- enable for debugging purposes only
     ),
+    CommonModule,
     BrowserModule,
     FormsModule,
+    MomentModule,
     AngularFireModule.initializeApp(environment.firebase),
     AngularFireAuthModule,
     AngularFireDatabaseModule

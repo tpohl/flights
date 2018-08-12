@@ -11,6 +11,8 @@ export class Flight {
   departureTime: Date;
   arrivalTime: Date;
 
+  durationMilliseconds: number;
+
   distance: Number;
   aircraftType: string;
 
