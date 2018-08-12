@@ -10,7 +10,7 @@
         <span *ngIf="flight.from && flight.from.length && flight.to && flight.to.length">{{flight.from}} to {{flight.to}}</span>
       </p>
       <p class="subtitle">
-        {{flight.departureTime | date:'dd.MM.yyyy HH:mm'}} - {{flight.flightno}} - {{flight.distance | number : '1.0-0'}} km
+          {{flight.departureTime | amTimeAgo}} ({{flight.departureTime | date:'dd.MM.yyyy HH:mm'}}) - {{flight.flightno}} - {{flight.distance | number : '1.0-0'}} km
       </p>
       <div class="field">
         <label class="label">Date</label>
@@ -66,14 +66,14 @@
       <div class="field">
         <label class="label">Distance</label>
         <div class="control">
-          <input class="input" type="text" [(ngModel)]="flight.distance" placeholder="Distance" readonly>
+          <input class="input" type="text" [(ngModel)]="flight.distance" placeholder="Distance" readonly disabled>
         </div>
       </div>
       <div class="field">
         <label class="label">Duration</label>
         <div class="control">
-          {{flight.durationMilliseconds | amDuration:'milliseconds' }}
-          <!--<input class="input" type="text" [(ngModel)]="flight.durationMilliseconds" placeholder="Duration" readonly>-->
+
+          <input class="input" type="text" value="{{flight.durationMilliseconds | amDurationExact:'milliseconds' }}" placeholder="Duration" readonly disabled >
         </div>
       </div>
 

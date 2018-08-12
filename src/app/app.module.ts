@@ -14,6 +14,7 @@ import { FlightEditComponent } from './flight-edit/flight-edit.component';
 import { AirportService} from './services/airport.service';
 import { CesiumDirective } from './cesium.directive';
 import { CommonModule } from '@angular/common';
+import { ExactDurationPipe } from './pipes/exactDurationPipe';
 
 
 const appRoutes: Routes = [
@@ -48,7 +49,8 @@ const appRoutes: Routes = [
     AppComponent,
     FlightListComponent,
     FlightEditComponent,
-    DatepickerComponent
+    DatepickerComponent,
+    ExactDurationPipe
   ],
   imports: [
     RouterModule.forRoot(
