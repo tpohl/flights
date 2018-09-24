@@ -3,14 +3,35 @@
     <a class="navbar-item" routerLink="/">
       <i class="fa fa-paper-plane-o" aria-hidden="true"></i>&nbsp;&nbsp;&nbsp;Thorstens Flight Tracker
     </a>
-    <a class="navbar-item" routerLink="/flights" routerLinkActive="active">List Flights</a>
-    <a class="navbar-item" (click)="logout()">Logout</a>
-    <a class="navbar-item" (click)="login()">Login</a>
+    <a class="navbar-item" *ngIf="isLoggedIn()" routerLink="/flights" routerLinkActive="active">List Flights</a>
+    <a class="navbar-item" *ngIf="isLoggedIn()" (click)="logout()">Logout</a>
+    <a class="navbar-item" *ngIf="!isLoggedIn()" (click)="login()">Login</a>
   </div>
 </nav>
 
+
 <section class="section">
-  <router-outlet></router-outlet>
+  <div *ngIf="isLoggedIn()">
+    <router-outlet></router-outlet>
+  </div>
+
+  <section class="hero is-primary" *ngIf="! isLoggedIn()">
+
+    <div class="hero-body">
+      <div class="container">
+        <h1 class="title">
+          Welcome to Thorstens Flight Tracker
+        </h1>
+        <h2 class="subtitle">
+          Log all your flights with ease.
+        </h2>
+
+
+
+        Please <a (click)="login()">login</a> to use the flight tracker.
+      </div>
+    </div>
+  </section>
 </section>
 <footer class="footer">
   <div class="container">
