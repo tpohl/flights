@@ -2,170 +2,277 @@
   <br />
   <div class="card" *ngIf="flight">
     <div class="card-content">
-      <p class="title">
-        <a routerLink="/flights" class="button">
-          <i class="fa fa-chevron-left" aria-hidden="true"></i>
+
+
+      <div class="media">
+        <div class="media-left">
+          <figure class="image is-48x48">
+            <img src="/assets/flight.jpeg" alt="Flight">
+
+          </figure>
+        </div>
+        <div class="media-content">
+          <p class="title is-4"> <span *ngIf="flight.from && flight.from.length && flight.to && flight.to.length">{{flight.from}}
+              to {{flight.to}}</span></p>
+          <p class="subtitle is-6"> {{flight.departureTime | amTimeAgo}} ({{flight.departureTime | date:'dd.MM.yyyy HH:mm'}})
+            - {{flight.flightno}} - {{flight.distance | number : '1.0-0'}} km
+          </p>
+        </div>
+        <a routerLink="/flights" class="card-header-icon" aria-label="Close Flight">
+          <span class="icon">
+            <i class="fa fa-times" aria-hidden="true"></i>
+          </span>
         </a>
-        <i class="fa fa-plane" aria-hidden="true"></i>
-        <span *ngIf="flight.from && flight.from.length && flight.to && flight.to.length">{{flight.from}} to {{flight.to}}</span>
-      </p>
-      <p class="subtitle">
-          {{flight.departureTime | amTimeAgo}} ({{flight.departureTime | date:'dd.MM.yyyy HH:mm'}}) - {{flight.flightno}} - {{flight.distance | number : '1.0-0'}} km
-      </p>
-      <div class="field">
-        <label class="label">Date</label>
-        <div class="control">
+      </div>
+      <div class="field is-horizontal">
+        <div class="field-label is-normal">
+          <label class="label">Date</label>
+        </div>
+        <div class="field-body">
+          <div class="field">
+            <div class="control">
+              <div class="field has-addons">
+                <div class="control is-expanded">
+                  <input class="input" [(ngModel)]="flight.date">
+                </div>
+                <div class="control">
+                  <button class="button">
+                    <app-datepicker locale="en" (emitSelectedDate)="selectedDate($event)"></app-datepicker>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="field is-horizontal">
+        <div class="field-label is-normal">
+          <label class="label">Flight Number</label>
+        </div>
+        <div class="field-body">
           <div class="field has-addons">
             <div class="control is-expanded">
-              <input class="input" [(ngModel)]="flight.date">
+              <input class="input" type="text" [(ngModel)]="flight.flightno" placeholder="Flight Number">
             </div>
             <div class="control">
-              <button class="button">
-                <app-datepicker locale="en" (emitSelectedDate)="selectedDate($event)"></app-datepicker>
+              <button (click)="autocomplete()" class="button">
+                <i class="fa fa-magic" aria-hidden="true"></i>
               </button>
             </div>
-
-          </div>
-        </div>
-      </div>
-      <div class="field">
-        <label class="label">Flight Number</label>
-        <div class="field has-addons">
-          <div class="control is-expanded">
-            <input class="input" type="text" [(ngModel)]="flight.flightno" placeholder="Flight Number">
-          </div>
-          <div class="control">
-            <button (click)="autocomplete()" class="button">
-              <i class="fa fa-magic" aria-hidden="true"></i>
-            </button>
           </div>
         </div>
       </div>
 
-      <div class="field">
-        <label class="label">From</label>
-        <div class="control">
-          <input class="input" type="text" [(ngModel)]="flight.from" placeholder="Origin" (change)="loadFromAirport(flight.from)">
+      <div class="field is-horizontal">
+        <div class="field-label is-normal">
+          <label class="label">From</label>
         </div>
-        <p class="help">{{(fromAirport$ | async)?.name}}</p>
+        <div class="field-body">
+          <div class="field has-addons">
+            <div class="control is-expanded">
+              <input class="input" type="text" [(ngModel)]="flight.from" placeholder="Origin" (change)="loadFromAirport(flight.from)">
+            </div>
+            <div class="control">
+              <p class="button is-static">{{(fromAirport$ | async)?.name}}</p>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div class="field">
-        <label class="label">To</label>
-        <div class="control">
-          <input class="input" type="text" [(ngModel)]="flight.to" placeholder="Destination" (change)="loadToAirport(flight.to)">
+      <div class="field is-horizontal">
+        <div class="field-label is-normal">
+          <label class="label">To</label>
         </div>
-        <p class="help">{{(toAirport$ | async)?.name}}</p>
+        <div class="field-body">
+          <div class="field has-addons">
+            <div class="control is-expanded">
+              <input class="input" type="text" [(ngModel)]="flight.to" placeholder="Destination" (change)="loadToAirport(flight.to)">
+            </div>
+            <div class="control">
+              <p class="button is-static">{{(toAirport$ | async)?.name}}</p>
+            </div>
+          </div>
+        </div>
       </div>
+
 
       <!--
           <app-local-datetime label="Departure Time" [instant]="departureTimeLocal" (timeUpdated)="timeUpdated('departureTime', $event)"></app-local-datetime>
 
         <app-local-datetime label="Arrival Time" [instant]="arrivalTimeLocal" (timeUpdated)="timeUpdated('arrivalTime', $event)"></app-local-datetime>
       -->
-      <div class="field">
-        <label class="label">Distance</label>
-        <div class="control">
-          <input class="input" type="text" [(ngModel)]="flight.distance" placeholder="Distance" readonly disabled>
+      <div class="field is-horizontal">
+        <div class="field-label is-normal">
+          <label class="label">Distance</label>
         </div>
-      </div>
-      <div class="field">
-        <label class="label">Duration</label>
-        <div class="control">
-
-          <input class="input" type="text" value="{{flight.durationMilliseconds | amDurationExact:'milliseconds' }}" placeholder="Duration" readonly disabled >
-        </div>
-      </div>
-
-      <div class="field">
-        <label class="label">Aircraft Type</label>
-        <div class="control">
-          <input class="input" type="text" [(ngModel)]="flight.aircraftType" placeholder="Aircraft Type">
-        </div>
-      </div>
-      <div class="field">
-        <label class="label">Aircraft Registration</label>
-        <div class="control">
-          <input class="input" type="text" [(ngModel)]="flight.aircraftRegistration" placeholder="Aircraft Registration">
+        <div class="field-body">
+          <div class="field">
+            <div class="control">
+              <input class="input" type="text" [(ngModel)]="flight.distance" placeholder="Distance" readonly disabled>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div class="field">
-        <label class="label">Seat</label>
-        <div class="control">
-          <input class="input" type="text" [(ngModel)]="flight.seat" placeholder="Seat">
+      <div class="field is-horizontal">
+        <div class="field-label is-normal">
+          <label class="label">Duration</label>
+        </div>
+        <div class="field-body">
+          <div class="field">
+            <div class="control">
+              <input class="input" type="text" value="{{flight.durationMilliseconds | amDurationExact:'milliseconds' }}" placeholder="Duration"
+                readonly disabled>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div class="field">
-        <label class="label">Seat Type:</label>
-        <div class="control">
-          <label class="radio">
-            <input type="radio" value="A" name="seatType" [(ngModel)]="flight.seatType"> Aisle
-          </label>
-          <label class="radio">
-            <input type="radio" value="M" name="seatType" [(ngModel)]="flight.seatType"> Middle
-          </label>
-          <label class="radio">
-            <input type="radio" value="W" name="seatType" [(ngModel)]="flight.seatType"> Window
-          </label>
+      <div class="field is-horizontal">
+        <div class="field-label is-normal">
+          <label class="label">Aircraft Type</label>
+        </div>
+        <div class="field-body">
+          <div class="field">
+            <div class="control is-expanded">
+              <input class="input" type="text" [(ngModel)]="flight.aircraftType" placeholder="Aircraft Type">
+            </div>
+          </div>
         </div>
       </div>
 
-      <div class="field">
-        <label class="label">Class:</label>
-        <div class="control">
-          <label class="radio">
-            <input type="radio" value="Y" name="class" [(ngModel)]="flight.class"> Economy
-          </label>
-          <label class="radio">
-            <input type="radio" value="M" name="class" [(ngModel)]="flight.class"> Premium Eco
-          </label>
-          <label class="radio">
-            <input type="radio" value="C" name="class" [(ngModel)]="flight.class"> Business
-          </label>
-          <label class="radio">
-            <input type="radio" value="F" name="class" [(ngModel)]="flight.class"> First
-          </label>
+      <div class="field is-horizontal">
+        <div class="field-label is-normal">
+          <label class="label">Aircraft Registration</label>
+        </div>
+        <div class="field-body">
+          <div class="field">
+            <div class="control">
+              <input class="input" type="text" [(ngModel)]="flight.aircraftRegistration" placeholder="Aircraft Registration">
+            </div>
+          </div>
+
         </div>
       </div>
 
-      <div class="field">
-        <label class="label">Reason:</label>
-        <div class="control">
-          <label class="radio">
-            <input type="radio" value="B" name="reason" [(ngModel)]="flight.reason"> Work
-          </label>
-          <label class="radio">
-            <input type="radio" value="L" name="reason" [(ngModel)]="flight.reason"> Leisure
-          </label>
-          <label class="radio">
-            <input type="radio" value="C" name="reason" [(ngModel)]="flight.reason"> Crew
-          </label>
-          <label class="radio">
-            <input type="radio" value="O" name="reason" [(ngModel)]="flight.reason"> Other
-          </label>
+      <div class="field is-horizontal">
+        <div class="field-label is-normal">
+          <label class="label">Seat</label>
+        </div>
+        <div class="field-body">
+          <div class="field">
+            <div class="control">
+              <input class="input" type="text" [(ngModel)]="flight.seat" placeholder="Seat">
+            </div>
+          </div>
         </div>
       </div>
 
-      <div class="field">
-        <label class="label">Carrier:</label>
-        <div class="control">
-          <input class="input" type="text" [(ngModel)]="flight.carrier" placeholder="Carrier">
+      <div class="field is-horizontal">
+        <div class="field-label is-normal">
+          <label class="label">Seat Type:</label>
+        </div>
+        <div class="field-body">
+          <div class="field">
+            <div class="control">
+              <label class="radio">
+                <input type="radio" value="A" name="seatType" [(ngModel)]="flight.seatType"> Aisle
+              </label>
+              <label class="radio">
+                <input type="radio" value="M" name="seatType" [(ngModel)]="flight.seatType"> Middle
+              </label>
+              <label class="radio">
+                <input type="radio" value="W" name="seatType" [(ngModel)]="flight.seatType"> Window
+              </label>
+            </div>
+          </div>
+
         </div>
       </div>
 
-      <div class="field">
-        <label class="label">Name:</label>
-        <div class="control">
-          <input class="input" type="text" [(ngModel)]="flight.name" placeholder="Name">
+      <div class="field is-horizontal">
+        <div class="field-label is-normal">
+          <label class="label">Class:</label>
+        </div>
+        <div class="field-body">
+          <div class="field">
+            <div class="control">
+              <label class="radio">
+                <input type="radio" value="Y" name="class" [(ngModel)]="flight.class"> Economy
+              </label>
+              <label class="radio">
+                <input type="radio" value="M" name="class" [(ngModel)]="flight.class"> Premium Eco
+              </label>
+              <label class="radio">
+                <input type="radio" value="C" name="class" [(ngModel)]="flight.class"> Business
+              </label>
+              <label class="radio">
+                <input type="radio" value="F" name="class" [(ngModel)]="flight.class"> First
+              </label>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div class="field">
-        <label class="label">Note:</label>
-        <div class="control">
-          <input class="input" type="text" [(ngModel)]="flight.note" placeholder="Note">
+      <div class="field is-horizontal">
+        <div class="field-label is-normal">
+          <label class="label">Reason:</label>
+        </div>
+        <div class="field-body">
+          <div class="field">
+            <div class="control">
+              <label class="radio">
+                <input type="radio" value="B" name="reason" [(ngModel)]="flight.reason"> Work
+              </label>
+              <label class="radio">
+                <input type="radio" value="L" name="reason" [(ngModel)]="flight.reason"> Leisure
+              </label>
+              <label class="radio">
+                <input type="radio" value="C" name="reason" [(ngModel)]="flight.reason"> Crew
+              </label>
+              <label class="radio">
+                <input type="radio" value="O" name="reason" [(ngModel)]="flight.reason"> Other
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="field is-horizontal">
+        <div class="field-label is-normal">
+          <label class="label">Carrier:</label>
+        </div>
+        <div class="field-body">
+          <div class="field">
+            <div class="control is-expanded">
+              <input class="input" type="text" [(ngModel)]="flight.carrier" placeholder="Carrier">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="field is-horizontal">
+        <div class="field-label is-normal">
+          <label class="label">Name:</label>
+        </div>
+        <div class="field-body">
+          <div class="field">
+            <div class="control is-expanded">
+              <input class="input" type="text" [(ngModel)]="flight.name" placeholder="Name">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="field is-horizontal">
+        <div class="field-label is-normal">
+          <label class="label">Note:</label>
+        </div>
+        <div class="field-body">
+          <div class="field">
+            <div class="control is-expanded">
+              <input class="input" type="text" [(ngModel)]="flight.note" placeholder="Note">
+            </div>
+          </div>
         </div>
       </div>
     </div>
