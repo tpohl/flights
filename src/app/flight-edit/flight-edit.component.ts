@@ -11,8 +11,10 @@ import { AngularFireDatabase } from 'angularfire2/database';
 import { AngularFireAuth } from 'angularfire2/auth';
 import { User } from 'firebase/app';
 import { Airport } from '../models/airport';
-import * as moment from 'moment';
-import { tap } from '../../../node_modules/rxjs/operators';
+import * as moment from 'moment-timezone';
+
+import { AmazingTimePickerService } from 'amazing-time-picker';
+import { tap } from 'rxjs/operators';
 
 
 @Component({
@@ -26,13 +28,17 @@ export class FlightEditComponent implements OnInit {
   user: User;
   //departureLocalTime: Moment;
 
+  departureTime = '00:00';
+
   objectRef: string;
 
   fromAirport$: BehaviorSubject<Airport> = new BehaviorSubject(null);
   toAirport$: BehaviorSubject<Airport> = new BehaviorSubject(null);
 
-  constructor(private route: ActivatedRoute,
-    private router: Router, private db: AngularFireDatabase, private afAuth: AngularFireAuth, private airportService: AirportService, private location: Location) {
+  constructor(private route: ActivatedRoute, private atp: AmazingTimePickerService,
+    private router: Router, private db: AngularFireDatabase,
+    private afAuth: AngularFireAuth,
+    private airportService: AirportService, private location: Location) {
   }
 
 
@@ -50,7 +56,31 @@ export class FlightEditComponent implements OnInit {
         }
       });
     });
+
+    this.fromAirport$.subscribe(fromAirport => {
+      if (fromAirport && this.flight){
+        this.departureTime =  moment(this.flight.departureTime).tz(fromAirport.timezoneId).format('HH:mm');
+        console.log('AAAA', this.departureTime, fromAirport.timezoneId);
+        }
+    });
   }
+
+selectDepartureTime(){
+  const amazingTimePicker = this.atp.open({
+    time: this.departureTime,
+    changeToMinutes: true;
+
+  });
+    amazingTimePicker.afterClose().subscribe(time => {
+      this.departureTime = time;
+      console.log('TIME', time);
+
+      const dateWithWithTime =  moment(this.flight.date).format('YYYY-MM-DD') + 'T' + time;
+      this.fromAirport$.subscribe(fromAirport => {
+        this.flight.departureTime = moment.tz(dateWithWithTime, fromAirport.timezoneId ); // '2013-06-01T00:00:00',
+      });
+    });
+}
 
   loadFlight(flightId) {
     this.objectRef = 'users/' + this.user.uid + '/flights/' + flightId;
@@ -59,7 +89,7 @@ export class FlightEditComponent implements OnInit {
       (flight) => {
         console.log('Loaded Flight');
         this.flight = flight;
-        this.loadFromAirport(this.flight.from);
+        this.loadFromAirport(this.flight.from)
         /*
         .pipe(tap(fromAirport=> {
         });

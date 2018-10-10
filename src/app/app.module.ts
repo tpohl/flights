@@ -15,6 +15,7 @@ import { AirportService} from './services/airport.service';
 import { CesiumDirective } from './cesium.directive';
 import { CommonModule } from '@angular/common';
 import { ExactDurationPipe } from './pipes/exactDurationPipe';
+import { AmazingTimePickerModule } from 'amazing-time-picker';
 
 
 const appRoutes: Routes = [
@@ -61,6 +62,7 @@ const appRoutes: Routes = [
     BrowserModule,
     FormsModule,
     MomentModule,
+    AmazingTimePickerModule,
     AngularFireModule.initializeApp(environment.firebase),
     AngularFireAuthModule,
     AngularFireDatabaseModule

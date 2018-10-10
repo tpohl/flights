@@ -14,7 +14,7 @@
         <div class="media-content">
           <p class="title is-4"> <span *ngIf="flight.from && flight.from.length && flight.to && flight.to.length">{{flight.from}}
               to {{flight.to}}</span></p>
-          <p class="subtitle is-6"> {{flight.departureTime | amTimeAgo}} ({{flight.departureTime | date:'dd.MM.yyyy HH:mm'}})
+          <p class="subtitle is-6"> {{flight.departureTime | amTimeAgo}} ({{flight.departureTime | date:'dd.MM.yyyy'}})
             - {{flight.flightno}} - {{flight.distance | number : '1.0-0'}} km
           </p>
         </div>
@@ -45,6 +45,7 @@
           </div>
         </div>
       </div>
+
       <div class="field is-horizontal">
         <div class="field-label is-normal">
           <label class="label">Flight Number</label>
@@ -95,7 +96,27 @@
         </div>
       </div>
 
-
+      <div class="field is-horizontal">
+        <div class="field-label is-normal">
+          <label class="label">Departure Time</label>
+        </div>
+        <div class="field-body">
+          <div class="field">
+            <div class="control">
+              <div class="field has-addons">
+                <div class="control is-expanded">
+                  <input readonly disabled class="input" type="time" [(ngModel)]="departureTime" />
+                </div>
+                <div class="control">
+                  <button class="button" (click)="selectDepartureTime()">
+                    <i class="fa fa-clock" aria-hidden="true"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
       <!--
           <app-local-datetime label="Departure Time" [instant]="departureTimeLocal" (timeUpdated)="timeUpdated('departureTime', $event)"></app-local-datetime>
 
