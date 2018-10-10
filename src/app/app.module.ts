@@ -16,6 +16,7 @@ import { CesiumDirective } from './cesium.directive';
 import { CommonModule } from '@angular/common';
 import { ExactDurationPipe } from './pipes/exactDurationPipe';
 import { AmazingTimePickerModule } from 'amazing-time-picker';
+import { PohlRocksImporterComponent } from './pohl-rocks-importer/pohl-rocks-importer.component';
 
 
 const appRoutes: Routes = [
@@ -26,6 +27,10 @@ const appRoutes: Routes = [
   {
     path: 'flight/:flightId',
     component: FlightEditComponent
+  },
+  {
+    path: 'import/pohl.rocks',
+    component: PohlRocksImporterComponent
   },
   /*
   {
@@ -51,7 +56,8 @@ const appRoutes: Routes = [
     FlightListComponent,
     FlightEditComponent,
     DatepickerComponent,
-    ExactDurationPipe
+    ExactDurationPipe,
+    PohlRocksImporterComponent
   ],
   imports: [
     RouterModule.forRoot(

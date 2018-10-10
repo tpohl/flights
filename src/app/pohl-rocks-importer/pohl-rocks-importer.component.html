@@ -1,0 +1,38 @@
+<div>
+  <div>
+  <h1 class="title">Paste your flights from <a href="https://flights.pohl.rocks">https://flights.pohl.rocks</a> here.</h1>
+  <textarea [(ngModel)]="importJson"  (change)="parseFlights()" rows="20" cols="200"></textarea>
+</div>
+<div>
+  <h2 class="title">Flights you are about to import:</h2>
+
+  <button>Do import</button>
+
+  <div class="columns is-multiline">
+      <div class="column is-half-tablet is-one-third-desktop is-one-quarter-fullhd" *ngFor="let flight of flights">
+
+          <div class="card">
+            <div class="card-content">
+
+              <div class="media">
+
+                <div class="media-content">
+                  <p class="title is-4"> {{flight.from}} to {{flight.to}}</p>
+                  <p class="subtitle is-6"> {{flight.departureTime | date:'dd.MM.yyyy HH:mm'}} - {{flight.flightno}} - {{flight.distance
+                    | number : '1.0-0'}} km
+                  </p>
+                </div>
+
+              </div>
+              <span class="is-hidden-mobile">
+                {{flight.class}} - {{flight.seat}} - {{flight.carrier}} <br /> {{flight.aircraftType}} {{flight.aircraftRegistration}}
+              </span>
+
+            </div>
+          </div>
+
+      </div>
+    </div>
+
+</div>
+</div>
