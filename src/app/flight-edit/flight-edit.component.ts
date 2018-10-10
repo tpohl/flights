@@ -58,29 +58,28 @@ export class FlightEditComponent implements OnInit {
     });
 
     this.fromAirport$.subscribe(fromAirport => {
-      if (fromAirport && this.flight){
-        this.departureTime =  moment(this.flight.departureTime).tz(fromAirport.timezoneId).format('HH:mm');
+      if (fromAirport && this.flight) {
+        this.departureTime = moment(this.flight.departureTime).tz(fromAirport.timezoneId).format('HH:mm');
         console.log('AAAA', this.departureTime, fromAirport.timezoneId);
-        }
+      }
     });
   }
 
-selectDepartureTime(){
-  const amazingTimePicker = this.atp.open({
-    time: this.departureTime,
-    changeToMinutes: true;
-
-  });
+  selectDepartureTime() {
+    const amazingTimePicker = this.atp.open({
+      time: this.departureTime,
+      changeToMinutes: true
+    });
     amazingTimePicker.afterClose().subscribe(time => {
       this.departureTime = time;
       console.log('TIME', time);
 
-      const dateWithWithTime =  moment(this.flight.date).format('YYYY-MM-DD') + 'T' + time;
+      const dateWithWithTime = moment(this.flight.date).format('YYYY-MM-DD') + 'T' + time;
       this.fromAirport$.subscribe(fromAirport => {
-        this.flight.departureTime = moment.tz(dateWithWithTime, fromAirport.timezoneId ); // '2013-06-01T00:00:00',
+        this.flight.departureTime = moment.tz(dateWithWithTime, fromAirport.timezoneId); // '2013-06-01T00:00:00',
       });
     });
-}
+  }
 
   loadFlight(flightId) {
     this.objectRef = 'users/' + this.user.uid + '/flights/' + flightId;
