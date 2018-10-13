@@ -17,6 +17,7 @@ import { CommonModule } from '@angular/common';
 import { ExactDurationPipe } from './pipes/exactDurationPipe';
 import { AmazingTimePickerModule } from 'amazing-time-picker';
 import { PohlRocksImporterComponent } from './pohl-rocks-importer/pohl-rocks-importer.component';
+import { FlightsExportComponent } from './flights-export/flights-export.component';
 
 
 const appRoutes: Routes = [
@@ -32,6 +33,10 @@ const appRoutes: Routes = [
     path: 'import/pohl.rocks',
     component: PohlRocksImporterComponent
   },
+  {
+    path: 'export',
+    component: FlightsExportComponent
+  },
   /*
   {
     path: 'home',
@@ -43,7 +48,7 @@ const appRoutes: Routes = [
   },*/
   {
     path: '',
-    redirectTo: '/home',
+    redirectTo: '/flights',
     pathMatch: 'full'
   }
 
@@ -57,7 +62,8 @@ const appRoutes: Routes = [
     FlightEditComponent,
     DatepickerComponent,
     ExactDurationPipe,
-    PohlRocksImporterComponent
+    PohlRocksImporterComponent,
+    FlightsExportComponent
   ],
   imports: [
     RouterModule.forRoot(

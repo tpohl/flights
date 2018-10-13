@@ -1,0 +1,11 @@
+<div>
+  <h1 class="title">Flights Export</h1>
+  <p>
+    Just <a (click)="flightsToClipbord()"><i class="fa fa-clipboard" aria-hidden="true"></i> copy</a> the following JSON containing all your flights.
+  </p>
+  <div>
+    <pre>
+      {{flights | async | json }}
+    </pre>
+  </div>
+</div>
