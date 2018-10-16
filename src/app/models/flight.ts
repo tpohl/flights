@@ -28,4 +28,6 @@ export class Flight {
 
   created: Date;
   user: string;
+
+  needsAutocomplete: boolean;
 }

@@ -56,7 +56,7 @@
               <input class="input" type="text" [(ngModel)]="flight.flightno" placeholder="Flight Number">
             </div>
             <div class="control">
-              <button (click)="autocomplete()" class="button">
+              <button (click)="autocomplete()" [class.is-loading]="flight.needsAutocomplete" class="button">
                 <i class="fa fa-magic" aria-hidden="true"></i>
               </button>
             </div>
