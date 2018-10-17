@@ -121,7 +121,7 @@ export class FlightEditComponent implements OnInit {
   }
 
   autocomplete(): void {
-    this.flight.needsAutocomplete = true;
+    this.flight.needsAutocomplete = (!this.flight.needsAutocomplete);
     return this.save();
   }
 
