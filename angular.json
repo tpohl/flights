@@ -25,7 +25,8 @@
                 "input": "node_modules/cesium/Build/Cesium",
                 "output": "./assets/cesium"
               },
-              "src/assets"
+              "src/assets",
+              "src/ATriggerVerify.txt"
             ],
             "styles": [
               "node_modules/cesium/Build/Cesium/Widgets/widgets.css",
@@ -85,6 +86,7 @@
             "scripts": [],
             "assets": [
               "src/favicon.ico",
+              "src/ATriggerVerify.txt",
               "src/assets"
             ]
           }
