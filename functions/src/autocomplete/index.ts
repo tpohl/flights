@@ -45,7 +45,7 @@ const autocompleteFlight = function (flightRef: admin.database.Reference, contex
         console.log('Getting Key parts', flightRef.path);
         const flightId = flightRef.key;
         const userId = flightRef.parent.parent.key;
-        prepareFutureAutoCompletion(flightId, userId, arrival);
+        prepareFutureAutoCompletion(userId, flightId, arrival);
       } else {
         console.log('Not preparing because the Flight has already landed.');
       }
