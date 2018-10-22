@@ -15,6 +15,7 @@
     "@types/simple-oauth2": "^1.1.1",
     "firebase-admin": "~6.0.0",
     "firebase-functions": "^2.0.4",
+    "jsonwebtoken": "^8.3.0",
     "moment": "^2.22.2",
     "rxjs": "^6.2.0",
     "simple-oauth2": "^1.5.2"

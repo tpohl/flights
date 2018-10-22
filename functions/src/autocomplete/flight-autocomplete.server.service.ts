@@ -42,12 +42,10 @@ const getLhApiToken = function () {
         }
         const newToken = result;
         token = oauth2.accessToken.create(newToken);
-        console.log('TOKEN', token);
         resolve(token);
       });
     }
     else {
-      console.log('TOKEN', token);
       resolve(token);
     }
   }
@@ -92,7 +90,6 @@ const loadAircraftType = function (acTypeCode) {
 
 
 const toFlight = function (lhApiFlight: any, index) {
-  console.log('TO FLIGHT', lhApiFlight)
   const flight = new Flight();
   flight.from = lhApiFlight.Departure.AirportCode;
   if (lhApiFlight.Departure.ActualTimeUTC) {
@@ -126,7 +123,6 @@ const addDistance = function (flight: Flight) {
     .pipe(map(ap => {
       const ap1 = ap[0].val() as Airport;
       const ap2 = ap[1].val() as Airport;
-      console.log('AIRPORTS RESOLVED: ', ap1, ap2);
       flight.distance = calculateDistance(ap1.latitude, ap1.longitude, ap2.latitude, ap2.longitude);
       return flight;
     }));
@@ -154,10 +150,10 @@ const FlightAutoCompleter = {
             json: true
           })
       ))
-      .pipe(tap(data => console.log('DATA', data)))
+      //.pipe(tap(data => console.log('DATA', data)))
       .pipe(filter(data => data.response.statusCode === 200))
       .pipe(map(data => data.body))
-      .pipe(tap(body => console.log('BODY', body)))
+      //.pipe(tap(body => console.log('BODY', body)))
       .pipe(map(apiResponse => apiResponse.FlightStatusResource.Flights.Flight))
       .pipe(tap(console.log))
       .pipe(map(toFlight))
