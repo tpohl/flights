@@ -41,3 +41,5 @@ testem.log
 Thumbs.db
 .firebaserc
 functions/firebase-debug.log
+.firebase
+
