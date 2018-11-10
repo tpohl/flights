@@ -11,7 +11,7 @@ import { AngularFireAuth } from 'angularfire2/auth';
   styleUrls: ['./flight-list.component.css']
 })
 export class FlightListComponent implements OnInit {
-
+// https://angularfirebase.com/lessons/infinite-scroll-with-firebase-data-and-angular-animation/
   flights: Observable<Flight[]>;
 
   constructor(private db: AngularFireDatabase, private afAuth: AngularFireAuth) { }

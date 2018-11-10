@@ -1,4 +1,4 @@
-import { filter } from 'rxjs/operators';
+import { filter, groupBy, toArray } from 'rxjs/operators';
 import { Airport } from './models/airport';
 import { AirportService } from './services/airport.service';
 import { Flight } from './models/flight';
@@ -8,7 +8,37 @@ import { delay, scan, reduce, mergeMap, last, flatMap, tap, map, sample, debounc
 
 import { interpolateRainbow } from 'd3-scale-chromatic';
 
+/*
+const createPositions = function (route) {
+  // https://gis.stackexchange.com/questions/194649/arcs-circle-segments-in-cesium/200246
+  console.log('Creating Positions for ', route);
+  // Calcuate Midpoint
+  const φ1 = route.fromAp.latitude * Math.PI / 180;
+  const λ1 = route.fromAp.longitude * Math.PI / 180;
 
+  const φ2 = route.toAp.latitude * Math.PI / 180;
+  const λ2 = route.toAp.longitude * Math.PI / 180;
+
+  var Bx = Math.cos(φ2) * Math.cos(λ2 - λ1);
+  var By = Math.cos(φ2) * Math.sin(λ2 - λ1);
+  var φ3 = Math.atan2(Math.sin(φ1) + Math.sin(φ2),
+    Math.sqrt((Math.cos(φ1) + Bx) * (Math.cos(φ1) + Bx) + By * By));
+  var λ3 = λ1 + Math.atan2(By, Math.cos(φ1) + Bx);
+
+  const midpointLatitude = φ3 * 180 / Math.PI;
+  const midpointLongitude = λ3 * 180 / Math.PI;
+
+
+  route.name = [route.fromAp.code, route.toAp.code].sort().join();
+  route.
+    positions = Cesium.Cartesian3.fromDegreesArrayHeights([
+      route.fromAp.longitude, route.fromAp.latitude, 0,
+      midpointLongitude, midpointLatitude, 100000,
+      route.toAp.longitude, route.toAp.latitude, 0]);
+
+  return route;
+};
+*/
 
 @Component({
   selector: 'app-cesium',
@@ -23,78 +53,177 @@ export class CesiumDirective implements OnInit {
     Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJkYWYxNzUzZi0yNjliLTQyYjYtYjJiYy1iZDk0YWUxYjQ4N2QiLCJpZCI6MjI2OCwiaWF0IjoxNTMyMzczMDQ0fQ.oWuIYi0TtUbwYeRHj5rE3nTI53c3v5HF8UJHgjehxoM';
   }
 
+  drawFlight(route, colorString?) {
+    const color = Cesium.Color.fromCssColorString(colorString ? colorString : '#FFB300');
+    // https://stackoverflow.com/questions/37381658/polyline-arcs-above-surface-in-cesium
+    
+    const departure = new Date(route.departureTime);
+    const arrival = new Date(route.arrivalTime);
+    var startTime = Cesium.JulianDate.fromDate(departure,new Cesium.JulianDate()); // this.viewer.clock.startTime;
+    var stopTime = Cesium.JulianDate.fromDate(arrival,new Cesium.JulianDate()); // Cesium.JulianDate.addSeconds(startTime, 86400, new Cesium.JulianDate());
+ 
+    const durationSeconds = Math.min(55, Cesium.JulianDate.secondsDifference(startTime, stopTime));
+    var midTime = Cesium.JulianDate.addSeconds(startTime, (durationSeconds/2.0), new Cesium.JulianDate());//Cesium.JulianDate.addSeconds(startTime, 43200, new Cesium.JulianDate());
+    Cesium.JulianDate.addSeconds(startTime, durationSeconds, stopTime);
+
+    console.log("Route:", route, departure, arrival, durationSeconds, midTime);
+    
+  
+    // Create a straight-line path.
+    var property = new Cesium.SampledPositionProperty();
+    var startPosition = Cesium.Cartesian3.fromDegrees(route.fromAp.longitude, route.fromAp.latitude, 0);
+    property.addSample(startTime, startPosition);
+    var stopPosition = Cesium.Cartesian3.fromDegrees(route.toAp.longitude, route.toAp.latitude, 0);
+    property.addSample(stopTime, stopPosition);
+  
+    const distance = Cesium.Cartesian3.distance(startPosition, stopPosition); // TODO: Distance is linear
+
+    // Find the midpoint of the straight path, and raise its altitude.
+    var midPoint = Cesium.Cartographic.fromCartesian(property.getValue(midTime));
+    midPoint.height = Cesium.Math.nextRandomNumber() * 100000 + Math.sqrt(distance)*500;
+    var midPosition = this.viewer.scene.globe.ellipsoid.cartographicToCartesian(
+      midPoint, new Cesium.Cartesian3());
+  
+    // Redo the path to be the new arc.
+    property = new Cesium.SampledPositionProperty();
+    property.addSample(startTime, startPosition);
+    property.addSample(midTime, midPosition);
+    property.addSample(stopTime, stopPosition);
+  
+    // Create an Entity to show the arc.
+    var arcEntity = this.viewer.entities.add({
+      position: property,
+      // The point is optional, I just wanted to see it.
+      point: {
+        pixelSize: 8,
+        color: Cesium.Color.TRANSPARENT,
+        outlineColor: color,
+        outlineWidth: 3
+      },
+      // This path shows the arc as a polyline.
+      path: {
+        name: route.name,
+        resolution: 1200,
+        material: new Cesium.PolylineGlowMaterialProperty({
+          glowPower: 0.16,
+          color: color
+        }),
+        width: 5, //Math.min(20, route.count / 3.0) + 5.0,//10,
+        leadTime: 0,
+        trailTime: 1e10
+      }
+    });
+  
+    // This is where it becomes a smooth path.
+    arcEntity.position.setInterpolationOptions({
+      interpolationDegree: 5,
+      interpolationAlgorithm: Cesium.LagrangePolynomialApproximation
+    });
+    
+  }
+
   private viewer: any;
   ngOnInit() {
     // Put initialization code for the Cesium viewer here
     this.viewer = new Cesium.Viewer(this.element.nativeElement, {
-      animation: false,
-      timeline: false
+      animation: true,
+      timeline: true
     });
+    const colorFunction = interpolateRainbow;
     this.flights
-      .pipe(delay(1))
+      .pipe(debounceTime(500))
       .subscribe(flightArray => {
+        let totalFlights = 0;
+        let flightNumber = 0;
         from(flightArray)
+          // Remove Duplicates
+          .pipe(
+            groupBy(flight => flight.from + flight.to),
+            mergeMap(group => group.pipe(toArray())),
+            map(flightArray => flightArray[0]),
+            tap(() => {totalFlights = totalFlights +1;})
+          )
           .pipe(mergeMap(flight =>
             zip(
               this.airportService.loadAirport(flight.from),
               this.airportService.loadAirport(flight.to),
               (fromAp: Airport, toAp: Airport) => {
                 const f = new CesiumFlight();
+                f.departureTime = flight.departureTime;
+                f.arrivalTime = flight.arrivalTime;
                 f.fromAp = fromAp;
                 f.toAp = toAp;
                 return f;
               }))
-          )
-          .pipe(filter(f => {
+          ,
+          filter(f => {
             if (f.fromAp && f.toAp) {
               return true;
             } else {
               return false;
             }
           }))
-            .pipe(map(f => {
-              const route = new Route();
-              route.name = [f.fromAp.code, f.toAp.code].sort().join();
-              route.
-                positions = Cesium.Cartesian3.fromDegreesArray([
-                  f.fromAp.longitude, f.fromAp.latitude,
-                  f.toAp.longitude, f.toAp.latitude]);
-              route.count = 0;
+          .subscribe(flight => {
+            const color = colorFunction(flightNumber++ / totalFlights);
+            this.drawFlight(flight, color);
+          });
+          /*
+          .pipe(map(f => {
+            const route = new Route();
+            route.fromAp = f.fromAp;
+            route.toAp = f.toAp;
+            route.name = [f.fromAp.code, f.toAp.code].sort().join();
+            route.count = 0;
 
-              return route;
-            }))
-            .pipe(scan(
-              (acc, value: Route) => {
-                let route = acc.get(value.name);
-                if (!route) {
-                  route = value;
-                  acc.set(route.name, route);
-                }
-                route.count++;
+            return route;
+          }))
+          .pipe(scan(
+            (acc, value: Route) => {
+              let route = acc.get(value.name);
+              if (!route) {
+                route = value;
+                acc.set(route.name, route);
+              }
+              route.count++;
 
-                return acc;
-              }, new Map<String, Route>()))
-            .pipe(debounceTime(10))
-            .subscribe(routes => {
-              const total = routes.size;
-              console.log('Total Routes', total);
-              let i = 0;
-              const colorFunction = interpolateRainbow;
-              routes.forEach(route => {
-                // console.log('Adding Route ', route.name);
-                const color = colorFunction(i++ / total);
-                this.viewer.entities.add({
-                  polyline: {
-                    name: route.name,
-                    positions: route.positions,
-                    width: Math.min(10, route.count),
-                    material: Cesium.Color.fromCssColorString(color)
-                  }
+              return acc;
+            }, new Map<String, Route>()))
+          .pipe(debounceTime(10))
+          .subscribe(routes => {
+            const total = routes.size;
+            console.log('Total Routes', total);
+            let i = 0;
+            const colorFunction = interpolateRainbow;
+            routes.forEach(route => {
+              //createPositions(route);
+              //createSpline(route);
+              console.log('Adding Route ', route);
 
-                });
-                this.viewer.zoomTo(this.viewer.entities);
-              });
+              const color = Cesium.Color.fromCssColorString(colorFunction(i++ / total));
+              drawFlight(route);
+              
+               const arcEntity = this.viewer.entities.add({
+                 polyline: {
+                   name: route.name,
+                   positions: route.positions,
+                   width: Math.min(2, route.count / 5.0),
+                   material: Cesium.Color.fromCssColorString(color)
+                 }
+                 
+               });
+               
+
+
+
+
+
+
+
+
+
+              this.viewer.zoomTo(this.viewer.entities);
             });
+          });*/
       });
 
 
@@ -102,13 +231,16 @@ export class CesiumDirective implements OnInit {
 
 }
 
-class Route {
+class CesiumFlight {
+  departureTime: Date;
+  arrivalTime: Date;
+  fromAp: Airport;
+  toAp: Airport;
+}
+
+class Route extends CesiumFlight {
   name: string;
   count: number;
   positions: any;
 }
 
-class CesiumFlight {
-  fromAp: Airport;
-  toAp: Airport;
-}
