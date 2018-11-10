@@ -48,10 +48,68 @@ export class CesiumDirective implements OnInit {
   @Input()
   private flights: Observable<Array<Flight>>;
 
+  private routeEntities = new Array<any>();
+
   constructor(private element: ElementRef, private airportService: AirportService) {
     Cesium.BingMapsApi.defaultKey = 'Arvxz11onv0TmhTvn0mMzbRDEVJ59LI35MI6YScmvQS3jzwzORkEZAv1Xs987i0T';
     Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJkYWYxNzUzZi0yNjliLTQyYjYtYjJiYy1iZDk0YWUxYjQ4N2QiLCJpZCI6MjI2OCwiaWF0IjoxNTMyMzczMDQ0fQ.oWuIYi0TtUbwYeRHj5rE3nTI53c3v5HF8UJHgjehxoM';
   }
+
+
+  private viewer: any;
+  ngOnInit() {
+    // Put initialization code for the Cesium viewer here
+    this.viewer = new Cesium.Viewer(this.element.nativeElement, {
+      animation: true,
+      timeline: true
+    });
+    const colorFunction = interpolateRainbow;
+    this.flights
+      .pipe(debounceTime(500))
+      .subscribe(flightArray => {
+        // remove any entities from the globe.
+        this.routeEntities.forEach((entity)=>{
+          this.viewer.entities.remove(entity);
+        });
+        this.routeEntities = new Array();
+        let totalFlights = 0;
+        let flightNumber = 0;
+        from(flightArray)
+          // Remove Duplicates
+          .pipe(
+            groupBy(flight => flight.from + flight.to),
+            mergeMap(group => group.pipe(toArray())),
+            map(flightArray => flightArray[0]),
+            tap(() => {totalFlights = totalFlights +1;})
+          )
+          .pipe(mergeMap(flight =>
+            zip(
+              this.airportService.loadAirport(flight.from),
+              this.airportService.loadAirport(flight.to),
+              (fromAp: Airport, toAp: Airport) => {
+                const f = new CesiumFlight();
+                f.departureTime = flight.departureTime;
+                f.arrivalTime = flight.arrivalTime;
+                f.fromAp = fromAp;
+                f.toAp = toAp;
+                return f;
+              }))
+          ,
+          filter(f => {
+            if (f.fromAp && f.toAp) {
+              return true;
+            } else {
+              return false;
+            }
+          }))
+          .subscribe(flight => {
+            const color = colorFunction(flightNumber++ / totalFlights);
+            this.routeEntities.push(this.drawFlight(flight, color));
+          });
+      });
+
+  }
+
 
   drawFlight(route, colorString?) {
     const color = Cesium.Color.fromCssColorString(colorString ? colorString : '#FFB300');
@@ -64,7 +122,7 @@ export class CesiumDirective implements OnInit {
  
     const durationSeconds = Math.min(55, Cesium.JulianDate.secondsDifference(startTime, stopTime));
     var midTime = Cesium.JulianDate.addSeconds(startTime, (durationSeconds/2.0), new Cesium.JulianDate());//Cesium.JulianDate.addSeconds(startTime, 43200, new Cesium.JulianDate());
-    Cesium.JulianDate.addSeconds(startTime, durationSeconds, stopTime);
+    stopTime = Cesium.JulianDate.addSeconds(startTime, durationSeconds, new Cesium.JulianDate());
 
     console.log("Route:", route, departure, arrival, durationSeconds, midTime);
     
@@ -113,122 +171,13 @@ export class CesiumDirective implements OnInit {
         trailTime: 1e10
       }
     });
-  
     // This is where it becomes a smooth path.
     arcEntity.position.setInterpolationOptions({
       interpolationDegree: 5,
       interpolationAlgorithm: Cesium.LagrangePolynomialApproximation
     });
-    
+    return arcEntity;
   }
-
-  private viewer: any;
-  ngOnInit() {
-    // Put initialization code for the Cesium viewer here
-    this.viewer = new Cesium.Viewer(this.element.nativeElement, {
-      animation: true,
-      timeline: true
-    });
-    const colorFunction = interpolateRainbow;
-    this.flights
-      .pipe(debounceTime(500))
-      .subscribe(flightArray => {
-        let totalFlights = 0;
-        let flightNumber = 0;
-        from(flightArray)
-          // Remove Duplicates
-          .pipe(
-            groupBy(flight => flight.from + flight.to),
-            mergeMap(group => group.pipe(toArray())),
-            map(flightArray => flightArray[0]),
-            tap(() => {totalFlights = totalFlights +1;})
-          )
-          .pipe(mergeMap(flight =>
-            zip(
-              this.airportService.loadAirport(flight.from),
-              this.airportService.loadAirport(flight.to),
-              (fromAp: Airport, toAp: Airport) => {
-                const f = new CesiumFlight();
-                f.departureTime = flight.departureTime;
-                f.arrivalTime = flight.arrivalTime;
-                f.fromAp = fromAp;
-                f.toAp = toAp;
-                return f;
-              }))
-          ,
-          filter(f => {
-            if (f.fromAp && f.toAp) {
-              return true;
-            } else {
-              return false;
-            }
-          }))
-          .subscribe(flight => {
-            const color = colorFunction(flightNumber++ / totalFlights);
-            this.drawFlight(flight, color);
-          });
-          /*
-          .pipe(map(f => {
-            const route = new Route();
-            route.fromAp = f.fromAp;
-            route.toAp = f.toAp;
-            route.name = [f.fromAp.code, f.toAp.code].sort().join();
-            route.count = 0;
-
-            return route;
-          }))
-          .pipe(scan(
-            (acc, value: Route) => {
-              let route = acc.get(value.name);
-              if (!route) {
-                route = value;
-                acc.set(route.name, route);
-              }
-              route.count++;
-
-              return acc;
-            }, new Map<String, Route>()))
-          .pipe(debounceTime(10))
-          .subscribe(routes => {
-            const total = routes.size;
-            console.log('Total Routes', total);
-            let i = 0;
-            const colorFunction = interpolateRainbow;
-            routes.forEach(route => {
-              //createPositions(route);
-              //createSpline(route);
-              console.log('Adding Route ', route);
-
-              const color = Cesium.Color.fromCssColorString(colorFunction(i++ / total));
-              drawFlight(route);
-              
-               const arcEntity = this.viewer.entities.add({
-                 polyline: {
-                   name: route.name,
-                   positions: route.positions,
-                   width: Math.min(2, route.count / 5.0),
-                   material: Cesium.Color.fromCssColorString(color)
-                 }
-                 
-               });
-               
-
-
-
-
-
-
-
-
-
-              this.viewer.zoomTo(this.viewer.entities);
-            });
-          });*/
-      });
-
-
-  }
-
 }
 
 class CesiumFlight {
