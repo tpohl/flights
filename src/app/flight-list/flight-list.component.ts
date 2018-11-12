@@ -27,9 +27,9 @@ export class FlightListComponent implements OnInit {
             return f;
           })))
         .pipe(map(flights => flights.sort((a: Flight, b: Flight) => {
-          if (a.departureTime < b.departureTime) {
+          if ((a.departureTime && !b.departureTime) || a.departureTime < b.departureTime) {
             return 1;
-          } else if (a.departureTime > b.departureTime) {
+          } else if ((!a.departureTime && b.departureTime) || a.departureTime > b.departureTime) {
             return -1;
           } else {
             return 0;
