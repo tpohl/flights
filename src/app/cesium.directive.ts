@@ -161,7 +161,7 @@ export class CesiumDirective implements OnInit {
       // This path shows the arc as a polyline.
       path: {
         name: route.name,
-        resolution: 1200,
+        resolution: 100,
         material: new Cesium.PolylineGlowMaterialProperty({
           glowPower: 0.16,
           color: color
