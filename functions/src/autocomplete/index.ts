@@ -60,7 +60,7 @@ const prepareFutureAutoCompletion = function (userId: string, flightId: string, 
   const autocompletion = {};
   autocompletion['flightId'] = flightId;
   autocompletion['userId'] = userId;
-  autocompletion['exp'] = (estimatedDate.getTime() + 60000) / 1000;
+  autocompletion['exp'] = (estimatedDate.getTime() + (60 * 60 * 1000) / 1000;
   // TODO NotBefore autocompletion['nbf'] = (estimatedDate.getTime() + 60000) / 1000;
   console.log('Payload', autocompletion);
   const token = jwt.sign(autocompletion, jwtsecret);
@@ -73,7 +73,7 @@ const prepareFutureAutoCompletion = function (userId: string, flightId: string, 
   const task = {
     "url": "https://flights-159420.firebaseapp.com/autocomplete",
     "payload": token,
-    "scheduled_date": (Math.max(estimatedDate.getTime(), Date.now()) + 60000)
+    "scheduled_date": (Math.max(estimatedDate.getTime() + (10 * 60 * 1000), Date.now()) + (10 * 60 * 1000))
   }
 
   return RxHR.post(url, {

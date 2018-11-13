@@ -10,6 +10,9 @@
           <p class="subtitle">
             Add / Import / Export
           </p>
+          <p>
+            {{(stats|async)?.count }} Flights - {{(stats|async)?.distance | number : '1.0-0'}} km
+          </p>
         </div>
         <footer class="card-footer">
           <a [routerLink]="['/flight', 'new']" class="card-footer-item">Add Flight</a>

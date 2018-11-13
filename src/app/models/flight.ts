@@ -13,7 +13,7 @@ export class Flight {
 
   durationMilliseconds: number;
 
-  distance: Number;
+  distance: number;
   aircraftType: string;
 
   aircraftRegistration: string;
