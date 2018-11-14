@@ -60,7 +60,7 @@ const prepareFutureAutoCompletion = function (userId: string, flightId: string, 
   const autocompletion = {};
   autocompletion['flightId'] = flightId;
   autocompletion['userId'] = userId;
-  autocompletion['exp'] = (estimatedDate.getTime() + (60 * 60 * 1000) / 1000;
+  autocompletion['exp'] = (estimatedDate.getTime() + (60 * 60 * 1000)) / 1000;
   // TODO NotBefore autocompletion['nbf'] = (estimatedDate.getTime() + 60000) / 1000;
   console.log('Payload', autocompletion);
   const token = jwt.sign(autocompletion, jwtsecret);
@@ -118,6 +118,7 @@ export default {
 
   autocomplete: functions.https.onRequest((req, res) => {
     const taskJwt = req.body;
+    try {
     const autocompletion = jwt.verify(taskJwt, jwtsecret);
 
     const userId = autocompletion['userId'];
@@ -132,6 +133,9 @@ export default {
         console.log('REJECTED');
         res.status(200).send('NOT OK').end();
       });
-
+    } catch (error) {
+      console.log(error);
+      res.status(400).send('NOT OK').end();
+    }
   }),
 }
