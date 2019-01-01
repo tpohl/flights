@@ -1,10 +1,9 @@
-import { filter, groupBy, toArray } from 'rxjs/operators';
+import { filter, groupBy, toArray ,  delay, scan, reduce, mergeMap, last, flatMap, tap, map, sample, debounceTime } from 'rxjs/operators';
 import { Airport } from './models/airport';
 import { AirportService } from './services/airport.service';
 import { Flight } from './models/flight';
 import { Directive, OnInit, ElementRef, Input, Component } from '@angular/core';
 import { Observable, from, zip, of } from 'rxjs';
-import { delay, scan, reduce, mergeMap, last, flatMap, tap, map, sample, debounceTime } from 'rxjs/operators';
 
 import { interpolateRainbow } from 'd3-scale-chromatic';
 

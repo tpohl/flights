@@ -1,14 +1,13 @@
 import { Location, LocationStrategy, PathLocationStrategy } from '@angular/common';
 import { AirportService } from './../services/airport.service';
-import { Observable, of } from 'rxjs';
-import { BehaviorSubject } from 'rxjs';
+import { Observable, of ,  BehaviorSubject } from 'rxjs';
 
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Params, Router } from '@angular/router';
 
 import { Flight } from '../models/flight';
-import { AngularFireDatabase } from 'angularfire2/database';
-import { AngularFireAuth } from 'angularfire2/auth';
+import { AngularFireDatabase } from '@angular/fire/database';
+import { AngularFireAuth } from '@angular/fire/auth';
 import { User } from 'firebase/app';
 import { Airport } from '../models/airport';
 import * as moment from 'moment-timezone';
