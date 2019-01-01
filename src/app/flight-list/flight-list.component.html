@@ -1,5 +1,5 @@
 <div>
-  <h2 class="title">Your flights</h2>
+  <h2 class="title">Your flights <a [routerLink]="['/flight', 'new']" class="button is-hidden-tablet is-pulled-right">Add</a></h2>
   <div class="columns">
     <div class="column is-two-thirds">
       <app-cesium *ngIf="flights" [flights]="flights"></app-cesium>
@@ -7,17 +7,15 @@
     <div class="column">
       <div class="card">
         <div class="card-content">
-          <p class="subtitle">
+          <p class="subtitle is-hidden-mobile">
             Add / Import / Export
           </p>
           <p>
             {{(stats|async)?.count }} Flights - {{(stats|async)?.distance | number : '1.0-0'}} km
           </p>
         </div>
-        <footer class="card-footer">
+        <footer class="card-footer is-hidden-mobile">
           <a [routerLink]="['/flight', 'new']" class="card-footer-item">Add Flight</a>
-          <a [routerLink]="['/import', 'pohl.rocks']" class="card-footer-item">Import from flights.pohl.rocks</a>
-          <a [routerLink]="['/export']" class="card-footer-item">Export</a>
         </footer>
       </div>
     </div>

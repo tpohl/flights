@@ -114,26 +114,26 @@ export class CesiumDirective implements OnInit {
   drawFlight(route, colorString?) {
     const color = Cesium.Color.fromCssColorString(colorString ? colorString : '#FFB300');
     // https://stackoverflow.com/questions/37381658/polyline-arcs-above-surface-in-cesium
-    
+
     const departure = new Date(route.departureTime);
     const arrival = new Date(route.arrivalTime);
     var startTime = Cesium.JulianDate.fromDate(departure,new Cesium.JulianDate()); // this.viewer.clock.startTime;
     var stopTime = Cesium.JulianDate.fromDate(arrival,new Cesium.JulianDate()); // Cesium.JulianDate.addSeconds(startTime, 86400, new Cesium.JulianDate());
- 
+
     const durationSeconds = Math.min(55, Cesium.JulianDate.secondsDifference(startTime, stopTime));
     var midTime = Cesium.JulianDate.addSeconds(startTime, (durationSeconds/2.0), new Cesium.JulianDate());//Cesium.JulianDate.addSeconds(startTime, 43200, new Cesium.JulianDate());
     stopTime = Cesium.JulianDate.addSeconds(startTime, durationSeconds, new Cesium.JulianDate());
 
-    console.log("Route:", route, departure, arrival, durationSeconds, midTime);
-    
-  
+    //console.log("Route:", route, departure, arrival, durationSeconds, midTime);
+
+
     // Create a straight-line path.
     var property = new Cesium.SampledPositionProperty();
     var startPosition = Cesium.Cartesian3.fromDegrees(route.fromAp.longitude, route.fromAp.latitude, 0);
     property.addSample(startTime, startPosition);
     var stopPosition = Cesium.Cartesian3.fromDegrees(route.toAp.longitude, route.toAp.latitude, 0);
     property.addSample(stopTime, stopPosition);
-  
+
     const distance = Cesium.Cartesian3.distance(startPosition, stopPosition); // TODO: Distance is linear
 
     // Find the midpoint of the straight path, and raise its altitude.
@@ -141,13 +141,13 @@ export class CesiumDirective implements OnInit {
     midPoint.height = Cesium.Math.nextRandomNumber() * 100000 + Math.sqrt(distance)*500;
     var midPosition = this.viewer.scene.globe.ellipsoid.cartographicToCartesian(
       midPoint, new Cesium.Cartesian3());
-  
+
     // Redo the path to be the new arc.
     property = new Cesium.SampledPositionProperty();
     property.addSample(startTime, startPosition);
     property.addSample(midTime, midPosition);
     property.addSample(stopTime, stopPosition);
-  
+
     // Create an Entity to show the arc.
     var arcEntity = this.viewer.entities.add({
       position: property,

@@ -7,6 +7,31 @@
 // 6. Import the rest of Bulma
 @import "../node_modules/bulma/bulma";
 
-app-cesium {
-  width: 100%; min-height: 400px; height: 50vh; max-height: 800px; margin: 0; padding: 0; overflow: hidden;
+@include mobile {
+  app-cesium {
+    width: 100%; min-height: 400px; height: 50vh; max-height: 800px; margin: 0; padding: 0; overflow: hidden;
+    div.cesium-viewer {
+      width: 90vw !important; height:90vw !important;
+    }
+  }
+}
+
+@include from($tablet) {
+  app-cesium {
+    width: 100%; min-height: 400px; height: 50vh; max-height: 800px; margin: 0; padding: 0; overflow: hidden;
+    /*div.cesium-viewer {
+      width: 50vw !important; height:50vw !important;
+    }*/
+  }
+}
+
+
+
+.mainContent {
+  background: url(./assets/background.png);
+  background: url(./assets/background.svg),
+    linear-gradient(transparent, transparent);
+
+    max-width: 1440px;
+    margin: 1rem auto;
 }

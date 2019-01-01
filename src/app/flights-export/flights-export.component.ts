@@ -33,7 +33,6 @@ export class FlightsExportComponent implements OnInit {
 
   flightsToClipbord() {
     this.flights.pipe(map(flightsArray => JSON.stringify(flightsArray))).subscribe(val => {
-      console.log('AAA', val);
       const selBox = document.createElement('textarea');
       selBox.style.position = 'fixed';
       selBox.style.left = '0';
