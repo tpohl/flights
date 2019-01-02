@@ -1,8 +1,8 @@
 import { Flight } from './../models/flight';
 import { Component, OnInit } from '@angular/core';
 import { AngularFireDatabase } from '@angular/fire/database';
-import { Observable, of, from } from 'rxjs';
-import { map, reduce, share, flatMap } from 'rxjs/operators';
+import { Observable, from } from 'rxjs';
+import { map, reduce, flatMap, take, shareReplay } from 'rxjs/operators';
 import { AngularFireAuth } from '@angular/fire/auth';
 
 @Component({
@@ -16,10 +16,13 @@ export class FlightListComponent implements OnInit {
 
   stats: Observable<Stats>;
 
+  userId: string;
+
   constructor(private db: AngularFireDatabase, private afAuth: AngularFireAuth) { }
 
   ngOnInit() {
     this.afAuth.user.subscribe(user => {
+      this.userId = user.uid;
       const flightList = this.db.list<Flight>('users/' + user.uid + '/flights').snapshotChanges()
         .pipe(
           map(snapshots =>
@@ -28,7 +31,7 @@ export class FlightListComponent implements OnInit {
               f._id = c.key;
               return f;
             })),
-          share()
+          shareReplay(1)
         );
       this.flights = flightList
         .pipe(
