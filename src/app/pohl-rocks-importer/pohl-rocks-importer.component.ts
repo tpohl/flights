@@ -17,9 +17,13 @@ export class PohlRocksImporterComponent implements OnInit {
 
   flights: Array<Flight>;
 
+  userId: string;
+
   constructor(private db: AngularFireDatabase, private afAuth: AngularFireAuth) { }
 
-  ngOnInit() {
+  ngOnInit() {this.afAuth.user.subscribe(user => {
+    this.userId = user.uid;
+  })
     this.flights = [];
   }
 
@@ -35,11 +39,11 @@ export class PohlRocksImporterComponent implements OnInit {
           flatMap(user => this.db.list('users/' + user.uid + '/flights').snapshotChanges()),
           take(1),
           map(snapshots =>
-            snapshots.map(c => {
-              const f = c.payload.val();
+            snapshots.map(c=> {
+              const f = c.payload.val() as Flight;
               f._id = c.key;
               return f;
-            }))
+            }) as Flight[])
         ).subscribe(flightArr => {
 
           flightArr.forEach(flight => {
