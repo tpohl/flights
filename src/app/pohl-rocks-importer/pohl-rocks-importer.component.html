@@ -1,28 +1,30 @@
 <div>
   <div>
-    <h1 class="title">Paste your flights from <a href="https://flights-old.pohl.rocks">https://flights-old.pohl.rocks</a> here.</h1>
+    <h1 class="title">Paste your flights from <a href="https://flights-old.pohl.rocks">https://flights-old.pohl.rocks</a>
+      here.</h1>
     <div>
-      <textarea [(ngModel)]="importJson"  rows="20" cols="200"></textarea>
+      <textarea [(ngModel)]="importJson" rows="20" cols="200"></textarea>
     </div>
     <p class="buttons">
       <a (click)="parseFlights()" class="button is-primary">
         <span class="icon"><i class="fa fa-code" aria-hidden="true"></i></span>
         Parse Flights
       </a>
-      </p>
+    </p>
   </div>
   <div>
     <h2 class="title">Flights you are about to import:</h2>
 
     <p class="buttons">
-        <a (click)="importFlights()" class="button is-primary">
-            <span class="icon"><i class="fa fa-cloud-upload" aria-hidden="true"></i></span>
-            Do import
-          </a>
-        <a (click)="deleteAllMyFlights()" class="button is-danger">
-            <span class="icon is-small"><i class="fa fa-trash" aria-hidden="true"></i></span>
-            Delete all existing flights
-          </a>
+      <a (click)="importFlights()" class="button is-primary">
+        <span class="icon"><i class="fa fa-cloud-upload" aria-hidden="true"></i></span>
+        Do import
+      </a>
+      <a (click)="removeDuplicateImports()" class="button is-warning">Remove Duplicate Imports</a>
+      <a (click)="deleteAllMyFlights()" class="button is-danger">
+        <span class="icon is-small"><i class="fa fa-trash" aria-hidden="true"></i></span>
+        Delete all existing flights
+      </a>
     </p>
 
     <div class="columns is-multiline">
