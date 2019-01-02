@@ -21,9 +21,10 @@ export class PohlRocksImporterComponent implements OnInit {
 
   constructor(private db: AngularFireDatabase, private afAuth: AngularFireAuth) { }
 
-  ngOnInit() {this.afAuth.user.subscribe(user => {
-    this.userId = user.uid;
-  })
+  ngOnInit() {
+    this.afAuth.user.subscribe(user => {
+      this.userId = user.uid;
+    });
     this.flights = [];
   }
 
@@ -36,33 +37,33 @@ export class PohlRocksImporterComponent implements OnInit {
   removeDuplicateImports() {
     if (confirm("Are you sure to delete all duplicate Imports")) {
       this.afAuth.user.pipe(
-          flatMap(user => this.db.list('users/' + user.uid + '/flights').snapshotChanges()),
-          take(1),
-          map(snapshots =>
-            snapshots.map(c=> {
-              const f = c.payload.val() as Flight;
-              f._id = c.key;
-              return f;
-            }) as Flight[])
-        ).subscribe(flightArr => {
+        flatMap(user => this.db.list('users/' + user.uid + '/flights').snapshotChanges()),
+        take(1),
+        map(snapshots =>
+          snapshots.map(c => {
+            const f = c.payload.val() as Flight;
+            f._id = c.key;
+            return f;
+          }) as Flight[])
+      ).subscribe(flightArr => {
 
-          flightArr.forEach(flight => {
-            const importedId = flight['importedId'];
+        flightArr.forEach(flight => {
+          const importedId = flight['importedId'];
 
-            if (importedId) {
-              const flightsWithImportedId = flightArr.filter(f => (importedId === f['importedId']));
-              if (flightsWithImportedId.length > 1) {
+          if (importedId) {
+            const flightsWithImportedId = flightArr.filter(f => (importedId === f['importedId']));
+            if (flightsWithImportedId.length > 1) {
 
-                const idToDelete = flightsWithImportedId[1]._id;
-                const ref = 'users/' + this.userId + '/flights/' + idToDelete;
-                console.log('Deleting Dup', ref);
-                this.db.object<Flight>(ref).remove().then(value => {
-                  console.log('Deleted Object', value);
-                });
-              }
+              const idToDelete = flightsWithImportedId[1]._id;
+              const ref = 'users/' + this.userId + '/flights/' + idToDelete;
+              console.log('Deleting Dup', ref);
+              this.db.object<Flight>(ref).remove().then(value => {
+                console.log('Deleted Object', value);
+              });
             }
-          });
+          }
         });
+      });
 
     }
   }
