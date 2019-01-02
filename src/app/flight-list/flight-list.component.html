@@ -32,7 +32,7 @@
 
               <div class="media-content">
                 <p class="title is-4"> {{flight.from}} to {{flight.to}}</p>
-                <p class="subtitle is-6"> {{flight.departureTime | date:'dd.MM.yyyy HH:mm'}} - {{flight.flightno}} - {{flight.distance
+                <p class="subtitle is-6"> {{flight.departureTime | date:'dd.MM.yyyy HH:mm'}} - {{flight.flightno}} <br /> {{flight.distance
                   | number : '1.0-0'}} km
                 </p>
               </div>
@@ -43,7 +43,7 @@
               </div>
             </div>
             <span class="is-hidden-mobile">
-              {{flight.class}} - {{flight.seat}} - {{flight.carrier}} <br /> {{flight.aircraftType}} {{flight.aircraftRegistration}}
+              {{flight.class}} - {{flight.seat}} - {{flight.carrier}} - {{flight.aircraftRegistration}} <br /> {{flight.aircraftType}}
             </span>
 
           </div>
