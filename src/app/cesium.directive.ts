@@ -87,8 +87,8 @@ export class CesiumDirective implements OnInit {
               this.airportService.loadAirport(flight.to),
               (fromAp: Airport, toAp: Airport) => {
                 const f = new CesiumFlight();
-                f.departureTime = flight.departureTime;
-                f.arrivalTime = flight.arrivalTime;
+                f.departureTime = new Date(flight.departureTime);
+                f.arrivalTime = new Date(flight.arrivalTime);
                 f.fromAp = fromAp;
                 f.toAp = toAp;
                 return f;

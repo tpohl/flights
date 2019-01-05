@@ -109,7 +109,7 @@
                 </div>
                 <div class="control">
                   <button class="button" (click)="selectDepartureTime()">
-                    <i class="fa fa-clock" aria-hidden="true"></i>
+                    <i class="fa fa-clock-o" aria-hidden="true"></i>
                   </button>
                 </div>
               </div>
@@ -117,6 +117,27 @@
           </div>
         </div>
       </div>
+      <div class="field is-horizontal">
+          <div class="field-label is-normal">
+            <label class="label">Arrival Time</label>
+          </div>
+          <div class="field-body">
+            <div class="field">
+              <div class="control">
+                <div class="field has-addons">
+                  <div class="control is-expanded">
+                    <input readonly disabled class="input" type="time" [(ngModel)]="arrivalTime" />
+                  </div>
+                  <div class="control">
+                    <button class="button" (click)="selectArrivalTime()">
+                      <i class="fa fa-clock-o" aria-hidden="true"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       <!--
           <app-local-datetime label="Departure Time" [instant]="departureTimeLocal" (timeUpdated)="timeUpdated('departureTime', $event)"></app-local-datetime>
 

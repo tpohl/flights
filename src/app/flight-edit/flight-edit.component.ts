@@ -28,6 +28,7 @@ export class FlightEditComponent implements OnInit {
   //departureLocalTime: Moment;
 
   departureTime = '00:00';
+  arrivalTime = '00:00';
 
   objectRef: string;
 
@@ -59,7 +60,12 @@ export class FlightEditComponent implements OnInit {
     this.fromAirport$.subscribe(fromAirport => {
       if (fromAirport && this.flight) {
         this.departureTime = moment(this.flight.departureTime).tz(fromAirport.timezoneId).format('HH:mm');
-        console.log('AAAA', this.departureTime, fromAirport.timezoneId);
+      }
+    });
+
+    this.toAirport$.subscribe(toAirport => {
+      if (toAirport && this.flight) {
+        this.arrivalTime = moment(this.flight.arrivalTime).tz(toAirport.timezoneId).format('HH:mm');
       }
     });
   }
@@ -74,8 +80,28 @@ export class FlightEditComponent implements OnInit {
       console.log('TIME', time);
 
       const dateWithWithTime = moment(this.flight.date).format('YYYY-MM-DD') + 'T' + time;
-      this.fromAirport$.subscribe(fromAirport => {
-        this.flight.departureTime = moment.tz(dateWithWithTime, fromAirport.timezoneId); // '2013-06-01T00:00:00',
+      this.fromAirport$.subscribe(ap => {
+        this.flight.departureTime = new Date(moment.tz(dateWithWithTime, ap.timezoneId)).getTime(); // '2013-06-01T00:00:00',
+      });
+    });
+  }
+
+  selectArrivalTime() {
+    const amazingTimePicker = this.atp.open({
+      time: this.arrivalTime,
+      changeToMinutes: true
+    });
+    amazingTimePicker.afterClose().subscribe(time => {
+      this.arrivalTime = time;
+      console.log('TIME', time);
+
+      const dateWithWithTime = moment(this.flight.date).format('YYYY-MM-DD') + 'T' + time;
+      this.toAirport$.subscribe(ap => {
+        this.flight.arrivalTime = moment.tz(dateWithWithTime, ap.timezoneId); // '2013-06-01T00:00:00',
+        if (this.flight.arrivalTime < this.flight.departureTime) { // When the arrival is BEFORE the Departure, then we add a day.
+          const day = 60 * 60 * 24 * 1000;
+          this.flight.arrivalTime = new Date(this.flight.arrivalTime + day).getTime();
+        }
       });
     });
   }
@@ -87,7 +113,7 @@ export class FlightEditComponent implements OnInit {
       (flight) => {
         console.log('Loaded Flight');
         this.flight = flight;
-        this.loadFromAirport(this.flight.from)
+        this.loadFromAirport(this.flight.from);
         /*
         .pipe(tap(fromAirport=> {
         });
