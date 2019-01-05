@@ -25,5 +25,6 @@ exports.flightNoUppercase = functions.database.ref('/users/{userId}/flights/{fli
 //export {flightAutoComplete, flightAutoCompleteOnCreate} from './autocomplete';
 import autocompleteFunctions from './autocomplete';
 import durationFunctions from './duration';
+import distanceFunctions from './distance';
 
-export default { ...autocompleteFunctions, ...durationFunctions };
+export default { ...autocompleteFunctions, ...durationFunctions, ...distanceFunctions };
