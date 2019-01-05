@@ -71,7 +71,7 @@ const prepareFutureAutoCompletion = function (userId: string, flightId: string, 
 
   // Schedule this task
   const task = {
-    "url": "https://flights-159420.firebaseapp.com/autocomplete",
+    "url": "https://flights.pohl.rocks/autocomplete",
     "payload": token,
     "scheduled_date": (Math.max(estimatedDate.getTime() + (10 * 60 * 1000), Date.now()) + (10 * 60 * 1000))
   }
