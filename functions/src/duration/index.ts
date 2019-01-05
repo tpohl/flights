@@ -10,22 +10,22 @@ import * as functions from 'firebase-functions';
 
 
 const computeDuration = function (snapshot: functions.database.DataSnapshot, context: functions.EventContext) {
-  console.log('BBB');
+  console.log('Computing Duration of Flight.');
   return from(
     snapshot.ref.parent.once('value')
   )
-    .pipe(map(flightSnap => flightSnap.val()))
-    .pipe(map((flight: Flight) => {
-      if (flight.departureTime && flight.arrivalTime) {
-        flight.durationMilliseconds =  moment.duration(moment(flight.arrivalTime).diff(moment(flight.departureTime))).asMilliseconds();
-      }
-      return flight;
-    }
-    ))
-    .pipe(tap(flight => console.log('Computed Duration of Flight', flight)))
     .pipe(
+      map(flightSnap => flightSnap.val()),
+      map((flight: Flight) => {
+        if (flight.departureTime && flight.arrivalTime) {
+          flight.durationMilliseconds = moment.duration(moment(flight.arrivalTime).diff(moment(flight.departureTime))).asMilliseconds();
+        }
+        return flight;
+      }
+      ),
+      tap(flight => console.log('Computed Duration of Flight', flight)),
       flatMap(newFlight => from(snapshot.ref.parent.set(newFlight)))
-    ).toPromise();
+      ).toPromise();
 };
 
 export default {
