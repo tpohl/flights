@@ -21,9 +21,12 @@
     "simple-oauth2": "^1.5.2"
   },
   "devDependencies": {
-    "firebase-tools": "^3.19.3",
+    "firebase-tools": "^4.0.0",
     "tslint": "^5.8.0",
     "typescript": "^2.5.3"
+  },
+  "engines": {
+    "node": "8"
   },
   "private": true
 }
