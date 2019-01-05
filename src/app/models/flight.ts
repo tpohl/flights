@@ -8,8 +8,8 @@ export class Flight {
   from: string;
   to: string;
 
-  departureTime: number;
-  arrivalTime: number;
+  departureTime: string;
+  arrivalTime: string;
 
   durationMilliseconds: number;
 

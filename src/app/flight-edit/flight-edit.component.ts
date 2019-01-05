@@ -81,7 +81,7 @@ export class FlightEditComponent implements OnInit {
 
       const dateWithWithTime = moment(this.flight.date).format('YYYY-MM-DD') + 'T' + time;
       this.fromAirport$.subscribe(ap => {
-        this.flight.departureTime = new Date(moment.tz(dateWithWithTime, ap.timezoneId)).getTime(); // '2013-06-01T00:00:00',
+        this.flight.departureTime = moment.tz(dateWithWithTime, ap.timezoneId).clone().tz('UTC').format(); // '2013-06-01T00:00:00',
       });
     });
   }
@@ -97,10 +97,9 @@ export class FlightEditComponent implements OnInit {
 
       const dateWithWithTime = moment(this.flight.date).format('YYYY-MM-DD') + 'T' + time;
       this.toAirport$.subscribe(ap => {
-        this.flight.arrivalTime = moment.tz(dateWithWithTime, ap.timezoneId); // '2013-06-01T00:00:00',
+        this.flight.arrivalTime = moment.tz(dateWithWithTime, ap.timezoneId).tz('UTC').format(); // '2013-06-01T00:00:00',
         if (this.flight.arrivalTime < this.flight.departureTime) { // When the arrival is BEFORE the Departure, then we add a day.
-          const day = 60 * 60 * 24 * 1000;
-          this.flight.arrivalTime = new Date(this.flight.arrivalTime + day).getTime();
+          this.flight.arrivalTime = moment(this.flight.arrivalTime).add(1, 'days').clone().tz('UTC').format();
         }
       });
     });
