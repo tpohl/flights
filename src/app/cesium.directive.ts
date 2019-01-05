@@ -127,7 +127,7 @@ export class CesiumDirective implements OnInit {
 
 
     // Create a straight-line path.
-    const property = new Cesium.SampledPositionProperty();
+    var property = new Cesium.SampledPositionProperty();
 
     // For some reason, we nee to use the fromAp as stop Position here and to as start...
     const stopPosition = Cesium.Cartesian3.fromDegrees(route.fromAp.longitude, route.fromAp.latitude, 0);
