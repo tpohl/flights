@@ -317,6 +317,19 @@
           </div>
         </div>
       </div>
+
+      <div class="field is-horizontal" *ngIf="flight.errorMessage">
+        <div class="field-label is-danger">
+          <label class="label">Error Message:</label>
+        </div>
+        <div class="field-body">
+          <div class="field">
+            <div class="control is-expanded is-danger">
+              <input class="input" type="text" disabled="disabled" [(ngModel)]="flight.errorMessage" placeholder="">
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
     <footer class="card-footer">
       <a (click)="save()" class="card-footer-item is-success button">

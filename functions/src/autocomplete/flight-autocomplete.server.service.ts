@@ -4,7 +4,7 @@ import { Airport } from './../models/airport';
 import { Flight } from './../models/flight';
 import { RxHR } from "@akanass/rx-http-request";
 import * as moment from 'moment';
-import { filter, map, tap, flatMap } from "rxjs/operators";
+import { filter, map, tap, flatMap, defaultIfEmpty } from "rxjs/operators";
 import { from, zip, Observable } from "rxjs";
 import * as simpleoauth2 from 'simple-oauth2';
 import { DataSnapshot } from 'firebase-functions/lib/providers/database';
@@ -141,7 +141,10 @@ const FlightAutoCompleter = {
             flight.aircraftType = acType;
             return flight;
           }))
-        ))
+        ),
+        defaultIfEmpty({'errorMessage': 'Could not autocomplete.'})
+      )
+
 
       ;
 

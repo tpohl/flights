@@ -29,5 +29,6 @@ export class Flight {
   created: Date;
   user: string;
 
-  needsAutocomplete:boolean;
+  needsAutocomplete: boolean;
+  errorMessage: string;
 }

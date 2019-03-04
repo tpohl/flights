@@ -2,7 +2,7 @@
  * Functions for flight autocompletion.
  */
 
-import { flatMap, tap, map } from 'rxjs/operators';
+import { flatMap, tap, map, catchError } from 'rxjs/operators';
 import { from, of } from "rxjs";
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
@@ -19,40 +19,49 @@ const autocompleteFlight = function (flightRef: admin.database.Reference, contex
 
   return from(
     flightRef.once('value'))
-    .pipe(map(dateSnap => dateSnap.val()))
-    .pipe(flatMap(flightInDb => {
-      const flightNo: string = flightInDb['flightno'];
-      const dateStr: string = flightInDb['date'];
-      console.log('About to autocomplete flight:', flightInDb, flightNo, dateStr)
-      return flightAutoComplete.autocomplete(flightNo, dateStr)
-        .pipe(tap(flight => console.log('Autocompleted Flight', flight)))
-        .pipe(
-          map(flight => {
-            console.log('Merging flights', flightInDb, flight)
-            return { ...flightInDb, ...flight } as Flight;
-          }))
-    }))
-    .pipe(map(newFlight => {
-      newFlight['needsAutocomplete'] = false;
-      return newFlight;
-    }))
     .pipe(
-      flatMap(newFlight => from(flightRef.set(newFlight)).pipe(map(() => newFlight)))
+      map(dateSnap => dateSnap.val()),
+      flatMap(flightInDb => {
+        const flightNo: string = flightInDb['flightno'];
+        const dateStr: string = flightInDb['date'];
+        console.log('About to autocomplete flight:', flightInDb, flightNo, dateStr)
+        return flightAutoComplete.autocomplete(flightNo, dateStr)
+          .pipe(
+            tap(flight => console.log('Autocompleted Flight', flight)),
+
+            map(flight => {
+              console.log('Merging flights', flightInDb, flight)
+              return { ...flightInDb, ...flight } as Flight;
+            }),
+            catchError(error => of(flightInDb).pipe(map(flight => {
+              flight['note'] = flight['errorMessage'] ? flight['errorMessage'] + '/nCould not autocomplete.': 'Could not autocomplete.';
+              return flight;
+            }
+            ))))
+      }),
+      map(newFlight => {
+        newFlight['needsAutocomplete'] = false;
+        return newFlight;
+      }),
+
+      flatMap(newFlight => from(flightRef.set(newFlight)).pipe(map(() => newFlight))),
+      flatMap(flight => {
+        console.log('PREPPING');
+        const arrival = new Date(flight.arrivalTime);
+        if (arrival.getTime() > Date.now()) {
+          console.log('Getting Key parts', flightRef.path);
+          const flightId = flightRef.key;
+          const userId = flightRef.parent.parent.key;
+          return prepareFutureAutoCompletion(userId, flightId, arrival)
+            .pipe(map(result => flight));
+        } else {
+          console.log('Not preparing because the Flight has already landed.');
+          return of(flight);
+        }
+      })
+
     )
-    .pipe(flatMap(flight => {
-      console.log('PREPPING');
-      const arrival = new Date(flight.arrivalTime);
-      if (arrival.getTime() > Date.now()) {
-        console.log('Getting Key parts', flightRef.path);
-        const flightId = flightRef.key;
-        const userId = flightRef.parent.parent.key;
-        return prepareFutureAutoCompletion(userId, flightId, arrival)
-          .pipe(map(result=>flight));
-      } else {
-        console.log('Not preparing because the Flight has already landed.');
-        return of(flight);
-      }
-    }))
+
     .toPromise();
 };
 
@@ -119,20 +128,20 @@ export default {
   autocomplete: functions.https.onRequest((req, res) => {
     const taskJwt = req.body;
     try {
-    const autocompletion = jwt.verify(taskJwt, jwtsecret);
+      const autocompletion = jwt.verify(taskJwt, jwtsecret);
 
-    const userId = autocompletion['userId'];
-    const flightId = autocompletion['flightId'];
-    console.log('autocomplete called');
-    console.log('REF ', `/users/${userId}/flights/${flightId}`);
-    autocompleteFlight(
-      admin.database().ref(`/users/${userId}/flights/${flightId}`), undefined).then(() => {
-        console.log('Autocompleted');
-        res.status(200).send('OK').end();
-      }, () => {
-        console.log('REJECTED');
-        res.status(200).send('NOT OK').end();
-      });
+      const userId = autocompletion['userId'];
+      const flightId = autocompletion['flightId'];
+      console.log('autocomplete called');
+      console.log('REF ', `/users/${userId}/flights/${flightId}`);
+      autocompleteFlight(
+        admin.database().ref(`/users/${userId}/flights/${flightId}`), undefined).then(() => {
+          console.log('Autocompleted');
+          res.status(200).send('OK').end();
+        }, () => {
+          console.log('REJECTED');
+          res.status(200).send('NOT OK').end();
+        });
     } catch (error) {
       console.log(error);
       res.status(400).send('NOT OK').end();
