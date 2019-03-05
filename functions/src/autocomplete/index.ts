@@ -3,24 +3,24 @@
  */
 
 import { flatMap, tap, map, catchError } from 'rxjs/operators';
-import { from, of } from "rxjs";
+import { of } from "rxjs";
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import * as jwt from 'jsonwebtoken';
-import { RxHR } from "@akanass/rx-http-request";
 
 import flightAutoComplete from './flight-autocomplete.server.service';
 import { Flight } from '../models/flight';
+import loadFlight from '../util/loadFlight';
+import defaultTimes from '../util/defaulttime';
+import saveFlightAndReturnIt from '../util/saveFlight';
+import prepareFutureAutoCompletion from '../util/prepareFutureAutoCompletion';
 
 const config = functions.config();
 const jwtsecret = config.jwt.secret;
 
 const autocompleteFlight = function (flightRef: admin.database.Reference, context: functions.EventContext) {
 
-  return from(
-    flightRef.once('value'))
-    .pipe(
-      map(dateSnap => dateSnap.val()),
+  return loadFlight(flightRef).pipe(
       flatMap(flightInDb => {
         const flightNo: string = flightInDb['flightno'];
         const dateStr: string = flightInDb['date'];
@@ -33,6 +33,7 @@ const autocompleteFlight = function (flightRef: admin.database.Reference, contex
               console.log('Merging flights', flightInDb, flight)
               return { ...flightInDb, ...flight } as Flight;
             }),
+            map(defaultTimes),
             catchError(error => of(flightInDb).pipe(map(flight => {
               flight['note'] = flight['errorMessage'] ? flight['errorMessage'] + '/nCould not autocomplete.': 'Could not autocomplete.';
               return flight;
@@ -43,55 +44,14 @@ const autocompleteFlight = function (flightRef: admin.database.Reference, contex
         newFlight['needsAutocomplete'] = false;
         return newFlight;
       }),
-
-      flatMap(newFlight => from(flightRef.set(newFlight)).pipe(map(() => newFlight))),
-      flatMap(flight => {
-        console.log('PREPPING');
-        const arrival = new Date(flight.arrivalTime);
-        if (arrival.getTime() > Date.now()) {
-          console.log('Getting Key parts', flightRef.path);
-          const flightId = flightRef.key;
-          const userId = flightRef.parent.parent.key;
-          return prepareFutureAutoCompletion(userId, flightId, arrival)
-            .pipe(map(result => flight));
-        } else {
-          console.log('Not preparing because the Flight has already landed.');
-          return of(flight);
-        }
-      })
-
+      flatMap(saveFlightAndReturnIt(flightRef)),
+      flatMap(prepareFutureAutoCompletion(flightRef))
     )
 
     .toPromise();
 };
 
-const prepareFutureAutoCompletion = function (userId: string, flightId: string, estimatedDate: Date) {
-  const autocompletion = {};
-  autocompletion['flightId'] = flightId;
-  autocompletion['userId'] = userId;
-  autocompletion['exp'] = (estimatedDate.getTime() + (60 * 60 * 1000)) / 1000;
-  // TODO NotBefore autocompletion['nbf'] = (estimatedDate.getTime() + 60000) / 1000;
-  console.log('Payload', autocompletion);
-  const token = jwt.sign(autocompletion, jwtsecret);
-  console.log('JWT signed', token);
-  // TODO call callmelater and POST the token
 
-  const url = 'https://callmelater.pohl.rocks/tasks'
-
-  // Schedule this task
-  const task = {
-    "url": "https://flights.pohl.rocks/autocomplete",
-    "payload": token,
-    "scheduled_date": (Math.max(estimatedDate.getTime() + (10 * 60 * 1000), Date.now()) + (10 * 60 * 1000))
-  }
-
-  return RxHR.post(url, {
-    body: task,
-    json: true
-  }).pipe(tap(response => {
-    console.log('Response from callmelater', response);
-  }));
-}
 
 export default {
   flightAutoComplete: functions.database.ref('/users/{userId}/flights/{flightId}/flightno')
