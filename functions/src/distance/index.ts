@@ -39,7 +39,6 @@ const computeDistance = function (snapshot: functions.database.DataSnapshot, con
   const flightRef = snapshot.ref.parent;
   return loadFlight(flightRef)
     .pipe(
-      map(flightSnap => flightSnap.val()),
       filter((flight: Flight) => {
         if (flight.from && flight.to) return true;
         else return false;
