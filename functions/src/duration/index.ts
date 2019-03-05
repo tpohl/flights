@@ -7,15 +7,14 @@ import { flatMap, tap, map } from 'rxjs/operators';
 import * as moment from 'moment';
 import { from } from "rxjs";
 import * as functions from 'firebase-functions';
+import loadFlight from '../util/loadFlight';
 
 
 const computeDuration = function (snapshot: functions.database.DataSnapshot, context: functions.EventContext) {
   console.log('Computing Duration of Flight.');
-  return from(
-    snapshot.ref.parent.once('value')
-  )
+  const flightRef = snapshot.ref.parent;
+  return loadFlight(flightRef)
     .pipe(
-      map(flightSnap => flightSnap.val()),
       map((flight: Flight) => {
         if (flight.departureTime && flight.arrivalTime) {
           flight.durationMilliseconds = moment.duration(moment(flight.arrivalTime).diff(moment(flight.departureTime))).asMilliseconds();

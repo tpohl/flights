@@ -8,6 +8,7 @@ import { Airport } from './../models/airport';
 import { from, Observable, zip } from "rxjs";
 import * as functions from 'firebase-functions';
 import { DataSnapshot } from 'firebase-functions/lib/providers/database';
+import loadFlight from '../util/loadFlight';
 const admin = require('firebase-admin');
 
 
@@ -35,9 +36,8 @@ const addDistance = function (flight: Flight) {
 
 const computeDistance = function (snapshot: functions.database.DataSnapshot, context: functions.EventContext) {
   console.debug('Computing Distance');
-  return from(
-    snapshot.ref.parent.once('value')
-  )
+  const flightRef = snapshot.ref.parent;
+  return loadFlight(flightRef)
     .pipe(
       map(flightSnap => flightSnap.val()),
       filter((flight: Flight) => {
