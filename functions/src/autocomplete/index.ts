@@ -21,32 +21,39 @@ const jwtsecret = config.jwt.secret;
 const autocompleteFlight = function (flightRef: admin.database.Reference, context: functions.EventContext) {
 
   return loadFlight(flightRef).pipe(
-      flatMap(flightInDb => {
-        const flightNo: string = flightInDb['flightno'];
-        const dateStr: string = flightInDb['date'];
-        console.log('About to autocomplete flight:', flightInDb, flightNo, dateStr)
-        return flightAutoComplete.autocomplete(flightNo, dateStr)
-          .pipe(
-            tap(flight => console.log('Autocompleted Flight', flight)),
+    flatMap(flightInDb => {
+      const flightNo: string = flightInDb['flightno'];
+      const dateStr: string = flightInDb['date'];
+      console.log('About to autocomplete flight:', flightInDb, flightNo, dateStr)
+      return flightAutoComplete.autocomplete(flightNo, dateStr)
+        .pipe(
+          tap(flight => console.log('Autocompleted Flight', flight)),
 
-            map(flight => {
-              console.log('Merging flights', flightInDb, flight)
-              return { ...flightInDb, ...flight } as Flight;
-            }),
-            map(defaultTimes),
-            catchError(error => of(flightInDb).pipe(map(flight => {
-              flight['note'] = flight['errorMessage'] ? flight['errorMessage'] + '/nCould not autocomplete.': 'Could not autocomplete.';
-              return flight;
-            }
-            ))))
-      }),
-      map(newFlight => {
-        newFlight['needsAutocomplete'] = false;
-        return newFlight;
-      }),
-      flatMap(saveFlightAndReturnIt(flightRef)),
-      flatMap(prepareFutureAutoCompletion(flightRef))
-    )
+          map(flight => {
+            console.log('Merging flights', flightInDb, flight)
+            return { ...flightInDb, ...flight } as Flight;
+          }),
+          map(defaultTimes),
+          catchError(
+            (error) => {
+              console.error('Error during Autocompletion', error);
+              return of(flightInDb)
+                .pipe(
+                  map(flight => {
+                    flight['note'] = flight['errorMessage'] ? flight['errorMessage'] + '/nCould not autocomplete.' : 'Could not autocomplete.';
+                    return flight;
+                  })
+                );
+            })
+        );
+    }),
+    map(newFlight => {
+      newFlight['needsAutocomplete'] = false;
+      return newFlight;
+    }),
+    flatMap(saveFlightAndReturnIt(flightRef)),
+    flatMap(prepareFutureAutoCompletion(flightRef))
+  )
 
     .toPromise();
 };

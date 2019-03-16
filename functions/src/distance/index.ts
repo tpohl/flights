@@ -35,7 +35,7 @@ const addDistance = function (flight: Flight) {
 }
 
 const computeDistance = function (snapshot: functions.database.DataSnapshot, context: functions.EventContext) {
-  console.debug('Computing Distance');
+  console.log('Computing Distance');
   const flightRef = snapshot.ref.parent;
   return loadFlight(flightRef)
     .pipe(

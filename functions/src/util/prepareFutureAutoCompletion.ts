@@ -33,9 +33,9 @@ const doPrepareFutureAutoCompletion = function (userId: string, flightId: string
   autocompletion['userId'] = userId;
   autocompletion['exp'] = (estimatedDate.getTime() + (60 * 60 * 1000)) / 1000;
   // TODO NotBefore autocompletion['nbf'] = (estimatedDate.getTime() + 60000) / 1000;
-  console.trace('Payload', autocompletion);
+  console.log('Payload', autocompletion);
   const token = jwt.sign(autocompletion, jwtsecret);
-  console.trace('JWT signed', token);
+  console.log('JWT signed', token);
   // TODO call callmelater and POST the token
 
   const url = 'https://callmelater.pohl.rocks/tasks'
@@ -51,7 +51,7 @@ const doPrepareFutureAutoCompletion = function (userId: string, flightId: string
     body: task,
     json: true
   }).pipe(tap(response => {
-    console.trace('Response from callmelater', response);
+    console.log('Response Code from callmelater', response.response.statusCode);
   }));
 }
 

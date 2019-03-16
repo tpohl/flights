@@ -55,6 +55,7 @@ const getLhApiToken = function () {
 
 const lhApiTypeReplacements = {
   '32V': 'Airbus A 320neo',
+  '31D': 'Airbus A 320 Family (not specified)'
 };
 const replaceType = function (lhApiType) {
   const replacement = lhApiTypeReplacements[lhApiType];
@@ -81,9 +82,14 @@ const loadAircraftType = function (acTypeCode) {
           },
           json: true
         })
-        .pipe(map(data => data.body))
-        .pipe(map(apiResponse => apiResponse.AircraftResource.AircraftSummaries.AircraftSummary.Names.Name.$))
-        .pipe(map(replaceType))
+        .pipe(
+          filter(data => data.response.statusCode == 200),
+          map(data => data.body),
+          map(apiResponse => apiResponse.AircraftResource.AircraftSummaries.AircraftSummary.Names.Name.$),
+          defaultIfEmpty(acTypeCode),
+          map(replaceType),
+          tap(replacedType => console.log('Replaced AC Type', acTypeCode, replacedType))
+        )
     ));
 
 };
@@ -129,11 +135,12 @@ const FlightAutoCompleter = {
               json: true
             })
         ),
-        tap(data => console.trace('DATA', data)),
-        filter(data => data.response.statusCode === 200),
+        tap(data => console.log('Status from LH API', data.response.statusCode)),
+        filter(data => data.response.statusCode == 200),
         map(data => data.body),
+        tap(body => console.log('Body from LH API', body)),
         map(apiResponse => apiResponse.FlightStatusResource.Flights.Flight),
-        tap(console.debug),
+        tap(body => console.log('Flight from LH API', body)),
         map(toFlight),
         //flatMap(addDistance),
         flatMap((flight) => loadAircraftType(flight.aircraftType)
@@ -142,11 +149,9 @@ const FlightAutoCompleter = {
             return flight;
           }))
         ),
+        tap(body => console.log('Complete Flight after autocompletion', body)),
         defaultIfEmpty({'errorMessage': 'Could not autocomplete.'})
-      )
-
-
-      ;
+      );
 
     return flight$;
   }
