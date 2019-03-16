@@ -1,7 +1,7 @@
 'use strict';
 
-import { Airport } from './../models/airport';
-import { Flight } from './../models/flight';
+import { Airport } from '../models/airport';
+import { Flight } from '../models/flight';
 import { RxHR } from "@akanass/rx-http-request";
 import * as moment from 'moment';
 import { filter, map, tap, flatMap, defaultIfEmpty } from "rxjs/operators";

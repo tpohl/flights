@@ -8,7 +8,7 @@ import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import * as jwt from 'jsonwebtoken';
 
-import flightAutoComplete from './flight-autocomplete.server.service';
+import flightAutoComplete from './lufthansa-api-autocompletion';
 import { Flight } from '../models/flight';
 import loadFlight from '../util/loadFlight';
 import defaultTimes from '../util/defaulttime';
