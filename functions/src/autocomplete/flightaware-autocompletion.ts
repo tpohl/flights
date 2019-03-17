@@ -103,7 +103,7 @@ const FlightAwareAutoCompleter = {
                 f.aircraftRegistration = flight.tailnumber;
                 f.distance = Math.round(flight.distance_filed * 1.60934);// Kilometers
                 f.note = flight.faFlightID;
-
+                console.log('Flightaware Result:', flight);
                 return f;
               }),
               defaultIfEmpty(new Flight()))

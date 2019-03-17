@@ -35,7 +35,9 @@ const autocompleteFlight = function (flightRef: admin.database.Reference, contex
           map(flights => {
             const lhApiFlight = flights[0];
             const flightAwareFlight = flights[1];
-            console.log('Merging flights: ', flightInDb, flightAwareFlight, lhApiFlight);
+            console.log('Merging flights: DB', flightInDb);
+            console.log('Merging flights: Flight Aware', flightAwareFlight, lhApiFlight);
+            console.log('Merging flights: Lufthansa API' , lhApiFlight);
             return { ...flightInDb, ...flightAwareFlight, ...lhApiFlight } as Flight;
           }),
           map(defaultTimes),
