@@ -4,7 +4,7 @@
 import { Flight } from '../models/flight';
 import { RxHR } from "@akanass/rx-http-request";
 import * as moment from 'moment';
-import { filter, map, tap, flatMap, defaultIfEmpty, first, take } from "rxjs/operators";
+import { filter, map, tap, flatMap, defaultIfEmpty, first, take, catchError } from "rxjs/operators";
 import { from, zip, Observable, of } from "rxjs";
 
 const admin = require('firebase-admin');
@@ -106,7 +106,12 @@ const FlightAwareAutoCompleter = {
                 console.log('Flightaware Result:', flight);
                 return f;
               }),
-              defaultIfEmpty(new Flight()))
+              defaultIfEmpty(new Flight()),
+              catchError(err => {
+                console.log('Error in FLight Awarre Result', err);
+                return of(new Flight());
+              })
+              )
         )) as Observable<Flight>;
 
 
