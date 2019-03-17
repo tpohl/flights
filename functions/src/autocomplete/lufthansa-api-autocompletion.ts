@@ -95,7 +95,7 @@ const loadAircraftType = function (acTypeCode) {
 };
 
 
-const toFlight = function (lhApiFlight: any, index) {
+const toFlight = function (lhApiFlight: any, index): Flight {
   const flight = new Flight();
   flight.from = lhApiFlight.Departure.AirportCode;
   if (lhApiFlight.Departure.ActualTimeUTC) {
@@ -114,14 +114,14 @@ const toFlight = function (lhApiFlight: any, index) {
 }
 
 const FlightAutoCompleter = {
-  autocomplete: function (flightNo, dateStr: string) {
+  autocomplete: function (flightNo, dateStr: string) : Observable<Flight>{
     // Default to current Date.
     const date = dateStr ? dateStr : moment().format('YYYY-MM-DD');
 
     console.log('Autocomplete Flight', flightNo, date);
 
 
-    const flight$ = getLhApiToken()
+    const flight$: Observable<Flight> = getLhApiToken()
       .pipe(
         map(apiTokenObj => apiTokenObj.token.access_token),
         flatMap(apiToken =>
@@ -146,12 +146,12 @@ const FlightAutoCompleter = {
         flatMap((flight) => loadAircraftType(flight.aircraftType)
           .pipe(map(acType => {
             flight.aircraftType = acType;
-            return flight;
+            return flight as Flight;
           }))
         ),
         tap(body => console.log('Complete Flight after autocompletion', body)),
-        defaultIfEmpty({'errorMessage': 'Could not autocomplete.'})
-      );
+        defaultIfEmpty(new Flight())
+      ) as Observable<Flight>;
 
     return flight$;
   }

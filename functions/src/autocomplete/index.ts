@@ -3,7 +3,7 @@
  */
 
 import { flatMap, tap, map, catchError } from 'rxjs/operators';
-import { of } from "rxjs";
+import { of, zip } from "rxjs";
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import * as jwt from 'jsonwebtoken';
@@ -14,6 +14,7 @@ import loadFlight from '../util/loadFlight';
 import defaultTimes from '../util/defaulttime';
 import saveFlightAndReturnIt from '../util/saveFlight';
 import prepareFutureAutoCompletion from '../util/prepareFutureAutoCompletion';
+import FlightAwareAutoCompleter from './flightaware-autocompletion';
 
 const config = functions.config();
 const jwtsecret = config.jwt.secret;
@@ -25,13 +26,17 @@ const autocompleteFlight = function (flightRef: admin.database.Reference, contex
       const flightNo: string = flightInDb['flightno'];
       const dateStr: string = flightInDb['date'];
       console.log('About to autocomplete flight:', flightInDb, flightNo, dateStr)
-      return flightAutoComplete.autocomplete(flightNo, dateStr)
-        .pipe(
-          tap(flight => console.log('Autocompleted Flight', flight)),
+      return zip(flightAutoComplete.autocomplete(flightNo, dateStr), FlightAwareAutoCompleter.autocomplete(flightNo, dateStr))
 
-          map(flight => {
-            console.log('Merging flights', flightInDb, flight)
-            return { ...flightInDb, ...flight } as Flight;
+        .pipe(
+
+          tap(flights => console.log('Autocompleted Flight', flights[0], flights[1])),
+
+          map(flights => {
+            const lhApiFlight = flights[0];
+            const flightAwareFlight = flights[1];
+            console.log('Merging flights: ', flightInDb, flightAwareFlight, lhApiFlight);
+            return { ...flightInDb, ...flightAwareFlight, ...lhApiFlight } as Flight;
           }),
           map(defaultTimes),
           catchError(
