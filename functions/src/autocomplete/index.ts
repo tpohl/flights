@@ -29,16 +29,18 @@ const autocompleteFlight = function (flightRef: admin.database.Reference, contex
       return zip(flightAutoComplete.autocomplete(flightNo, dateStr), FlightAwareAutoCompleter.autocomplete(flightNo, dateStr))
 
         .pipe(
-
-          tap(flights => console.log('Autocompleted Flight', flights[0], flights[1])),
-
+          tap(flights => console.log('Autocompleted Flight', flights)),
           map(flights => {
             const lhApiFlight = flights[0];
             const flightAwareFlight = flights[1];
             console.log('Merging flights: DB', flightInDb);
             console.log('Merging flights: Flight Aware', flightAwareFlight, lhApiFlight);
             console.log('Merging flights: Lufthansa API' , lhApiFlight);
-            return { ...flightInDb, ...flightAwareFlight, ...lhApiFlight } as Flight;
+            let result = { ...flightInDb, ...flightAwareFlight} as Flight;
+            console.log('Result after Flight Aware Merge', result);
+            result = {... result, ...lhApiFlight} as Flight;
+            console.log('Result after LH API merge', result);
+            return { result };
           }),
           map(defaultTimes),
           catchError(

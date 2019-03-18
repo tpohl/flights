@@ -81,8 +81,10 @@ const FlightAwareAutoCompleter = {
       }
     })
       .pipe(
+        tap(data => console.log('Status from FlightAware API', data.response.statusCode)),
         filter(data => data.response.statusCode == 200),
         map(data => data.body),
+        tap(body => console.log('Body from FlightAware API', body)),
         map(body => body.FlightInfoStatusResult.flights),
         defaultIfEmpty([]),
         flatMap((flights: Array<FlightAwareFlight>) =>
