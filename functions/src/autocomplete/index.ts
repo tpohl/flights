@@ -38,9 +38,9 @@ const autocompleteFlight = function (flightRef: admin.database.Reference, contex
             console.log('Merging flights: Lufthansa API' , lhApiFlight);
             let result = { ...flightInDb, ...flightAwareFlight} as Flight;
             console.log('Result after Flight Aware Merge', result);
-            result = {... result, ...lhApiFlight} as Flight;
+            result = {... flightInDb, ...lhApiFlight} as Flight;
             console.log('Result after LH API merge', result);
-            return { result };
+            return result;
           }),
           map(defaultTimes),
           catchError(
