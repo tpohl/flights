@@ -95,7 +95,7 @@ const loadAircraftType = function (acTypeCode) {
 };
 
 
-const toFlight = function (lhApiFlight: any, index): Flight {
+const toFlight = function (lhApiFlight: any): Flight {
   const flight = new Flight();
   flight.from = lhApiFlight.Departure.AirportCode;
   if (lhApiFlight.Departure.ActualTimeUTC) {
@@ -137,7 +137,8 @@ const FlightAutoCompleter = {
         ),
         tap(data => console.log('Status from LH API', data.response.statusCode)),
         filter(data => data.response.statusCode == 200),
-        map(data => data.body),
+        map(data => data.body)
+      ).pipe(
         tap(body => console.log('Body from LH API', body)),
         map(apiResponse => apiResponse.FlightStatusResource.Flights.Flight),
         tap(body => console.log('Flight from LH API', body)),
