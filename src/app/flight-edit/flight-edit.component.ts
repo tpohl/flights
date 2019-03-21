@@ -158,7 +158,7 @@ export class FlightEditComponent implements OnInit {
       } else {
         const flightList = this.db.list<Flight>('users/' + user.uid + '/flights');
         flightList.push(this.flight).then(reference => {
-          const flightId = reference.getKey();
+          const flightId = reference.key;
           this.loadFlight(flightId);
           this.location.replaceState('flight/' + flightId);
         }, error => {

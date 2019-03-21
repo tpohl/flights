@@ -54,8 +54,9 @@ const getLhApiToken = function () {
 };
 
 const lhApiTypeReplacements = {
-  '32V': 'Airbus A 320neo',
-  '31D': 'Airbus A 320 Family (not specified)'
+  '32V': 'Airbus A320neo',
+  '31D': 'Airbus A319',
+  '34Q': 'Airbus A340-300'
 };
 const replaceType = function (lhApiType) {
   const replacement = lhApiTypeReplacements[lhApiType];
