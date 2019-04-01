@@ -5,7 +5,7 @@ import { Flight } from '../models/flight';
 import { RxHR } from "@akanass/rx-http-request";
 import * as moment from 'moment';
 import { filter, map, tap, flatMap, defaultIfEmpty, first, take, catchError } from "rxjs/operators";
-import { from, zip, Observable, of } from "rxjs";
+import { from, zip, Observable, of, concat } from "rxjs";
 
 const admin = require('firebase-admin');
 const functions = require('firebase-functions');
@@ -72,6 +72,32 @@ const FlightAwareAutoCompleter = {
   autocomplete: function (flightNo, _flightDate) {
     const flightDate = _flightDate ? cleanDate(_flightDate) : moment().format('DD.MM.YYYY');
 
+    const flightAwareFlightConverter = function (flight) {
+      const f = new Flight();
+
+      f.flightno = flight.airline_iata + flight.flightnumber;
+      f.aircraftType = flight.full_aircrafttype;
+      f.carrier = flight.airline;
+      f.from = flight.origin.alternate_ident;
+      f.to = flight.destination.alternate_ident;
+
+      // Find the best departureTime
+      const departureEpoch = flight.actual_departure_time ? flight.actual_departure_time.epoch
+        : (flight.estimated_departure_time ? flight.estimated_departure_time.epoch : flight.filed_departure_time.epoch);
+      f.departureTime = moment.unix(departureEpoch).toISOString();
+
+      // Find the best arrivalTime
+      const arrivalEpoch = flight.actual_arrival_time ? flight.actual_arrival_time.epoch
+        : (flight.estimated_arrival_time ? flight.estimated_arrival_time.epoch : flight.filed_arrival_time.epoch);
+      f.arrivalTime = moment.unix(arrivalEpoch).toISOString();
+
+      f.aircraftRegistration = flight.tailnumber;
+      f.distance = Math.round(flight.distance_filed * 1.60934);// Kilometers
+      f.note = flight.faFlightID;
+      console.log('Flightaware Result:', flight);
+      return f;
+    }
+
 
     return RxHR.get('https://flightxml.flightaware.com/json/FlightXML3/FlightInfoStatus', {
       headers: { "Authorization": credentials.auth },
@@ -89,38 +115,60 @@ const FlightAwareAutoCompleter = {
         map(body => {
           const FlightInfoStatusResult = body.FlightInfoStatusResult;
           console.log('FlightInfoStatusResult from FlightAware API', FlightInfoStatusResult);
-          const flights = FlightInfoStatusResult.flights;
+          const flights = FlightInfoStatusResult ? FlightInfoStatusResult.flights : [];
           console.log('Flights from FlightAware API', flights);
           return flights;
         }),
         defaultIfEmpty([]),
         flatMap((flights: Array<FlightAwareFlight>) =>
-          from(flights)
-            .pipe(
-              filter((flight) => flight.filed_departure_time && flight.filed_departure_time['date'] == flightDate),
-              take(1),
-              map(flight => {
-                const f = new Flight();
+          (flights.length === 0) ? of(new Flight()) :
+            concat(
+              from(flights)
+                .pipe(
+                  filter((flight, idx) => (
+                    flight.filed_departure_time && flight.filed_departure_time['date'] == flightDate) // this is the right flight
+                  ),
+                  take(1),
+                  map(flightAwareFlightConverter),
+                  catchError(err => {
+                    console.log('Error in FLight Aware Result', err);
+                    return of(new Flight());
+                  })
+                ),
+              of(flights[flights.length - 1]).pipe(
+                map(flightAwareFlightConverter),
+                map(flight => {
+                  // This is the last flight. Lets assume on the flight date it is similar.
+                  const flightDateMoment = moment(flightDate, 'DD.MM.YYYY');
+                  const originalDepartureTime = moment(flight.departureTime);
+                  const originalArrivalTime = moment(flight.arrivalTime);
+                  const departureTime = originalDepartureTime.clone()
+                    .year(flightDateMoment.year())
+                    .month(flightDateMoment.month())
+                    .date( flightDateMoment.date());
+                  const arrivalTime = moment.unix(departureTime.unix() + (originalArrivalTime.unix() - originalDepartureTime.unix()));
+                  console.log('Flightaware Dates', {
+                    date: flightDateMoment,
+                    originalDepartureTime: originalDepartureTime,
+                    originalArrivalTime: originalArrivalTime,
+                    departureTime: departureTime,
+                    arrivalTime: arrivalTime,
+                    y: flightDateMoment.get("year"),
+                    m: flightDateMoment.get("month"),
+                    d: flightDateMoment.date()
+                  })
 
-                f.flightno = flight.flightnumber;
-                f.aircraftType = flight.full_aircrafttype;
-                f.carrier = flight.airline;
-                f.from = flight.origin.alternate_ident;
-                f.to = flight.destination.alternate_ident;
-                f.departureTime = flight.estimated_departure_time.epoch;
-                f.arrivalTime = flight.estimated_arrival_time.epoch;
-                f.aircraftRegistration = flight.tailnumber;
-                f.distance = Math.round(flight.distance_filed * 1.60934);// Kilometers
-                f.note = flight.faFlightID;
-                console.log('Flightaware Result:', flight);
-                return f;
-              }),
-              defaultIfEmpty(new Flight()),
-              catchError(err => {
-                console.log('Error in FLight Awarre Result', err);
-                return of(new Flight());
-              })
+                  flight.departureTime =
+                    departureTime.toISOString();
+                  flight.arrivalTime = arrivalTime.toISOString();
+
+                  delete(flight.aircraftRegistration);
+
+                  console.log('No Flight Found for the day. Guessing Flight: ', flight);
+                  return flight;
+                })
               )
+            ).pipe(take(1))
         )) as Observable<Flight>;
 
 
