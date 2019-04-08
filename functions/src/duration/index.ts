@@ -23,7 +23,7 @@ const computeDuration = function (snapshot: functions.database.DataSnapshot, con
       }
       ),
       tap(flight => console.log('Computed Duration of Flight', flight)),
-      flatMap(newFlight => from(snapshot.ref.parent.set(newFlight)))
+      flatMap(newFlight => from(snapshot.ref.parent.child(durationMilliseconds).set(newFlight.durationMilliseconds)))
       ).toPromise();
 };
 
