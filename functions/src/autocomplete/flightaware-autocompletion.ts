@@ -39,6 +39,8 @@ const airlineMapper = function (airlineCode: string) {
 }
 
 const aircraft = {
+  'A319': 'Airbus A319',
+  'A320': 'Airbus A320',
   'A321': 'Airbus A321',
   'A359': 'Airbus A350-900',
   'B744': 'Boeing 747-400',
