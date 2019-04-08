@@ -45,7 +45,7 @@ const computeDistance = function (snapshot: functions.database.DataSnapshot, con
       }),
       flatMap(addDistance),
       tap(flight => console.log('Computed Distance of Flight', flight)),
-      flatMap(newFlight => from(snapshot.ref.parent..child('distance').set(newFlight.distance)))
+      flatMap(newFlight => from(snapshot.ref.parent.child('distance').set(newFlight.distance)))
     ).toPromise();
 };
 
