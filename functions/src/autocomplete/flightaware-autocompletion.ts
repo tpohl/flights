@@ -30,8 +30,21 @@ const cleanDate = function (date: string) {
   } else {
     return date;
   }
+}
+const airlines = {
+  'DLH': 'Lufthansa',
+}
+const airlineMapper = function (airlineCode: string) {
+  return airlines[airlineCode] ? airlines[airlineCode] : airlineCode;
+}
 
-
+const aircraft = {
+  'A321': 'Airbus A321',
+  'A359': 'Airbus A350-900',
+  'B744': 'Boeing 747-400',
+}
+const aircraftMapper = function (acCode: string) {
+  return aircraft[acCode] ? airlines[acCode] : acCode;
 }
 
 interface FlightAwareFlight {
@@ -76,8 +89,8 @@ const FlightAwareAutoCompleter = {
       const f = new Flight();
 
       f.flightno = flight.airline_iata + flight.flightnumber;
-      f.aircraftType = flight.full_aircrafttype;
-      f.carrier = flight.airline;
+      f.aircraftType = aircraftMapper(flight.full_aircrafttype);
+      f.carrier = airlineMapper(flight.airline);
       f.from = flight.origin.alternate_ident;
       f.to = flight.destination.alternate_ident;
 
@@ -145,7 +158,7 @@ const FlightAwareAutoCompleter = {
                   const departureTime = originalDepartureTime.clone()
                     .year(flightDateMoment.year())
                     .month(flightDateMoment.month())
-                    .date( flightDateMoment.date());
+                    .date(flightDateMoment.date());
                   const arrivalTime = moment.unix(departureTime.unix() + (originalArrivalTime.unix() - originalDepartureTime.unix()));
                   console.log('Flightaware Dates', {
                     date: flightDateMoment,
@@ -162,7 +175,7 @@ const FlightAwareAutoCompleter = {
                     departureTime.toISOString();
                   flight.arrivalTime = arrivalTime.toISOString();
 
-                  delete(flight.aircraftRegistration);
+                  delete (flight.aircraftRegistration);
 
                   console.log('No Flight Found for the day. Guessing Flight: ', flight);
                   return flight;
