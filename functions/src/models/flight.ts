@@ -31,4 +31,7 @@ export class Flight {
 
   needsAutocomplete: boolean;
   errorMessage: string;
+
+  lhApiFlight: Flight;
+  flightAwareFlight: Flight;
 }

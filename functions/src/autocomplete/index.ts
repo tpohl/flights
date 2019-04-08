@@ -40,6 +40,8 @@ const autocompleteFlight = function (flightRef: admin.database.Reference, contex
             console.log('Result after Flight Aware Merge', result);
             result = {... result, ...lhApiFlight} as Flight;
             console.log('Result after LH API merge', result);
+            result.flightAwareFlight = flightAwareFlight;
+            result.lhApiFlight = lhApiFlight;
             return result;
           }),
           map(defaultTimes),
