@@ -98,6 +98,7 @@ const loadAircraftType = function (acTypeCode) {
 
 const toFlight = function (lhApiFlight: any): Flight {
   const flight = new Flight();
+  flight.lhApiFlight = lhApiFlight;
   flight.from = lhApiFlight.Departure.AirportCode;
   if (lhApiFlight.Departure.ActualTimeUTC) {
     flight.departureTime = lhApiFlight.Departure.ActualTimeUTC.DateTime;

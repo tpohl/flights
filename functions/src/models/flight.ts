@@ -1,3 +1,5 @@
+import { FlightAwareFlight } from "../autocomplete/flightaware-autocompletion";
+
 export class Flight {
   _id: string;
   name: string;
@@ -32,8 +34,8 @@ export class Flight {
   needsAutocomplete: boolean;
   errorMessage: string;
 
-  lhApiFlight: Flight;
-  flightAwareFlight: Flight;
+  lhApiFlight: any;
+  flightAwareFlight: FlightAwareFlight;
   status: FlightStatus;
 
 }

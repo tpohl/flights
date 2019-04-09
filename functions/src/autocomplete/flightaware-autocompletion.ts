@@ -50,21 +50,27 @@ const aircraftMapper = function (acCode: string) {
   return aircraft.has(acCode) ? aircraft.get(acCode) : acCode;
 }
 
-interface FlightAwareFlight {
-  filed_departure_time: boolean;
+export interface FlightAwareFlight {
+
   faFlightID: string;
   distance_filed: number;
   tailnumber: string;
-  estimated_arrival_time: any;
-  estimated_departure_time: any;
+  estimated_arrival_time?: FlightAwareTimestamp;
+  estimated_departure_time?: FlightAwareTimestamp;
   destination: FlightAwareAirport;
   origin: FlightAwareAirport;
   airline: string;
+  airline_iata: string;
   full_aircrafttype: string;
   flightnumber: string;
+  actual_departure_time?: FlightAwareTimestamp;
+  actual_arrival_time?: FlightAwareTimestamp;
+  filed_departure_time?: FlightAwareTimestamp;
+  filed_arrival_time?: FlightAwareTimestamp;
+  progress_percent: number;
 }
 
-interface FlightAwareAirport {
+export interface FlightAwareAirport {
 
   airport_code: string;
   alternate_ident?: string;
@@ -82,14 +88,19 @@ interface FlightAwareAirport {
   wiki_url?: string;
 }
 
+export interface FlightAwareTimestamp {
+  epoch: number;
+}
+
 const FlightAwareAutoCompleter = {
 
 
   autocomplete: function (flightNo, _flightDate) {
     const flightDate = _flightDate ? cleanDate(_flightDate) : moment().format('DD.MM.YYYY');
 
-    const flightAwareFlightConverter = function (flight) {
+    const flightAwareFlightConverter = function (flight: FlightAwareFlight) {
       const f = new Flight();
+      f.flightAwareFlight = flight;
 
       f.flightno = flight.airline_iata + flight.flightnumber;
       f.aircraftType = aircraftMapper(flight.full_aircrafttype);
