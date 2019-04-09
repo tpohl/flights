@@ -31,22 +31,23 @@ const cleanDate = function (date: string) {
     return date;
   }
 }
-const airlines = {
+const airlines = new Map(Object.entries({
   'DLH': 'Lufthansa',
-}
+}));
 const airlineMapper = function (airlineCode: string) {
-  return airlines[airlineCode] ? airlines[airlineCode] : airlineCode;
+  return airlines.has(airlineCode) ? airlines.get(airlineCode) : airlineCode;
 }
 
-const aircraft = {
+const aircraft = new Map(Object.entries({
   'A319': 'Airbus A319',
   'A320': 'Airbus A320',
   'A321': 'Airbus A321',
   'A359': 'Airbus A350-900',
   'B744': 'Boeing 747-400',
-}
+})) as Map<string, string>;
+
 const aircraftMapper = function (acCode: string) {
-  return aircraft[acCode] ? airlines[acCode] : acCode;
+  return aircraft.has(acCode) ? aircraft.get(acCode) : acCode;
 }
 
 interface FlightAwareFlight {
@@ -109,7 +110,7 @@ const FlightAwareAutoCompleter = {
       f.aircraftRegistration = flight.tailnumber;
       f.distance = Math.round(flight.distance_filed * 1.60934);// Kilometers
       f.note = flight.faFlightID;
-      f.status = flight.progress_percent === 100 ? 'landed': 'scheduled';
+      f.status = flight.progress_percent === 100 ? 'landed' : 'scheduled';
       console.log('Flightaware Result:', flight);
       return f;
     }
