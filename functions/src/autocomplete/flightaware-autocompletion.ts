@@ -109,6 +109,7 @@ const FlightAwareAutoCompleter = {
       f.aircraftRegistration = flight.tailnumber;
       f.distance = Math.round(flight.distance_filed * 1.60934);// Kilometers
       f.note = flight.faFlightID;
+      f.status = flight.progress_percent === 100 ? 'landed': 'scheduled';
       console.log('Flightaware Result:', flight);
       return f;
     }
@@ -180,6 +181,8 @@ const FlightAwareAutoCompleter = {
                   delete (flight.aircraftRegistration);
 
                   console.log('No Flight Found for the day. Guessing Flight: ', flight);
+
+                  flight.status = "guess";
                   return flight;
                 })
               )

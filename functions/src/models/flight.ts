@@ -34,4 +34,7 @@ export class Flight {
 
   lhApiFlight: Flight;
   flightAwareFlight: Flight;
+  status: FlightStatus;
+
 }
+export type FlightStatus = "guess" | "scheduled" | "landed";
