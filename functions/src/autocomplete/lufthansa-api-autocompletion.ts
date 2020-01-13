@@ -145,7 +145,9 @@ const FlightAutoCompleter = {
         map(data => data.body)
       ).pipe(
         tap(body => console.log('Body from LH API', body)),
-        map(apiResponse => apiResponse.FlightStatusResource.Flights.Flight[0]), // The Flights are now an array.
+        map(apiResponse => apiResponse.FlightStatusResource.Flights.Flight),
+        // The Flights are now an array but maybe not always.
+        map(apiResponse => Array.isArray(apiResponse) ? apiResponse[0] : apiResponse),
         tap(body => console.log('Flight from LH API', body)),
         map(toFlight),
         //flatMap(addDistance),
