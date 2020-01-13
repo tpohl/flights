@@ -1,13 +1,12 @@
 'use strict';
 
-import { Airport } from '../models/airport';
 import { Flight } from '../models/flight';
-import { RxHR } from "@akanass/rx-http-request";
+import { RxHR } from '@akanass/rx-http-request';
 import * as moment from 'moment';
-import { filter, map, tap, flatMap, defaultIfEmpty } from "rxjs/operators";
-import { from, zip, Observable } from "rxjs";
+import { defaultIfEmpty, filter, flatMap, map, tap } from 'rxjs/operators';
+import { from, Observable } from 'rxjs';
 import * as simpleoauth2 from 'simple-oauth2';
-import { DataSnapshot } from 'firebase-functions/lib/providers/database';
+
 const admin = require('firebase-admin');
 const functions = require('firebase-functions');
 const config = functions.config();
@@ -33,22 +32,21 @@ const oauth2 = simpleoauth2.create(credentials);
 
 const getLhApiToken = function () {
   const promise = new Promise<simpleoauth2.AccessToken>(function (resolve, reject) {
-    if (!token || token.expired()) {
-      console.log('Refreshing token with credentials', credentials);
-      oauth2.clientCredentials.getToken(tokenConfig, function (error, result) {
-        if (error) {
-          reject(error);
-          console.log('Access Token Error', error);
-        }
-        const newToken = result;
-        token = oauth2.accessToken.create(newToken);
+      if (!token || token.expired()) {
+        console.log('Refreshing token with credentials', credentials);
+        oauth2.clientCredentials.getToken(tokenConfig, function (error, result) {
+          if (error) {
+            reject(error);
+            console.log('Access Token Error', error);
+          }
+          const newToken = result;
+          token = oauth2.accessToken.create(newToken);
+          resolve(token);
+        });
+      } else {
         resolve(token);
-      });
+      }
     }
-    else {
-      resolve(token);
-    }
-  }
   );
   return from(promise);
 };
@@ -99,24 +97,29 @@ const loadAircraftType = function (acTypeCode) {
 const toFlight = function (lhApiFlight: any): Flight {
   const flight = new Flight();
   flight.lhApiFlight = lhApiFlight;
-  flight.from = lhApiFlight.Departure.AirportCode;
-  if (lhApiFlight.Departure.ActualTimeUTC) {
-    flight.departureTime = lhApiFlight.Departure.ActualTimeUTC.DateTime;
+  if (!!lhApiFlight.Departure && !!lhApiFlight.Arrival) {
+
+    flight.from = lhApiFlight.Departure.AirportCode;
+    if (lhApiFlight.Departure.ActualTimeUTC) {
+      flight.departureTime = lhApiFlight.Departure.ActualTimeUTC.DateTime;
+    } else {
+      flight.departureTime = lhApiFlight.Departure.ScheduledTimeUTC.DateTime;
+    }
+    flight.to = lhApiFlight.Arrival.AirportCode;
+    if (lhApiFlight.Arrival.ActualTimeUTC) {
+      flight.arrivalTime = lhApiFlight.Arrival.ActualTimeUTC.DateTime;
+    } else {
+      flight.arrivalTime = lhApiFlight.Arrival.ScheduledTimeUTC.DateTime;
+    }
+    flight.aircraftType = lhApiFlight.Equipment.AircraftCode;
   } else {
-    flight.departureTime = lhApiFlight.Departure.ScheduledTimeUTC.DateTime;
+    console.log('LH API FLight is invalid', lhApiFlight);
   }
-  flight.to = lhApiFlight.Arrival.AirportCode;
-  if (lhApiFlight.Arrival.ActualTimeUTC) {
-    flight.arrivalTime = lhApiFlight.Arrival.ActualTimeUTC.DateTime;
-  } else {
-    flight.arrivalTime = lhApiFlight.Arrival.ScheduledTimeUTC.DateTime;
-  }
-  flight.aircraftType = lhApiFlight.Equipment.AircraftCode;
   return flight;
-}
+};
 
 const FlightAutoCompleter = {
-  autocomplete: function (flightNo, dateStr: string) : Observable<Flight>{
+  autocomplete: function (flightNo, dateStr: string): Observable<Flight> {
     // Default to current Date.
     const date = dateStr ? dateStr : moment().format('YYYY-MM-DD');
 
@@ -142,7 +145,7 @@ const FlightAutoCompleter = {
         map(data => data.body)
       ).pipe(
         tap(body => console.log('Body from LH API', body)),
-        map(apiResponse => apiResponse.FlightStatusResource.Flights.Flight),
+        map(apiResponse => apiResponse.FlightStatusResource.Flights.Flight[0]), // The Flights are now an array.
         tap(body => console.log('Flight from LH API', body)),
         map(toFlight),
         //flatMap(addDistance),
@@ -158,7 +161,7 @@ const FlightAutoCompleter = {
 
     return flight$;
   }
-}
+};
 
 
 export default FlightAutoCompleter;
