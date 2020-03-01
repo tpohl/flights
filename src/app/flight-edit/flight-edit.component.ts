@@ -37,6 +37,9 @@ export class FlightEditComponent implements OnInit {
   toAirport$: BehaviorSubject<Airport> = new BehaviorSubject(null);
 
   flightsWithSameAircraft$: Observable<number>;
+  flightsWithSameAirline$: Observable<number>;
+  flightsOnSameSeat$: Observable<number>;
+  flightsWithSameAircraftType$: Observable<number>;
 
   constructor(private flightsService: FlightsService, private route: ActivatedRoute, private atp: AmazingTimePickerService,
               private router: Router, private db: AngularFireDatabase,
@@ -123,6 +126,21 @@ export class FlightEditComponent implements OnInit {
         this.loadToAirport(this.flight.to);
 
         this.flightsWithSameAircraft$ = this.flightsService.getFlightsWithSameAircraft(this.flight)
+          .pipe(
+            map(flights => flights.length)
+          );
+
+        this.flightsWithSameAirline$ = this.flightsService.getFlightsWithSameAirline(this.flight)
+          .pipe(
+            map(flights => flights.length)
+          );
+
+        this.flightsOnSameSeat$ = this.flightsService.getFlightsOnSameSeat(this.flight)
+          .pipe(
+            map(flights => flights.length)
+          );
+
+        this.flightsWithSameAircraftType$ = this.flightsService.getFlightsWithSameAircraftType(this.flight)
           .pipe(
             map(flights => flights.length)
           );

@@ -39,4 +39,28 @@ export class FlightsService {
       )
     );
   }
+
+  getFlightsWithSameAircraftType(compareFlight: Flight) {
+    return this.getFlights().pipe(
+      map(flights => flights.filter(
+        flight => flight.aircraftType === compareFlight.aircraftType)
+      )
+    );
+  }
+
+  getFlightsWithSameAirline(compareFlight: Flight) {
+    return this.getFlights().pipe(
+      map(flights => flights.filter(
+        flight => flight.carrier === compareFlight.carrier)
+      )
+    );
+  }
+
+  getFlightsOnSameSeat(compareFlight: Flight) {
+    return this.getFlights().pipe(
+      map(flights => flights.filter(
+        flight => flight.seat === compareFlight.seat)
+      )
+    );
+  }
 }

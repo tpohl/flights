@@ -13,11 +13,14 @@
         </div>
         <div class="media-content">
           <p class="title is-4"> <span *ngIf="flight.from && flight.from.length && flight.to && flight.to.length">{{flight.from}}
-              to {{flight.to}}</span></p>
+            to {{flight.to}}</span></p>
           <p class="subtitle is-6"> {{flight.departureTime | amTimeAgo}} ({{flight.departureTime | date:'dd.MM.yyyy'}})
             - {{flight.flightno}} - {{flight.distance | number : '1.0-0'}} km
-            <br/>
-            You flew with {{flight.aircraftRegistration}} {{flightsWithSameAircraft$ | async}} times.
+            <br />
+            <span class="statistics">You flew with {{flight.aircraftRegistration}} {{flightsWithSameAircraft$ | async}} times.</span>
+            <span class="statistics">You flew with an {{flight.aircraftType}} {{flightsWithSameAircraftType$ | async}} times.</span>
+            <span class="statistics">You flew with {{flight.carrier}} {{flightsWithSameAirline$ | async}} times.</span>
+            <span class="statistics">You sat on {{flight.seat}} {{flightsOnSameSeat$ | async}} times.</span>
           </p>
         </div>
         <a routerLink="/flights" class="card-header-icon" aria-label="Close Flight">
@@ -120,26 +123,26 @@
         </div>
       </div>
       <div class="field is-horizontal">
-          <div class="field-label is-normal">
-            <label class="label">Arrival Time</label>
-          </div>
-          <div class="field-body">
-            <div class="field">
-              <div class="control">
-                <div class="field has-addons">
-                  <div class="control is-expanded">
-                    <input readonly disabled class="input" type="time" [(ngModel)]="arrivalTime" />
-                  </div>
-                  <div class="control">
-                    <button class="button" (click)="selectArrivalTime()">
-                      <i class="fa fa-clock-o" aria-hidden="true"></i>
-                    </button>
-                  </div>
+        <div class="field-label is-normal">
+          <label class="label">Arrival Time</label>
+        </div>
+        <div class="field-body">
+          <div class="field">
+            <div class="control">
+              <div class="field has-addons">
+                <div class="control is-expanded">
+                  <input readonly disabled class="input" type="time" [(ngModel)]="arrivalTime" />
+                </div>
+                <div class="control">
+                  <button class="button" (click)="selectArrivalTime()">
+                    <i class="fa fa-clock-o" aria-hidden="true"></i>
+                  </button>
                 </div>
               </div>
             </div>
           </div>
         </div>
+      </div>
       <!--
           <app-local-datetime label="Departure Time" [instant]="departureTimeLocal" (timeUpdated)="timeUpdated('departureTime', $event)"></app-local-datetime>
 
@@ -166,7 +169,7 @@
           <div class="field">
             <div class="control">
               <input class="input" type="text" value="{{flight.durationMilliseconds | amDurationExact:'milliseconds' }}" placeholder="Duration"
-                readonly disabled>
+                     readonly disabled>
             </div>
           </div>
         </div>
@@ -335,9 +338,11 @@
     </div>
     <footer class="card-footer">
       <a (click)="save()" class="card-footer-item is-success button">
-        <i class="fa fa-floppy-o" aria-hidden="true"></i> Save</a>
+        <i class="fa fa-floppy-o" aria-hidden="true"></i> Save
+      </a>
       <a (click)="delete()" class="card-footer-item is-danger button">
-        <i class="fa fa-trash-o" aria-hidden="true"></i> Delete</a>
+        <i class="fa fa-trash-o" aria-hidden="true"></i> Delete
+      </a>
     </footer>
   </div>
 </div>
