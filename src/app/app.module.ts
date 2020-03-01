@@ -18,6 +18,7 @@ import { ExactDurationPipe } from './pipes/exactDurationPipe';
 import { AmazingTimePickerModule } from 'amazing-time-picker';
 import { PohlRocksImporterComponent } from './pohl-rocks-importer/pohl-rocks-importer.component';
 import { FlightsExportComponent } from './flights-export/flights-export.component';
+import { FlightsService } from './services/flights.service';
 
 
 const appRoutes: Routes = [
@@ -79,7 +80,7 @@ const appRoutes: Routes = [
     AngularFireAuthModule,
     AngularFireDatabaseModule
   ],
-  providers: [AirportService],
+  providers: [AirportService, FlightsService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
