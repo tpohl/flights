@@ -31,4 +31,12 @@ export class FlightsService {
         shareReplay(1)
       );
   }
+
+  getFlightsWithSameAircraft(compareFlight: Flight) {
+    return this.getFlights().pipe(
+      map(flights => flights.filter(
+        flight => flight.aircraftRegistration === compareFlight.aircraftRegistration)
+      )
+    );
+  }
 }

@@ -16,6 +16,8 @@
               to {{flight.to}}</span></p>
           <p class="subtitle is-6"> {{flight.departureTime | amTimeAgo}} ({{flight.departureTime | date:'dd.MM.yyyy'}})
             - {{flight.flightno}} - {{flight.distance | number : '1.0-0'}} km
+            <br/>
+            You flew with {{flight.aircraftRegistration}} {{flightsWithSameAircraft$ | async}} times.
           </p>
         </div>
         <a routerLink="/flights" class="card-header-icon" aria-label="Close Flight">

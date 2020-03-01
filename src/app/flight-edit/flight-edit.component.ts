@@ -1,9 +1,9 @@
 import { Location, LocationStrategy, PathLocationStrategy } from '@angular/common';
 import { AirportService } from './../services/airport.service';
-import { Observable, of ,  BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Observable, of } from 'rxjs';
 
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Params, Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
 import { Flight } from '../models/flight';
 import { AngularFireDatabase } from '@angular/fire/database';
@@ -13,7 +13,8 @@ import { Airport } from '../models/airport';
 import * as moment from 'moment-timezone';
 
 import { AmazingTimePickerService } from 'amazing-time-picker';
-import { tap } from 'rxjs/operators';
+import { FlightsService } from '../services/flights.service';
+import { map } from 'rxjs/operators';
 
 
 @Component({
@@ -35,10 +36,12 @@ export class FlightEditComponent implements OnInit {
   fromAirport$: BehaviorSubject<Airport> = new BehaviorSubject(null);
   toAirport$: BehaviorSubject<Airport> = new BehaviorSubject(null);
 
-  constructor(private route: ActivatedRoute, private atp: AmazingTimePickerService,
-    private router: Router, private db: AngularFireDatabase,
-    private afAuth: AngularFireAuth,
-    private airportService: AirportService, private location: Location) {
+  flightsWithSameAircraft$: Observable<number>;
+
+  constructor(private flightsService: FlightsService, private route: ActivatedRoute, private atp: AmazingTimePickerService,
+              private router: Router, private db: AngularFireDatabase,
+              private afAuth: AngularFireAuth,
+              private airportService: AirportService, private location: Location) {
   }
 
 
@@ -118,6 +121,11 @@ export class FlightEditComponent implements OnInit {
         });
         */
         this.loadToAirport(this.flight.to);
+
+        this.flightsWithSameAircraft$ = this.flightsService.getFlightsWithSameAircraft(this.flight)
+          .pipe(
+            map(flights => flights.length)
+          );
       }
     );
   }
@@ -125,6 +133,7 @@ export class FlightEditComponent implements OnInit {
   selectedDate(momentDate: moment.Moment) {
     this.flight.date = momentDate.format('YYYY-MM-DD');
   }
+
   loadAirport(code: String): Observable<Airport> {
     if (code && code.length === 3) {
       return this.airportService.loadAirport(code);
@@ -138,6 +147,7 @@ export class FlightEditComponent implements OnInit {
     ap.subscribe((a) => this.fromAirport$.next(a));
     return ap;
   }
+
   loadToAirport(code: String): Observable<Airport> {
     const ap = this.loadAirport(code);
     ap.subscribe((a) => this.toAirport$.next(a));
@@ -158,12 +168,12 @@ export class FlightEditComponent implements OnInit {
       } else {
         const flightList = this.db.list<Flight>('users/' + user.uid + '/flights');
         flightList.push(this.flight).then(reference => {
-          const flightId = reference.key;
-          this.loadFlight(flightId);
-          this.location.replaceState('flight/' + flightId);
-        }, error => {
-          console.log(error);
-        }
+            const flightId = reference.key;
+            this.loadFlight(flightId);
+            this.location.replaceState('flight/' + flightId);
+          }, error => {
+            console.log(error);
+          }
         );
       }
 
