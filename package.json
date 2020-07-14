@@ -32,7 +32,7 @@
     "moment": "^2.24.0",
     "moment-timezone": "^0.5.23",
     "ngx-moment": "^3.3.0",
-    "rxjs": "^6.5.2",
+    "rxjs": "^6.6.0",
     "zone.js": "^0.9.1"
   },
   "devDependencies": {
@@ -41,7 +41,7 @@
     "@angular/language-service": "^8.0.0",
     "@types/jasmine": "^2.8.16",
     "@types/jasminewd2": "^2.0.6",
-    "@types/node": "~8.9.4",
+    "@types/node": "10.3.6",
     "codelyzer": "~4.5.0",
     "firebase-tools": "^6.0.0",
     "jasmine-core": "~2.99.1",
