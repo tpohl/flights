@@ -29,10 +29,10 @@ export class AppComponent {
     );
   }
   login() {
-    this.afAuth.auth.signInWithPopup(new auth.GoogleAuthProvider());
+    this.afAuth.signInWithPopup(new auth.GoogleAuthProvider());
   }
   logout() {
-    this.afAuth.auth.signOut().then((res) => this.router.navigate(['/']));
+    this.afAuth.signOut().then((res) => this.router.navigate(['/']));
   }
 
   isLoggedIn() {
