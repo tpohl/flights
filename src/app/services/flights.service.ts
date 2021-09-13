@@ -11,14 +11,10 @@ import { Flight } from '../models/flight';
 @Injectable()
 export class FlightsService {
 
-  private airports = new Map<String, Observable<Airport>>();
-
+  private flights: Observable<Flight[]>;
 
   constructor(private db: AngularFireDatabase, private afAuth: AngularFireAuth) {
-  }
-
-  getFlights() {
-    return this.afAuth.user
+    this.flights = this.afAuth.user
       .pipe(
         map(user => user.uid),
         flatMap(userId => this.db.list<Flight>('users/' + userId + '/flights').snapshotChanges()),
@@ -30,6 +26,10 @@ export class FlightsService {
           })),
         shareReplay(1)
       );
+  }
+
+  getFlights() {
+    return this.flights;
   }
 
   getFlightsWithSameAircraft(compareFlight: Flight) {

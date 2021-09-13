@@ -28,20 +28,22 @@ const credentials = {
 
 const tokenConfig = {};
 let token: simpleoauth2.AccessToken;
-const oauth2 = simpleoauth2.create(credentials);
+const oauth2 = new simpleoauth2.ClientCredentials(credentials)
+
 
 const getLhApiToken = function () {
   const promise = new Promise<simpleoauth2.AccessToken>(function (resolve, reject) {
       if (!token || token.expired()) {
         console.log('Refreshing token with credentials', credentials);
-        oauth2.clientCredentials.getToken(tokenConfig, function (error, result) {
-          if (error) {
+        oauth2.getToken(tokenConfig).then( function (result) {
+
+          const token = result;
+          resolve(token);
+        }).catch(function (error){
+
             reject(error);
             console.log('Access Token Error', error);
-          }
-          const newToken = result;
-          token = oauth2.accessToken.create(newToken);
-          resolve(token);
+
         });
       } else {
         resolve(token);

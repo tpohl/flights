@@ -61,7 +61,7 @@ const autocompleteFlight = function (flightRef: admin.database.Reference, contex
       return newFlight;
     }),
     flatMap(saveFlightAndReturnIt(flightRef)),
-    flatMap(prepareFutureAutoCompletion(flightRef))
+  //  flatMap(prepareFutureAutoCompletion(flightRef))
   )
 
     .toPromise();
