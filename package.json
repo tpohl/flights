@@ -25,7 +25,6 @@
     "@angular/platform-browser-dynamic": "^10.0.3",
     "@angular/router": "^10.0.3",
     "@types/d3-scale-chromatic": "^1.3.1",
-    "amazing-time-picker": "^1.8.0",
     "bulma": "^0.9.0",
     "cesium": "^1.71.0",
     "core-js": "^2.6.5",
@@ -34,6 +33,7 @@
     "moment": "^2.24.0",
     "moment-timezone": "^0.5.23",
     "ngx-moment": "^3.3.0",
+    "node-sass": "npm:sass@^1.50.1",
     "rxjs": "^6.6.0",
     "tslib": "^2.0.0",
     "zone.js": "~0.10.2"
