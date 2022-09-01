@@ -1,12 +1,15 @@
 <div>
   <h2 class="title">Your flights <a [routerLink]="['/flight', 'new']" class="button is-hidden-tablet is-pulled-right">Add</a></h2>
-  <div *ngIf="(stats|async)?.hasAircraft" class="card" style="width: 30%; min-width: 300px; top: 20px; right: 20px; position: fixed; z-index: 9999;">
+  <ng-container *ngIf="(stats$|async) as stats">
+  <div *ngIf="stats.hasAircraft" class="card" style="width: 30%; min-width: 300px; top: 20px; right: 20px; position: fixed; z-index: 9999;">
     <div class="card-content">
       <p>
-        With Aircraft {{(stats|async)?.aircraft }} you did {{(stats|async)?.flightsWithAircraft }} flights (with this type {{(stats|async)?.flightsWithType }}).
+        With Aircraft {{stats.aircraft }} you did {{stats.flightsWithAircraft }} flights (with this type {{stats.flightsWithType }}).
       </p>
+      <p>You flew this route {{stats.flightsOnRoute}} times.</p>
     </div>
   </div>
+  </ng-container>
   <div class="columns">
     <div class="column is-two-thirds">
       <app-cesium *ngIf="flights" [flights]="flights"></app-cesium>
@@ -17,8 +20,8 @@
           <p class="subtitle is-hidden-mobile">
             Add / Import / Export
           </p>
-          <p>
-            {{(stats|async)?.count }} Flights - {{(stats|async)?.distance | number : '1.0-0'}} km
+          <p *ngIf="(stats$|async) as stats">
+            {{stats.count }} Flights - {{stats.distance | number : '1.0-0'}} km
           </p>
         </div>
         <footer class="card-footer is-hidden-mobile">

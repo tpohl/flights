@@ -14,7 +14,7 @@ export class FlightListComponent implements OnInit {
   // https://angularfirebase.com/lessons/infinite-scroll-with-firebase-data-and-angular-animation/
   flights: Observable<Flight[]>;
 
-  stats: Observable<Stats>;
+  stats$: Observable<Stats>;
 
   selectedFlight$ = new BehaviorSubject<Flight>(null);
 
@@ -52,7 +52,7 @@ export class FlightListComponent implements OnInit {
             }
           }))
         );
-      this.stats = combineLatest([flightList, this.selectedFlight$]).pipe(
+      this.stats$ = combineLatest([flightList, this.selectedFlight$]).pipe(
         mergeMap(([flightArray, selectedFlight]) => from(flightArray)
           .pipe(
             reduce<Flight, Stats>(
@@ -66,6 +66,14 @@ export class FlightListComponent implements OnInit {
                   }
                   if (!!selectedFlight.aircraftType && (selectedFlight.aircraftType == flight.aircraftType)) {
                     stats.flightsWithType += 1;
+                  }
+                  if (!!selectedFlight.from && !!selectedFlight.to){
+                    if (selectedFlight.from == flight.from && selectedFlight.to == flight.to){
+                      stats.flightsOnRoute += 1;
+                    }
+                    else if (selectedFlight.to == flight.from && selectedFlight.from == flight.to){
+                      stats.flightsOnRoute += 1;
+                    }
                   }
                 }
                 return stats;
@@ -95,4 +103,5 @@ class Stats {
   aircraft = 'select';
   flightsWithAircraft = 0;
   flightsWithType = 0;
+  flightsOnRoute = 0;
 }
