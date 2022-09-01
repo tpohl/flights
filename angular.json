@@ -26,7 +26,8 @@
                 "output": "./assets/cesium"
               },
               "src/assets",
-              "src/ATriggerVerify.txt"
+              "src/ATriggerVerify.txt",
+              "src/manifest.webmanifest"
             ],
             "styles": [
               "node_modules/cesium/Build/Cesium/Widgets/widgets.css",
@@ -40,7 +41,9 @@
             "buildOptimizer": false,
             "sourceMap": true,
             "optimization": false,
-            "namedChunks": true
+            "namedChunks": true,
+            "serviceWorker": true,
+            "ngswConfigPath": "ngsw-config.json"
           },
           "configurations": {
             "production": {
@@ -98,7 +101,8 @@
             "assets": [
               "src/favicon.ico",
               "src/ATriggerVerify.txt",
-              "src/assets"
+              "src/assets",
+              "src/manifest.webmanifest"
             ]
           }
         }
