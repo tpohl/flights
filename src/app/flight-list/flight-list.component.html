@@ -3,7 +3,7 @@
   <div *ngIf="(stats|async)?.hasAircraft" class="card" style="width: 30%; min-width: 300px; top: 20px; right: 20px; position: fixed; z-index: 9999;">
     <div class="card-content">
       <p>
-        With Aircraft {{(stats|async)?.aircraft }} you did {{(stats|async)?.flightsWithAircraft }} Flights.
+        With Aircraft {{(stats|async)?.aircraft }} you did {{(stats|async)?.flightsWithAircraft }} flights (with this type {{(stats|async)?.flightsWithType }}).
       </p>
     </div>
   </div>

@@ -64,6 +64,9 @@ export class FlightListComponent implements OnInit {
                   if (!!selectedFlight.aircraftRegistration && (selectedFlight.aircraftRegistration == flight.aircraftRegistration)) {
                     stats.flightsWithAircraft += 1;
                   }
+                  if (!!selectedFlight.aircraftType && (selectedFlight.aircraftType == flight.aircraftType)) {
+                    stats.flightsWithType += 1;
+                  }
                 }
                 return stats;
               },
@@ -91,4 +94,5 @@ class Stats {
   hasAircraft = false;
   aircraft = 'select';
   flightsWithAircraft = 0;
+  flightsWithType = 0;
 }
