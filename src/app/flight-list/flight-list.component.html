@@ -1,14 +1,23 @@
 <div>
-  <h2 class="title">Your flights <a [routerLink]="['/flight', 'new']" class="button is-hidden-tablet is-pulled-right">Add</a></h2>
+  <h2 class="title">Your flights
+    <a [routerLink]="['/flight', 'new']" class="button is-hidden-tablet is-pulled-right">Add</a>
+  </h2>
   <ng-container *ngIf="(stats$|async) as stats">
-  <div *ngIf="stats.hasAircraft" class="card" style="width: 30%; min-width: 300px; top: 20px; right: 20px; position: fixed; z-index: 9999;">
-    <div class="card-content">
-      <p>
-        With Aircraft {{stats.aircraft }} you did {{stats.flightsWithAircraft }} flights (with this type {{stats.flightsWithType }}).
-      </p>
-      <p>You flew this route {{stats.flightsOnRoute}} times.</p>
+    <div *ngIf="stats.hasAircraft" class="card" style="width: 30%; min-width: 300px; top: 20px; right: 20px; position: fixed; z-index: 9999;">
+      <div class="card-header">
+        <div class="card-header-title">Stats</div>
+        <div class="card-header-icon" (click)="selectFlight(null)">
+          <i class="fa fa-close"></i>
+        </div>
+      </div>
+
+      <div class="card-content">
+        <p>
+          With Aircraft {{stats.aircraft }} you did {{stats.flightsWithAircraft }} flights (with this type {{stats.flightsWithType }}).
+        </p>
+        <p>You flew this route {{stats.flightsOnRoute}} times.</p>
+      </div>
     </div>
-  </div>
   </ng-container>
   <div class="columns">
     <div class="column is-two-thirds">
@@ -35,31 +44,27 @@
   <div class="columns is-multiline">
     <div class="column is-half-tablet is-one-third-desktop is-one-quarter-fullhd" *ngFor="let flight of flights | async">
 
-        <div class="card" (mouseenter)="selectFlight(flight)" (click)="selectFlight(flight)">
-          <div class="card-content">
-
-            <div class="media">
-
-              <div class="media-content">
-                <p class="title is-4"> {{flight.from}} to {{flight.to}}</p>
-                <p class="subtitle is-6"> {{flight.departureTime | date:'dd.MM.yyyy HH:mm'}} - {{flight.flightno}} <br /> {{flight.distance
-                  | number : '1.0-0'}} km - {{flight.aircraftRegistration}}
-                </p>
-              </div>
-              <div class="card-header-icon">
-                <a [routerLink]="['/flight', flight._id]">
+      <div class="card" (mouseenter)="selectFlight(flight)" (click)="selectFlight(flight)">
+        <div class="card-header">
+          <div class="card-header-title">{{flight.from}} to {{flight.to}}</div>
+          <div class="card-header-icon">
+            <a [routerLink]="['/flight', flight._id]">
                 <span class="icon">
-                  <i class="fa fa-edit fa-2x" aria-hidden="true"></i>
+                  <i class="fa fa-edit" aria-hidden="true"></i>
                 </span>
-                </a>
-              </div>
-            </div>
-            <span class="is-hidden-mobile">
-              {{flight.class}} - {{flight.seat}} - {{flight.carrier}} <br /> {{flight.aircraftType}}
-            </span>
-
+            </a>
           </div>
         </div>
+        <div class="card-content">
+          <p> {{flight.departureTime | date:'dd.MM.yyyy HH:mm'}} - {{flight.flightno}} <br /> {{flight.distance
+            | number : '1.0-0'}} km - {{flight.aircraftRegistration}}
+          </p>
+          <p class="is-hidden-mobile">
+            {{flight.class}} - {{flight.seat}} - {{flight.carrier}} <br /> {{flight.aircraftType}}
+          </p>
+
+        </div>
+      </div>
 
     </div>
   </div>
