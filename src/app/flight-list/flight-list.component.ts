@@ -30,7 +30,7 @@ export class FlightListComponent implements OnInit {
               const f = c.payload.val();
               f._id = c.key;
               return f;
-            })),
+            }).filter(flight => !!flight.departureTime)),
           shareReplay(1)
         );
       this.flights = flightList
