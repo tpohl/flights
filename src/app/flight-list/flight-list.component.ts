@@ -1,9 +1,9 @@
 import { Flight } from './../models/flight';
 import { Component, OnInit } from '@angular/core';
-import { AngularFireDatabase } from '@angular/fire/database';
+import { AngularFireDatabase } from '@angular/fire/compat/database';
 import { Observable, from } from 'rxjs';
-import { map, reduce, flatMap, take, shareReplay } from 'rxjs/operators';
-import { AngularFireAuth } from '@angular/fire/auth';
+import { map, reduce, flatMap, take, shareReplay, filter } from 'rxjs/operators';
+import { AngularFireAuth } from '@angular/fire/compat/auth';
 
 @Component({
   selector: 'app-flight-list',
@@ -35,7 +35,6 @@ export class FlightListComponent implements OnInit {
         );
       this.flights = flightList
         .pipe(
-
           map(flights => flights.sort((a: Flight, b: Flight) => {
             if ((a.departureTime && !b.departureTime) || a.departureTime < b.departureTime) {
               return 1;

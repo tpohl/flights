@@ -10,7 +10,8 @@ export const environment = {
     databaseURL: "https://flights-159420.firebaseio.com",
     projectId: "flights-159420",
     storageBucket: "flights-159420.appspot.com",
-    messagingSenderId: "732553597334"
+    messagingSenderId: "732553597334",
+    automaticDataCollectionEnabled: false,
   }
 };
 

@@ -1,9 +1,11 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
-import * as firebase from 'firebase/app';
-import { AngularFireAuth } from '@angular/fire/auth';
-import { auth } from 'firebase/app';
+import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { Observable } from 'rxjs';
+import firebase from 'firebase/compat/app';
+import 'firebase/compat/auth'
+import User = firebase.User;
+import GoogleAuthProvider = firebase.auth.GoogleAuthProvider;
 
 @Component({
   selector: 'app-root',
@@ -12,8 +14,8 @@ import { Observable } from 'rxjs';
 })
 export class AppComponent {
 
-  private user: Observable<firebase.User>;
-  private userDetails: firebase.User = null;
+  private user: Observable<User>;
+  private userDetails: User = null;
 
   constructor(public afAuth: AngularFireAuth, private router: Router) {
     this.user = afAuth.authState;
@@ -29,7 +31,7 @@ export class AppComponent {
     );
   }
   login() {
-    this.afAuth.signInWithPopup(new auth.GoogleAuthProvider());
+    this.afAuth.signInWithPopup(new GoogleAuthProvider());
   }
   logout() {
     this.afAuth.signOut().then((res) => this.router.navigate(['/']));

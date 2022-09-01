@@ -1,5 +1,6 @@
 import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import * as moment from 'moment';
+// @ts-ignore
 import { Moment } from '../../../functions/node_modules/moment';
 
 @Component({
@@ -16,10 +17,10 @@ export class DatepickerComponent implements OnInit {
 
   @Output() emitSelectedDate = new EventEmitter<moment.Moment>();
 
-  navDate: Moment;
+  navDate: moment.Moment;
   weekDaysHeaderArr: Array<string> = [];
   gridArr: Array<any> = [];
-  selectedDate: Moment;
+  selectedDate: moment.Moment;
 
   constructor() { }
 

@@ -13,20 +13,20 @@
   "dependencies": {
     "@akanass/rx-http-request": "^3.1.0",
     "@types/simple-oauth2": "^1.6.0",
-    "firebase-admin": "~6.0.0",
-    "firebase-functions": "^2.2.0",
+    "firebase-admin": "~11.0.0",
+    "firebase-functions": "^3.23.0",
     "jsonwebtoken": "^8.5.0",
     "moment": "^2.24.0",
     "rxjs": "^6.6.0",
     "simple-oauth2": "^1.6.0"
   },
   "devDependencies": {
-    "firebase-tools": "^4.0.0",
+    "firebase-tools": "^7.0.0",
     "tslint": "^5.13.1",
     "typescript": "^2.9.2"
   },
   "engines": {
-    "node": "10"
+    "node": "16"
   },
   "private": true
 }

@@ -6,14 +6,14 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Params, Router } from '@angular/router';
 
 import { Flight } from '../models/flight';
-import { AngularFireDatabase } from '@angular/fire/database';
-import { AngularFireAuth } from '@angular/fire/auth';
-import { User } from 'firebase/app';
+import { AngularFireDatabase } from '@angular/fire/compat/database';
+import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { Airport } from '../models/airport';
 import * as moment from 'moment-timezone';
 
-import { AmazingTimePickerService } from 'amazing-time-picker';
 import { tap } from 'rxjs/operators';
+import firebase from 'firebase/compat';
+import User = firebase.User;
 
 
 @Component({
@@ -35,7 +35,7 @@ export class FlightEditComponent implements OnInit {
   fromAirport$: BehaviorSubject<Airport> = new BehaviorSubject(null);
   toAirport$: BehaviorSubject<Airport> = new BehaviorSubject(null);
 
-  constructor(private route: ActivatedRoute, private atp: AmazingTimePickerService,
+  constructor(private route: ActivatedRoute,
     private router: Router, private db: AngularFireDatabase,
     private afAuth: AngularFireAuth,
     private airportService: AirportService, private location: Location) {
@@ -71,6 +71,7 @@ export class FlightEditComponent implements OnInit {
   }
 
   selectDepartureTime() {
+    /*
     const amazingTimePicker = this.atp.open({
       time: this.departureTime,
       changeToMinutes: true
@@ -84,9 +85,12 @@ export class FlightEditComponent implements OnInit {
         this.flight.departureTime = moment.tz(dateWithWithTime, ap.timezoneId).clone().tz('UTC').format(); // '2013-06-01T00:00:00',
       });
     });
+
+     */
   }
 
   selectArrivalTime() {
+    /*
     const amazingTimePicker = this.atp.open({
       time: this.arrivalTime,
       changeToMinutes: true
@@ -103,6 +107,7 @@ export class FlightEditComponent implements OnInit {
         }
       });
     });
+    */
   }
 
   loadFlight(flightId) {
