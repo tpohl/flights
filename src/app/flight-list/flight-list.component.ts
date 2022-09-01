@@ -1,8 +1,8 @@
 import { Flight } from './../models/flight';
 import { Component, OnInit } from '@angular/core';
 import { AngularFireDatabase } from '@angular/fire/compat/database';
-import { Observable, from } from 'rxjs';
-import { map, reduce, flatMap, take, shareReplay, filter } from 'rxjs/operators';
+import { Observable, from, Subject, combineLatest, BehaviorSubject } from 'rxjs';
+import { map, reduce, flatMap, take, shareReplay, filter, mergeMap, tap } from 'rxjs/operators';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
 
 @Component({
@@ -16,9 +16,16 @@ export class FlightListComponent implements OnInit {
 
   stats: Observable<Stats>;
 
+  selectedFlight$ = new BehaviorSubject<Flight>(null);
+
   userId: string;
 
-  constructor(private db: AngularFireDatabase, private afAuth: AngularFireAuth) { }
+  constructor(private db: AngularFireDatabase, private afAuth: AngularFireAuth) {
+  }
+
+  selectFlight(flight: Flight) {
+    this.selectedFlight$.next(flight);
+  }
 
   ngOnInit() {
     this.afAuth.user.subscribe(user => {
@@ -45,20 +52,31 @@ export class FlightListComponent implements OnInit {
             }
           }))
         );
-      this.stats = flightList.pipe(
-        flatMap(flightArray => from(flightArray)
+      this.stats = combineLatest([flightList, this.selectedFlight$]).pipe(
+        mergeMap(([flightArray, selectedFlight]) => from(flightArray)
           .pipe(
             reduce<Flight, Stats>(
               (stats, flight) => {
 
                 stats.count += 1;
                 stats.distance += flight.distance;
+                if (!!selectedFlight) {
+                  if (!!selectedFlight.aircraftRegistration && (selectedFlight.aircraftRegistration == flight.aircraftRegistration)) {
+                    stats.flightsWithAircraft += 1;
+                  }
+                }
                 return stats;
               },
               new Stats()),
             map(stats => {
               stats.distance = Math.round(stats.distance);
               return stats;
+            }, new Stats()),
+            tap((stats) => {
+              stats.hasAircraft = !!selectedFlight;
+              if (stats.hasAircraft) {
+                stats.aircraft = selectedFlight.aircraftRegistration;
+              }
             })
           )
         )
@@ -66,7 +84,11 @@ export class FlightListComponent implements OnInit {
     });
   }
 }
+
 class Stats {
   count = 0;
   distance = 0;
+  hasAircraft = false;
+  aircraft = 'select';
+  flightsWithAircraft = 0;
 }
