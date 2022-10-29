@@ -21,7 +21,7 @@
     "simple-oauth2": "^1.6.0"
   },
   "devDependencies": {
-    "firebase-tools": "^7.0.0",
+    "firebase-tools": "^7.16.2",
     "tslint": "^5.13.1",
     "typescript": "^2.9.2"
   },
