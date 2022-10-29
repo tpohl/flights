@@ -41,6 +41,9 @@ export class FlightEditComponent implements OnInit {
     private airportService: AirportService, private location: Location) {
   }
 
+  flightsForMap(){
+    return of([this.flight]);
+  }
 
   ngOnInit() {
     this.route.params.subscribe(params => {
