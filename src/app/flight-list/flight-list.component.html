@@ -3,7 +3,7 @@
     <a [routerLink]="['/flight', 'new']" class="button is-hidden-tablet is-pulled-right">Add</a>
   </h2>
   <ng-container *ngIf="(stats$|async) as stats">
-    <div *ngIf="stats.hasAircraft" class="card" style="width: 30%; min-width: 300px; top: 20px; right: 20px; position: fixed; z-index: 9999;">
+    <div *ngIf="stats.hasAircraft" class="card" style="width: 50%; min-width: 400px; top: 20px; right: 20px; position: fixed; z-index: 9999;">
       <div class="card-header">
         <div class="card-header-title">Stats</div>
         <div class="card-header-icon" (click)="selectFlight(null)">
@@ -13,9 +13,29 @@
 
       <div class="card-content">
         <p>
-          With Aircraft {{stats.aircraft }} you did {{stats.flightsWithAircraft }} flights (with this type {{stats.flightsWithType }}).
+          With Aircraft {{stats.aircraft }} you did {{stats.flightsWithAircraft.length }} flights (with this type {{stats.flightsWithType }}).
         </p>
         <p>You flew this route {{stats.flightsOnRoute}} times.</p>
+
+        <div *ngIf="stats.flightsWithAircraft.length > 1">
+          <p>Flights with this aircraft:</p>
+          <div class="box">
+            <div class="media" *ngFor="let pastFlight of stats.flightsWithAircraft">
+              <div class="media-content">
+                <div class="content">
+                  <p>
+                    <strong>{{pastFlight.from}} - {{pastFlight.to}}</strong>&nbsp;
+                    <small>{{pastFlight.departureTime | amTimeAgo}}</small>
+                    &nbsp;
+                    <small>
+                    Seat: {{pastFlight.seat}}
+                    </small>
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </ng-container>

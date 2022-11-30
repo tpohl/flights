@@ -62,7 +62,7 @@ export class FlightListComponent implements OnInit {
                 stats.distance += flight.distance;
                 if (!!selectedFlight) {
                   if (!!selectedFlight.aircraftRegistration && (selectedFlight.aircraftRegistration == flight.aircraftRegistration)) {
-                    stats.flightsWithAircraft += 1;
+                    stats.flightsWithAircraft.push(flight);
                   }
                   if (!!selectedFlight.aircraftType && (selectedFlight.aircraftType == flight.aircraftType)) {
                     stats.flightsWithType += 1;
@@ -101,7 +101,7 @@ class Stats {
   distance = 0;
   hasAircraft = false;
   aircraft = 'select';
-  flightsWithAircraft = 0;
+  flightsWithAircraft: Flight[] = [];
   flightsWithType = 0;
   flightsOnRoute = 0;
 }
