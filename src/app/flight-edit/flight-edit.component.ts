@@ -74,33 +74,18 @@ export class FlightEditComponent implements OnInit {
   }
 
   selectDepartureTime() {
-    /*
-    const amazingTimePicker = this.atp.open({
-      time: this.departureTime,
-      changeToMinutes: true
-    });
-    amazingTimePicker.afterClose().subscribe(time => {
-      this.departureTime = time;
-      console.log('TIME', time);
+
+      const time = this.departureTime;
 
       const dateWithWithTime = moment(this.flight.date).format('YYYY-MM-DD') + 'T' + time;
       this.fromAirport$.subscribe(ap => {
         this.flight.departureTime = moment.tz(dateWithWithTime, ap.timezoneId).clone().tz('UTC').format(); // '2013-06-01T00:00:00',
       });
-    });
-
-     */
   }
 
   selectArrivalTime() {
-    /*
-    const amazingTimePicker = this.atp.open({
-      time: this.arrivalTime,
-      changeToMinutes: true
-    });
-    amazingTimePicker.afterClose().subscribe(time => {
-      this.arrivalTime = time;
-      console.log('TIME', time);
+
+      const time = this.departureTime;
 
       const dateWithWithTime = moment(this.flight.date).format('YYYY-MM-DD') + 'T' + time;
       this.toAirport$.subscribe(ap => {
@@ -109,8 +94,7 @@ export class FlightEditComponent implements OnInit {
           this.flight.arrivalTime = moment(this.flight.arrivalTime).add(1, 'days').clone().tz('UTC').format();
         }
       });
-    });
-    */
+
   }
 
   loadFlight(flightId) {
