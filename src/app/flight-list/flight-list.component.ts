@@ -57,7 +57,7 @@ export class FlightListComponent implements OnInit {
           .pipe(
             reduce<Flight, Stats>(
               (stats, flight) => {
-
+                stats.flight = selectedFlight;
                 stats.count += 1;
                 stats.distance += flight.distance;
                 if (!!selectedFlight) {
@@ -67,11 +67,10 @@ export class FlightListComponent implements OnInit {
                   if (!!selectedFlight.aircraftType && (selectedFlight.aircraftType == flight.aircraftType)) {
                     stats.flightsWithType += 1;
                   }
-                  if (!!selectedFlight.from && !!selectedFlight.to){
-                    if (selectedFlight.from == flight.from && selectedFlight.to == flight.to){
+                  if (!!selectedFlight.from && !!selectedFlight.to) {
+                    if (selectedFlight.from == flight.from && selectedFlight.to == flight.to) {
                       stats.flightsOnRoute += 1;
-                    }
-                    else if (selectedFlight.to == flight.from && selectedFlight.from == flight.to){
+                    } else if (selectedFlight.to == flight.from && selectedFlight.from == flight.to) {
                       stats.flightsOnRoute += 1;
                     }
                   }
@@ -97,6 +96,7 @@ export class FlightListComponent implements OnInit {
 }
 
 class Stats {
+  flight: Flight;
   count = 0;
   distance = 0;
   hasAircraft = false;

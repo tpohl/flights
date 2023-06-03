@@ -17,6 +17,7 @@ export class Flight {
 
   distance: number;
   aircraftType: string;
+  aircraftTypeCode: string;
 
   aircraftRegistration: string;
   seat: string;

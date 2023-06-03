@@ -5,8 +5,10 @@
   <ng-container *ngIf="(stats$|async) as stats">
     <div *ngIf="stats.hasAircraft" class="card" style="width: 50%; min-width: 400px; top: 20px; right: 20px; position: fixed; z-index: 9999;">
       <div class="card-header">
-        <div class="card-header-title">Stats</div>
-        <div class="card-header-icon" (click)="selectFlight(null)">
+        <div class="card-header-title"><strong>Stats</strong>&nbsp;<small>{{stats.flight.from}} - {{stats.flight.to}}</small>
+          &nbsp;
+          <small>{{stats.flight.departureTime | amTimeAgo}}</small></div>
+        <div class="card-header-icon" (click)="selectFlight(stats.flight)">
           <i class="fa fa-close"></i>
         </div>
       </div>

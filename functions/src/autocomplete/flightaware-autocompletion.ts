@@ -4,8 +4,8 @@
 import { Flight } from '../models/flight';
 import { RxHR } from "@akanass/rx-http-request";
 import * as moment from 'moment';
-import { filter, map, tap, flatMap, defaultIfEmpty, first, take, catchError } from "rxjs/operators";
-import { from, zip, Observable, of, concat } from "rxjs";
+import { filter, map, tap, flatMap, defaultIfEmpty, take, catchError } from "rxjs/operators";
+import { from, zip, Observable, of, concat, EMPTY } from 'rxjs';
 
 const admin = require('firebase-admin');
 const functions = require('firebase-functions');
@@ -96,6 +96,10 @@ const FlightAwareAutoCompleter = {
 
 
   autocomplete: function (flightNo, _flightDate) {
+    // Flightaware does not work at the moment
+    return of({});
+
+
     const flightDate = _flightDate ? cleanDate(_flightDate) : moment().format('DD.MM.YYYY');
 
     const flightAwareFlightConverter = function (flight: FlightAwareFlight) {

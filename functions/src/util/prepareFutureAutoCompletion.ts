@@ -15,7 +15,6 @@ const prepareFutureAutoCompletion = function(flightRef: admin.database.Reference
   console.log('PREPPING');
   const arrival = new Date(flight.arrivalTime);
   if (arrival.getTime() > Date.now()) {
-    console.log('Getting Key parts', flightRef.path);
     const flightId = flightRef.key;
     const userId = flightRef.parent.parent.key;
     return doPrepareFutureAutoCompletion(userId, flightId, arrival)

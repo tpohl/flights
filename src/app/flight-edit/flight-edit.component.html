@@ -178,9 +178,12 @@
           <label class="label">Aircraft Type</label>
         </div>
         <div class="field-body">
-          <div class="field">
+          <div class="field has-addons">
             <div class="control is-expanded">
-              <input class="input" type="text" [(ngModel)]="flight.aircraftType" placeholder="Aircraft Type">
+              <input class="input" type="text" [(ngModel)]="flight.aircraftTypeCode" placeholder="Aircraft Type">
+            </div>
+            <div class="control">
+              <p class="button is-static">{{flight.aircraftType}}</p>
             </div>
           </div>
         </div>
