@@ -1,0 +1,53 @@
+{
+  "openapi": "3.0.2",
+  "info": {
+    "title": "Flight Media Server",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8080/media",
+      "description": "Local host, for development"
+    },
+    {
+      "url": "https://flights-media.pohl.rock/media",
+      "description": "Production"
+    }
+  ],
+  "paths": {
+    "/airport/image/{airportcode}": {
+      "get": {
+        "parameters": [
+          {
+            "name": "airportcode",
+            "description": "identifier of individual to retrieve",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "HAM"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "image/jpeg": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            },
+            "description": "success"
+          }
+        },
+        "operationId": "getAirportImage"
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+    }
+  }
+}
