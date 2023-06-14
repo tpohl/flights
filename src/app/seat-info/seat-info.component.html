@@ -1,0 +1,6 @@
+<span *ngIf="!!flight">{{flight.seat}}
+  <span class="tag is-light is-small"
+        [ngClass]="{'is-success': 'Y' === flight.class, 'is-primary': 'M' === flight.class, 'is-info': 'C' === flight.class, 'is-danger': 'F' === flight.class }"
+  >{{translateClass(flight.class)}}
+  </span>
+</span>

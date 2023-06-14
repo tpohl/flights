@@ -1,0 +1,47 @@
+<ng-container *ngIf="(stats$ | async) as stats">
+  <div class="section pl-0 pr-0">
+    <p class="title is-6">Statistics</p>
+    <p class="heading is-6">
+      Number of flights
+    </p>
+    <nav class="level is-mobile" *ngIf="(stats$|async) as stats">
+      <div class="level-item has-text-centered">
+        <div>
+          <p class="heading">same route</p>
+          <p class="title is-5">{{stats.flightsOnRoute}}</p>
+        </div>
+      </div>
+      <div class="level-item has-text-centered">
+        <div>
+          <p class="heading">same A/C</p>
+          <p class="title is-5">{{stats.flightsWithAircraft.length }}</p>
+        </div>
+      </div>
+      <div class="level-item has-text-centered">
+        <div>
+          <p class="heading">same Type</p>
+          <p class="title is-5">{{stats.flightsWithType }}</p>
+        </div>
+      </div>
+    </nav>
+  </div>
+  <div class="section pl-0 pr-0" *ngIf="stats.flightsWithAircraft.length > 1">
+    <a class="is-pulled-right" (click)="flightsHidden = !flightsHidden">
+       <span class="icon">
+            <i class="fa" [ngClass]="{'fa-angle-down': flightsHidden, 'fa-angle-up': !flightsHidden}" aria-hidden="true"></i>
+          </span>
+    </a>
+    <p class="title is-6 pb-1 mb-2">Flights with this aircraft</p>
+
+    <div class="" [ngClass]="{'is-hidden': flightsHidden}">
+      <div class="columns is-multiline">
+        <div class="column is-half-tablet is-one-third-desktop is-one-quarter-fullhd" *ngFor="let flight of stats.flightsWithAircraft">
+          <div class="box">
+            <app-flight-tile [flight]="flight" [compact]="true"></app-flight-tile>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</ng-container>

@@ -3,10 +3,19 @@
 @import '../node_modules/bulma/sass/utilities/initial-variables';
 @import '../node_modules/bulma/sass/utilities/functions';
 
+$section-padding: 1rem 0.5rem !default;
 
 // 6. Import the rest of Bulma
 @import "../node_modules/bulma/bulma";
-
+html {
+  font-size: 10px;
+}
+.tag.is-small {
+    font-size: 0.5rem;
+}
+div.cesium-viewer {
+  border-radius: 0.5rem;
+}
 @include mobile {
   app-cesium {
     width: 100%; min-height: 400px; height: 50vh; max-height: 800px; margin: 0; padding: 0; overflow: hidden;

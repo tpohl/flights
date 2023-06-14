@@ -11,7 +11,6 @@ import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { Airport } from '../models/airport';
 import * as moment from 'moment-timezone';
 
-import { tap } from 'rxjs/operators';
 import firebase from 'firebase/compat';
 import User = firebase.User;
 

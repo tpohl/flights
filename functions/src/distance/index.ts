@@ -3,7 +3,7 @@ import { Flight } from './../models/flight';
  * Functions for flight disctance computation.
  */
 
-import { flatMap, tap, map, filter } from 'rxjs/operators';
+import { tap, map, filter, mergeMap } from 'rxjs/operators';
 import { Airport } from './../models/airport';
 import { from, Observable, zip } from "rxjs";
 import * as functions from 'firebase-functions';
@@ -43,30 +43,27 @@ const computeDistance = function (snapshot: functions.database.DataSnapshot, con
         if (flight.from && flight.to) return true;
         else return false;
       }),
-      flatMap(addDistance),
+      mergeMap(addDistance),
       tap(flight => console.log('Computed Distance of Flight', flight)),
-      flatMap(newFlight => from(snapshot.ref.parent.child('distance').set(newFlight.distance)))
+      mergeMap(newFlight => from(snapshot.ref.parent.child('distance').set(newFlight.distance)))
     ).toPromise();
 };
 
 export default {
 
-  updatedDepartureTime: functions.database.ref('/users/{userId}/flights/{flightId}/from')
+  updatedDepartureAirport: functions.database.ref('/users/{userId}/flights/{flightId}/from')
     .onUpdate((change, context) => {
       return computeDistance(change.after, context);
     }),
 
-
-  updatedDepartureTimeOnCreate: functions.database.ref('/users/{userId}/flights/{flightId}/from')
+  updatedDepartureAirportOnCreate: functions.database.ref('/users/{userId}/flights/{flightId}/from')
     .onCreate(computeDistance),
 
-
-  updatedArrivalTime: functions.database.ref('/users/{userId}/flights/{flightId}/to')
+  updatedArrivalAirport: functions.database.ref('/users/{userId}/flights/{flightId}/to')
     .onUpdate((change, context) => {
       return computeDistance(change.after, context);
     }),
 
-
-  updatedArrivalTimeCreate: functions.database.ref('/users/{userId}/flights/{flightId}/to')
+  updatedArrivalAirportCreate: functions.database.ref('/users/{userId}/flights/{flightId}/to')
     .onCreate(computeDistance)
 };

@@ -19,6 +19,10 @@ import { getAuth, provideAuth } from '@angular/fire/auth';
 import { getDatabase, provideDatabase } from '@angular/fire/database';
 import { FIREBASE_OPTIONS } from '@angular/fire/compat';
 import { ServiceWorkerModule } from '@angular/service-worker';
+import { FlightStatsComponent } from './flight-stats/flight-stats.component';
+import { FlightsService } from './services/flights.service';
+import { FlightTileComponent } from './flight-tile/flight-tile.component';
+import { SeatInfoComponent } from './seat-info/seat-info.component';
 
 
 const appRoutes: Routes = [
@@ -61,10 +65,13 @@ const appRoutes: Routes = [
     AppComponent,
     FlightListComponent,
     FlightEditComponent,
+    FlightStatsComponent,
     DatepickerComponent,
     ExactDurationPipe,
     PohlRocksImporterComponent,
-    FlightsExportComponent
+    FlightsExportComponent,
+    FlightTileComponent,
+    SeatInfoComponent
   ],
   imports: [
     RouterModule.forRoot(
@@ -86,7 +93,7 @@ const appRoutes: Routes = [
       registrationStrategy: 'registerWhenStable:30000'
     })
   ],
-  providers: [AirportService, { provide: FIREBASE_OPTIONS, useValue: environment.firebase }],
+  providers: [AirportService, FlightsService, { provide: FIREBASE_OPTIONS, useValue: environment.firebase }],
   bootstrap: [AppComponent]
 })
 export class AppModule {

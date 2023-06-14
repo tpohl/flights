@@ -2,46 +2,6 @@
   <h2 class="title">Your flights
     <a [routerLink]="['/flight', 'new']" class="button is-hidden-tablet is-pulled-right">Add</a>
   </h2>
-  <ng-container *ngIf="(stats$|async) as stats">
-    <div *ngIf="stats.hasAircraft" class="card" style="width: 50%; min-width: 400px; top: 20px; right: 20px; position: fixed; z-index: 9999;">
-      <div class="card-header">
-        <div class="card-header-title"><strong>Stats</strong>&nbsp;<small>{{stats.flight.from}} - {{stats.flight.to}}</small>
-          &nbsp;
-          <small>{{stats.flight.departureTime | amTimeAgo}}</small>
-        </div>
-        <div class="card-header-icon" (click)="selectFlight(null)">
-          <i class="fa fa-close"></i>
-        </div>
-      </div>
-
-      <div class="card-content">
-        <p>
-          With Aircraft {{stats.aircraft }} you did {{stats.flightsWithAircraft.length }} flights (with this type {{stats.flightsWithType }}).
-        </p>
-        <p>You flew this route {{stats.flightsOnRoute}} times.</p>
-
-        <div *ngIf="stats.flightsWithAircraft.length > 1">
-          <p>Flights with this aircraft:</p>
-          <div class="box">
-            <div class="media" *ngFor="let pastFlight of stats.flightsWithAircraft">
-              <div class="media-content">
-                <div class="content">
-                  <p>
-                    <strong>{{pastFlight.from}} - {{pastFlight.to}}</strong>&nbsp;
-                    <small>{{pastFlight.departureTime | amTimeAgo}}</small>
-                    &nbsp;
-                    <small>
-                      Seat: {{pastFlight.seat}}
-                    </small>
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </ng-container>
   <div class="columns">
     <div class="column is-two-thirds">
       <app-cesium *ngIf="flights" [flights]="flights"></app-cesium>
@@ -77,52 +37,13 @@
 
   <div class="columns is-multiline">
     <div class="column is-half-tablet is-one-third-desktop is-one-quarter-fullhd" *ngFor="let flight of flights | async" id="flight-{{flight._id}}">
-
-      <div class="card" (mouseenter)="selectFlight(flight)">
-        <div class="card-content">
-          <div class="media mb-0" [routerLink]="['/flight', flight._id]">
-            <div class="media-left">
-              <figure class="image is-64x64" style="background-size: cover;
-    background-position: center; background-image: url('https://flights-media.pohl.rocks/media/airport/image/{{flight.to}}'), url('https://flights-media.pohl.rocks/media/airport/image/LHR'">
-              </figure>
-            </div>
-            <div class="media-content">
-              <div class="title is-5 pb-2">{{flight.flightno}}
-                <div *ngIf="!!flight?.aircraftRegistration" class="tag is-primary is-pulled-right has-text-centered ml-2">
-                  <div>{{flight.aircraftRegistration}}</div>
-                </div>
-                <div *ngIf="!!flight?.aircraftTypeCode" class="tag is-info is-pulled-right has-text-centered">
-                  <div>{{flight.aircraftTypeCode}}</div>
-                </div>
-              </div>
-              <div class="subtitle is-6 level is-mobile">
-                <div class="level-item level-left has-text-centered">
-                  <div>{{flight.from}}<br />
-                    <span class="heading">{{flight.departureTime | date:'HH:mm'}}</span>
-                  </div>
-                </div>
-                <div class="level-item has-text-centered">
-                  <div>
-                    <i class="fa fa-plane"></i>
-                    <span class="heading">{{flight.distance | number : '1.0-0'}} km</span>
-                  </div>
-                </div>
-                <div class="level-item level-right has-text-centered">
-                  <div>{{flight.to}}<br />
-                    <span class="heading">{{flight.arrivalTime | date:'HH:mm'}}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div (click)="selectFlight(flight)">
-            <p class="heading">{{flight.departureTime | date:'dd.MM.yyyy'}} - {{flight.class}}<span *ngIf="!!flight?.seat"> - Seat: {{flight.seat}}</span>
-              <br /> {{flight.carrier}} - {{flight.aircraftType}}
-            </p>
+      <a [routerLink]="['/flight', flight._id]">
+        <div class="card">
+          <div class="card-content">
+            <app-flight-tile [flight]="flight"></app-flight-tile>
           </div>
         </div>
-      </div>
-
+      </a>
     </div>
   </div>
 </div>

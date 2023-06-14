@@ -3,7 +3,7 @@
 import { Flight } from '../models/flight';
 import { RxHR } from '@akanass/rx-http-request';
 import * as moment from 'moment';
-import { defaultIfEmpty, filter, flatMap, map, mergeMap, tap } from 'rxjs/operators';
+import { defaultIfEmpty, filter, map, mergeMap, tap } from 'rxjs/operators';
 import { from, Observable } from 'rxjs';
 import { ClientCredentials, AccessToken, ModuleOptions } from 'simple-oauth2';
 
@@ -96,7 +96,7 @@ const loadAircraftType = function (acTypeCode, aircraftType) {
 
   return getLhApiToken()
     .pipe(map(apiTokenObj => apiTokenObj.token.access_token))
-    .pipe(flatMap(apiToken =>
+    .pipe(mergeMap(apiToken =>
 
       RxHR.get('https://api.lufthansa.com/v1/mds-references/aircraft/' + acTypeCode,
         {
@@ -155,7 +155,7 @@ const autocomplete = function (flightNo, dateStr: string): Observable<Flight> {
   const flight$: Observable<Flight> = getLhApiToken()
     .pipe(
       map(apiTokenObj => apiTokenObj.token.access_token),
-      flatMap(apiToken =>
+      mergeMap(apiToken =>
         RxHR.get('https://api.lufthansa.com/v1/operations/flightstatus/' + flightNo + '/' + date,
           {
             headers: {
@@ -191,7 +191,6 @@ const autocomplete = function (flightNo, dateStr: string): Observable<Flight> {
 };
 
 const FlightAutoCompleter = {
-
   loadAircraftType : loadAircraftType,
   autocomplete: autocomplete
 };
