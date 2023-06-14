@@ -27,7 +27,12 @@
               },
               "src/assets",
               "src/ATriggerVerify.txt",
-              "src/manifest.webmanifest"
+              "src/site.webmanifest",
+              {
+                "glob": "*.png",
+                "input": "src",
+                "output": "."
+              }
             ],
             "styles": [
               "node_modules/cesium/Build/Cesium/Widgets/widgets.css",
