@@ -84,7 +84,7 @@ export class FlightEditComponent implements OnInit {
 
   selectArrivalTime() {
 
-      const time = this.departureTime;
+      const time = this.arrivalTime;
 
       const dateWithWithTime = moment(this.flight.date).format('YYYY-MM-DD') + 'T' + time;
       this.toAirport$.subscribe(ap => {
