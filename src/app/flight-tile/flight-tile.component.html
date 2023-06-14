@@ -5,15 +5,15 @@
     </figure>
   </div>
   <div class="media-content">
-    <div class="title is-6 pb-1">{{flight.flightno}}
-      <div *ngIf="!compact && !!flight?.aircraftRegistration" class="tag is-primary is-pulled-right has-text-centered ml-2">
+    <div class="title is-4 pb-3">{{flight.flightno}}
+      <div *ngIf="!compact && !!flight?.aircraftRegistration" class="tag is-primary is-medium is-pulled-right has-text-centered ml-2">
         <div>{{flight.aircraftRegistration}}</div>
       </div>
-      <div *ngIf="!compact && !!flight?.aircraftTypeCode" class="tag is-info is-pulled-right has-text-centered">
+      <div *ngIf="!compact && !!flight?.aircraftTypeCode" class="tag is-info is-medium is-pulled-right has-text-centered">
         <div>{{flight.aircraftTypeCode}}</div>
       </div>
     </div>
-    <div class="subtitle is-6 level is-mobile">
+    <div class="subtitle is-5 level is-mobile mb-0">
       <div class="level-item level-left has-text-centered">
         <div>{{flight.from}}<br />
           <span class="heading">{{flight.departureTime | date:'HH:mm'}}</span>
@@ -34,10 +34,11 @@
         </div>
       </div>
     </div>
+    <div *ngIf="!compact">
+      <p class="heading">{{flight.departureTime | date:'dd.MM.yyyy'}} -
+        <app-seat-info [flight]="flight"></app-seat-info>
+        - {{flight.carrier}} - {{flight.aircraftType}}
+      </p>
+    </div>
   </div>
-</div>
-<div *ngIf="!compact">
-  <p class="heading">{{flight.departureTime | date:'dd.MM.yyyy'}} -
-    <app-seat-info [flight]="flight"></app-seat-info> - {{flight.carrier}} - {{flight.aircraftType}}
-  </p>
 </div>

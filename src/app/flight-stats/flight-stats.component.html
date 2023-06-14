@@ -1,26 +1,26 @@
 <ng-container *ngIf="(stats$ | async) as stats">
   <div class="section pl-0 pr-0">
-    <p class="title is-6">Statistics</p>
-    <p class="heading is-6">
+    <p class="title is-5">Statistics</p>
+    <p class="heading is-5">
       Number of flights
     </p>
     <nav class="level is-mobile" *ngIf="(stats$|async) as stats">
       <div class="level-item has-text-centered">
         <div>
           <p class="heading">same route</p>
-          <p class="title is-5">{{stats.flightsOnRoute}}</p>
+          <p class="title is-4">{{stats.flightsOnRoute}}</p>
         </div>
       </div>
       <div class="level-item has-text-centered">
         <div>
           <p class="heading">same A/C</p>
-          <p class="title is-5">{{stats.flightsWithAircraft.length }}</p>
+          <p class="title is-4">{{stats.flightsWithAircraft.length }}</p>
         </div>
       </div>
       <div class="level-item has-text-centered">
         <div>
           <p class="heading">same Type</p>
-          <p class="title is-5">{{stats.flightsWithType }}</p>
+          <p class="title is-4">{{stats.flightsWithType }}</p>
         </div>
       </div>
     </nav>
@@ -31,7 +31,7 @@
             <i class="fa" [ngClass]="{'fa-angle-down': flightsHidden, 'fa-angle-up': !flightsHidden}" aria-hidden="true"></i>
           </span>
     </a>
-    <p class="title is-6 pb-1 mb-2">Flights with this aircraft</p>
+    <p class="title is-5 pb-1 mb-2" (click)="flightsHidden = !flightsHidden">Flights with this aircraft</p>
 
     <div class="" [ngClass]="{'is-hidden': flightsHidden}">
       <div class="columns is-multiline">
