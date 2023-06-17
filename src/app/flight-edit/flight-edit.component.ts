@@ -1,17 +1,23 @@
 import { Location, LocationStrategy, PathLocationStrategy } from '@angular/common';
-import { AirportService } from './../services/airport.service';
-import { Observable, of, BehaviorSubject } from 'rxjs';
+import { AirportService } from '../services/airport.service';
+import { BehaviorSubject, Observable, of, Subscription } from 'rxjs';
 
-import { Component, Input, OnInit } from '@angular/core';
-import { ActivatedRoute, Params, Router } from '@angular/router';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 
 import { Flight } from '../models/flight';
 import { AngularFireDatabase } from '@angular/fire/compat/database';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { Airport } from '../models/airport';
-import * as moment from 'moment-timezone';
+import DayJS from 'dayjs';
+import DayJSUtc from 'dayjs/plugin/utc';
+import DayJSTimezone from 'dayjs/plugin/timezone';
+
+DayJS.extend(DayJSUtc);
+DayJS.extend(DayJSTimezone);
 
 import firebase from 'firebase/compat';
+import { FlightsService, SaveResultType } from '../services/flights.service';
 import User = firebase.User;
 
 
@@ -21,14 +27,23 @@ import User = firebase.User;
   templateUrl: './flight-edit.component.html',
   styleUrls: ['./flight-edit.component.css']
 })
-export class FlightEditComponent implements OnInit {
+export class FlightEditComponent implements OnInit, OnDestroy {
+
+  constructor(private route: ActivatedRoute,
+              private router: Router, private db: AngularFireDatabase,
+              private afAuth: AngularFireAuth,
+              private airportService: AirportService,
+              private flightsService: FlightsService,
+              private location: Location) {
+  }
+
+
 
   @Input()
   flightId: String;
 
   flight: Flight;
   user: User;
-  // departureLocalTime: Moment;
 
   departureTime = '00:00';
   arrivalTime = '00:00';
@@ -37,12 +52,7 @@ export class FlightEditComponent implements OnInit {
 
   fromAirport$: BehaviorSubject<Airport> = new BehaviorSubject(null);
   toAirport$: BehaviorSubject<Airport> = new BehaviorSubject(null);
-
-  constructor(private route: ActivatedRoute,
-              private router: Router, private db: AngularFireDatabase,
-              private afAuth: AngularFireAuth,
-              private airportService: AirportService, private location: Location) {
-  }
+  private subs = new Subscription();
 
   flightsForMap() {
     return of([this.flight]);
@@ -50,39 +60,40 @@ export class FlightEditComponent implements OnInit {
 
   ngOnInit() {
 
-    this.afAuth.user.subscribe(user => {
+    this.subs.add(this.afAuth.user.subscribe(user => {
       this.user = user;
 
       if (this.flightId === 'new') {
         this.objectRef = null;
         this.flight = new Flight();
-        this.flight.date = moment().format('YYYY-MM-DD');
+        this.flight._id = null;
+        this.flight.date = DayJS().format('YYYY-MM-DD');
       } else {
         this.loadFlight(this.flightId);
       }
-    });
+    }));
 
 
-    this.fromAirport$.subscribe(fromAirport => {
-      if (fromAirport && this.flight) {
-        this.departureTime = moment(this.flight.departureTime).tz(fromAirport.timezoneId).format('HH:mm');
+    this.subs.add(this.fromAirport$.subscribe(fromAirport => {
+      if (fromAirport && this.flight && this.flight.departureTime && fromAirport.timezoneId) {
+        this.departureTime = DayJS(this.flight.departureTime).tz(fromAirport.timezoneId).format('HH:mm');
       }
-    });
+    }));
 
-    this.toAirport$.subscribe(toAirport => {
-      if (toAirport && this.flight) {
-        this.arrivalTime = moment(this.flight.arrivalTime).tz(toAirport.timezoneId).format('HH:mm');
+    this.subs.add(this.toAirport$.subscribe(toAirport => {
+      if (toAirport && this.flight && this.flight.arrivalTime && toAirport.timezoneId) {
+        this.arrivalTime = DayJS(this.flight.arrivalTime).tz(toAirport.timezoneId).format('HH:mm');
       }
-    });
+    }));
   }
 
   selectDepartureTime() {
 
     const time = this.departureTime;
 
-    const dateWithWithTime = moment(this.flight.date).format('YYYY-MM-DD') + 'T' + time;
+    const dateWithWithTime = DayJS(this.flight.date).format('YYYY-MM-DD') + 'T' + time;
     this.fromAirport$.subscribe(ap => {
-      this.flight.departureTime = moment.tz(dateWithWithTime, ap.timezoneId).clone().tz('UTC').format(); // '2013-06-01T00:00:00',
+      this.flight.departureTime = DayJS.tz(dateWithWithTime, ap.timezoneId).clone().tz('UTC').format(); // '2013-06-01T00:00:00',
     });
   }
 
@@ -90,34 +101,27 @@ export class FlightEditComponent implements OnInit {
 
     const time = this.arrivalTime;
 
-    const dateWithWithTime = moment(this.flight.date).format('YYYY-MM-DD') + 'T' + time;
+    const dateWithWithTime = DayJS(this.flight.date).format('YYYY-MM-DD') + 'T' + time;
     this.toAirport$.subscribe(ap => {
-      this.flight.arrivalTime = moment.tz(dateWithWithTime, ap.timezoneId).tz('UTC').format(); // '2013-06-01T00:00:00',
+      this.flight.arrivalTime = DayJS.tz(dateWithWithTime, ap.timezoneId).tz('UTC').format(); // '2013-06-01T00:00:00',
       if (this.flight.arrivalTime < this.flight.departureTime) { // When the arrival is BEFORE the Departure, then we add a day.
-        this.flight.arrivalTime = moment(this.flight.arrivalTime).add(1, 'days').clone().tz('UTC').format();
+        this.flight.arrivalTime = DayJS(this.flight.arrivalTime).add(1, 'days').clone().tz('UTC').format();
       }
     });
 
   }
 
   loadFlight(flightId) {
-    this.objectRef = 'users/' + this.user.uid + '/flights/' + flightId;
-    const flightObject = this.db.object<Flight>(this.objectRef);
-    flightObject.valueChanges().subscribe(
+    this.flightsService.loadFlight(flightId).subscribe(
       (flight) => {
-        console.log('Loaded Flight');
         this.flight = flight;
         this.loadFromAirport(this.flight.from);
-        /*
-        .pipe(tap(fromAirport=> {
-        });
-        */
         this.loadToAirport(this.flight.to);
       }
     );
   }
 
-  selectedDate(momentDate: moment.Moment) {
+  selectedDate(momentDate: DayJS.Dayjs) {
     this.flight.date = momentDate.format('YYYY-MM-DD');
   }
 
@@ -147,35 +151,32 @@ export class FlightEditComponent implements OnInit {
   }
 
   save(): void {
-    console.log('Saving Flight', this.flight);
-    this.afAuth.user.subscribe(user => {
-      if (this.objectRef) {
-        const flightObject = this.db.object<Flight>(this.objectRef);
-        flightObject.update(this.flight);
-      } else {
-        const flightList = this.db.list<Flight>('users/' + user.uid + '/flights');
-        flightList.push(this.flight).then(reference => {
-            const flightId = reference.key;
-            this.loadFlight(flightId);
-            this.location.replaceState('flight/' + flightId);
-          }, error => {
-            console.log(error);
-          }
-        );
-      }
-
-    });
+    const sub = this.flightsService.saveFlight(this.flight)
+      .subscribe(result => {
+        if (result.type === SaveResultType.CREATED) {
+          const flightId = result.flightId;
+          this.loadFlight(flightId);
+          this.location.replaceState('flight/' + flightId);
+        }
+        sub.unsubscribe();
+      });
   }
 
   delete(): void {
-    console.log('Deleting Flight', this.flight);
     if (this.objectRef) {
-      const flightObject = this.db.object<Flight>(this.objectRef);
-      flightObject.remove().then(value => {
-        this.router.navigateByUrl('/flights');
-      });
+      this.flight._deleted = true;
+
+      const sub = this.flightsService.saveFlight(this.flight)
+        .subscribe(_ => {
+          this.router.navigateByUrl('/flights');
+          sub.unsubscribe();
+        });
     } else {
       this.router.navigateByUrl('/flights');
     }
   }
+  ngOnDestroy() {
+    this.subs.unsubscribe();
+  }
 }
+

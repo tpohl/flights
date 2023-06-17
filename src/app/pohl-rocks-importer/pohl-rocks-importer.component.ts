@@ -2,9 +2,9 @@ import { Component, OnInit } from '@angular/core';
 import { Flight } from 'functions/src/models/flight';
 import { AngularFireDatabase } from '@angular/fire/compat/database';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
-import * as moment from 'moment-timezone';
-import { flatMap, take, map } from 'rxjs/operators';
-import { Observable } from 'rxjs';
+import dayjs from 'dayjs/esm';
+import { take, map, mergeMap } from 'rxjs/operators';
+
 
 @Component({
   selector: 'app-pohl-rocks-importer',
@@ -35,9 +35,9 @@ export class PohlRocksImporterComponent implements OnInit {
   }
 
   removeDuplicateImports() {
-    if (confirm("Are you sure to delete all duplicate Imports")) {
+    if (confirm('Are you sure to delete all duplicate Imports')) {
       this.afAuth.user.pipe(
-        flatMap(user => this.db.list('users/' + user.uid + '/flights').snapshotChanges()),
+        mergeMap(user => this.db.list('users/' + user.uid + '/flights').snapshotChanges()),
         take(1),
         map(snapshots =>
           snapshots.map(c => {
@@ -70,7 +70,7 @@ export class PohlRocksImporterComponent implements OnInit {
 
   deleteAllMyFlights() {
     this.afAuth.user.subscribe(user => {
-      const flightList = this.db.list('users/' + user.uid + '/flights').remove();
+      // this.db.list('users/' + user.uid + '/flights').remove();
     });
   }
 
@@ -80,7 +80,7 @@ export class PohlRocksImporterComponent implements OnInit {
       const flightList = this.db.list<Flight>('users/' + user.uid + '/flights');
       this.flights.forEach(flight => {
         flight[`importedId`] = flight['_id'];
-        flight.date = moment(flight.departureTime).startOf('day').format('YYYY-MM-DD');
+        flight.date = dayjs(flight.departureTime).startOf('day').format('YYYY-MM-DD');
         flightList.push(flight);
       });
 

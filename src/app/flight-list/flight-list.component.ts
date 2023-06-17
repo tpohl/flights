@@ -26,18 +26,7 @@ export class FlightListComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.flights = this.flightsService.flights$
-      .pipe(
-        map(flights => flights.sort((a: Flight, b: Flight) => {
-          if ((a.departureTime && !b.departureTime) || a.departureTime < b.departureTime) {
-            return 1;
-          } else if ((!a.departureTime && b.departureTime) || a.departureTime > b.departureTime) {
-            return -1;
-          } else {
-            return 0;
-          }
-        }))
-      );
+    this.flights = this.flightsService.flights$;
     this.stats$ = this.flightsService.stats$;
   }
 }

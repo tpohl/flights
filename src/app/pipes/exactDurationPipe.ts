@@ -1,5 +1,9 @@
 import { Pipe, PipeTransform } from '@angular/core';
-import * as moment from 'moment';
+
+import DayJS from 'dayjs';
+import DayJSDuration from 'dayjs/plugin/duration';
+
+DayJS.extend(DayJSDuration);
 
 @Pipe({ name: 'amDurationExact' })
 export class ExactDurationPipe implements PipeTransform {
@@ -7,8 +11,7 @@ export class ExactDurationPipe implements PipeTransform {
     if (typeof args === 'undefined' || args.length !== 1) {
       throw new Error('DurationPipe: missing required time unit argument');
     }
-    const duration = moment.duration(value, args[0] as moment.unitOfTime.DurationConstructor);
-    //return duration.get('hours') + ':' + duration.get('minutes');
-    return moment.utc(duration.asMilliseconds()).format('HH:mm');
+    const duration = DayJS.duration(value);
+    return duration.format('HH:mm');
   }
 }

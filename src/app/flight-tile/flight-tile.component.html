@@ -6,6 +6,7 @@
   </div>
   <div class="media-content">
     <div class="title is-4 pb-3">{{flight.flightno}}
+      <span *ngIf="compact && !!flight?.departureTime" class="heading is-pulled-right">{{flight.departureTime | date:'dd.MM.yyyy'}}</span>
       <div *ngIf="!compact && !!flight?.aircraftRegistration" class="tag is-primary is-medium is-pulled-right has-text-centered ml-2">
         <div>{{flight.aircraftRegistration}}</div>
       </div>

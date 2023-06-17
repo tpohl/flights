@@ -1,7 +1,14 @@
 import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
-import * as moment from 'moment';
-// @ts-ignore
-import { Moment } from '../../../functions/node_modules/moment';
+
+import DayJS from 'DayJS';
+import DayJSUtc from 'DayJS/plugin/utc';
+import DayJSTimezone from 'DayJS/plugin/timezone';
+import DayJSWeekday from 'DayJS/plugin/weekday';
+
+DayJS.extend(DayJSUtc);
+DayJS.extend(DayJSTimezone);
+DayJS.extend(DayJSWeekday);
+
 
 @Component({
   selector: 'app-datepicker',
@@ -15,22 +22,22 @@ export class DatepickerComponent implements OnInit {
   @Input() isAvailableLogic: any;
   @Input() open = false;
 
-  @Output() emitSelectedDate = new EventEmitter<moment.Moment>();
+  @Output() emitSelectedDate = new EventEmitter<DayJS.Dayjs>();
 
-  navDate: moment.Moment;
+  navDate: DayJS.Dayjs;
   weekDaysHeaderArr: Array<string> = [];
   gridArr: Array<any> = [];
-  selectedDate: moment.Moment;
+  selectedDate: DayJS.Dayjs;
 
-  constructor() { }
+  constructor() {
+  }
 
-  toggle(){
+  toggle() {
     this.open = !open;
   }
 
   ngOnInit() {
-    moment.locale(this.locale);
-    this.navDate = moment();
+    this.navDate = DayJS(); // .tz(this.locale);
     this.makeHeader();
     this.makeGrid();
   }
@@ -44,7 +51,7 @@ export class DatepickerComponent implements OnInit {
 
   canChangeNavMonth(num: number) {
     if (this.canChangeNavMonthLogic) {
-      const clonedDate = moment(this.navDate);
+      const clonedDate = DayJS(this.navDate);
       return this.canChangeNavMonthLogic(num, clonedDate);
     } else {
       return true;
@@ -53,21 +60,21 @@ export class DatepickerComponent implements OnInit {
 
   makeHeader() {
     const weekDaysArr: Array<number> = [0, 1, 2, 3, 4, 5, 6];
-    weekDaysArr.forEach(day => this.weekDaysHeaderArr.push(moment().weekday(day).format('ddd')));
+    weekDaysArr.forEach(day => this.weekDaysHeaderArr.push(DayJS().weekday(day).format('ddd')));
   }
 
   makeGrid() {
     this.gridArr = [];
 
-    const firstDayDate = moment(this.navDate).startOf('month');
+    const firstDayDate = DayJS(this.navDate).startOf('month');
     const initialEmptyCells = firstDayDate.weekday();
-    const lastDayDate = moment(this.navDate).endOf('month');
+    const lastDayDate = DayJS(this.navDate).endOf('month');
     const lastEmptyCells = 6 - lastDayDate.weekday();
     const daysInMonth = this.navDate.daysInMonth();
     const arrayLength = initialEmptyCells + lastEmptyCells + daysInMonth;
 
     for (let i = 0; i < arrayLength; i++) {
-      let obj: any = {};
+      const obj: any = {};
       if (i < initialEmptyCells || i > initialEmptyCells + daysInMonth - 1) {
         obj.value = 0;
         obj.available = false;
@@ -89,7 +96,7 @@ export class DatepickerComponent implements OnInit {
   }
 
   dateFromNum(num: number, referenceDate: any): any {
-    let returnDate = moment(referenceDate);
+    const returnDate = DayJS(referenceDate);
     return returnDate.date(num);
   }
 

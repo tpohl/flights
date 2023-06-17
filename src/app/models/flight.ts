@@ -33,4 +33,7 @@ export class Flight {
 
   needsAutocomplete: boolean;
   errorMessage: string;
+
+  _objectReference: string;
+  _deleted: boolean;
 }

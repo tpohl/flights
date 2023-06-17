@@ -3,11 +3,11 @@
 
 import { Flight } from '../models/flight';
 import { RxHR } from "@akanass/rx-http-request";
-import * as moment from 'moment';
+import DayJS from 'dayjs';
+
 import { filter, map, tap, flatMap, defaultIfEmpty, take, catchError } from "rxjs/operators";
 import { from, zip, Observable, of, concat, EMPTY } from 'rxjs';
 
-const admin = require('firebase-admin');
 const functions = require('firebase-functions');
 const config = functions.config();
 
@@ -100,7 +100,7 @@ const FlightAwareAutoCompleter = {
     return of({});
 
 
-    const flightDate = _flightDate ? cleanDate(_flightDate) : moment().format('DD.MM.YYYY');
+    const flightDate = _flightDate ? cleanDate(_flightDate) : DayJS().format('DD.MM.YYYY');
 
     const flightAwareFlightConverter = function (flight: FlightAwareFlight) {
       const f = new Flight();
@@ -115,12 +115,12 @@ const FlightAwareAutoCompleter = {
       // Find the best departureTime
       const departureEpoch = flight.actual_departure_time ? flight.actual_departure_time.epoch
         : (flight.estimated_departure_time ? flight.estimated_departure_time.epoch : flight.filed_departure_time.epoch);
-      f.departureTime = moment.unix(departureEpoch).toISOString();
+      f.departureTime = DayJS.unix(departureEpoch).toISOString();
 
       // Find the best arrivalTime
       const arrivalEpoch = flight.actual_arrival_time ? flight.actual_arrival_time.epoch
         : (flight.estimated_arrival_time ? flight.estimated_arrival_time.epoch : flight.filed_arrival_time.epoch);
-      f.arrivalTime = moment.unix(arrivalEpoch).toISOString();
+      f.arrivalTime = DayJS.unix(arrivalEpoch).toISOString();
 
       f.aircraftRegistration = flight.tailnumber;
       f.distance = Math.round(flight.distance_filed * 1.60934);// Kilometers
@@ -171,14 +171,14 @@ const FlightAwareAutoCompleter = {
                 map(flightAwareFlightConverter),
                 map(flight => {
                   // This is the last flight. Lets assume on the flight date it is similar.
-                  const flightDateMoment = moment(flightDate, 'DD.MM.YYYY');
-                  const originalDepartureTime = moment(flight.departureTime);
-                  const originalArrivalTime = moment(flight.arrivalTime);
+                  const flightDateMoment = DayJS(flightDate, 'DD.MM.YYYY');
+                  const originalDepartureTime = DayJS(flight.departureTime);
+                  const originalArrivalTime = DayJS(flight.arrivalTime);
                   const departureTime = originalDepartureTime.clone()
                     .year(flightDateMoment.year())
                     .month(flightDateMoment.month())
                     .date(flightDateMoment.date());
-                  const arrivalTime = moment.unix(departureTime.unix() + (originalArrivalTime.unix() - originalDepartureTime.unix()));
+                  const arrivalTime = DayJS.unix(departureTime.unix() + (originalArrivalTime.unix() - originalDepartureTime.unix()));
                   console.log('Flightaware Dates', {
                     date: flightDateMoment,
                     originalDepartureTime: originalDepartureTime,
