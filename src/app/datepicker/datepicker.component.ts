@@ -1,9 +1,10 @@
 import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 
-import DayJS from 'DayJS';
-import DayJSUtc from 'DayJS/plugin/utc';
-import DayJSTimezone from 'DayJS/plugin/timezone';
-import DayJSWeekday from 'DayJS/plugin/weekday';
+
+import DayJS from 'dayjs';
+import DayJSUtc from 'dayjs/plugin/utc';
+import DayJSTimezone from 'dayjs/plugin/timezone';
+import DayJSWeekday from 'dayjs/plugin/weekday';
 
 DayJS.extend(DayJSUtc);
 DayJS.extend(DayJSTimezone);
