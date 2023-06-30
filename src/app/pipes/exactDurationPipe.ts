@@ -11,7 +11,11 @@ export class ExactDurationPipe implements PipeTransform {
     if (typeof args === 'undefined' || args.length !== 1) {
       throw new Error('DurationPipe: missing required time unit argument');
     }
-    const duration = DayJS.duration(value);
-    return duration.format('HH:mm');
+    if (!!value) {
+      const duration = DayJS.duration(value);
+      return duration.format('HH:mm');
+    } else {
+      return "";
+    }
   }
 }

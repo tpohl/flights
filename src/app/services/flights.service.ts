@@ -130,8 +130,9 @@ export class FlightsService {
         }));
   }
 
-  saveFlight(flight: Flight): Observable<SaveResult> {
-    console.log('Saving Flight', flight);
+  saveFlight(_flight: Flight): Observable<SaveResult> {
+    console.log('Saving Flight', _flight);
+    const flight = clearFlight(_flight);
     return this.afAuth.user.pipe(
       switchMap(user => {
           if (!!flight._objectReference) {
@@ -146,16 +147,11 @@ export class FlightsService {
             );
 
           } else {
-            console.log('Creating new');
+
+
+            console.log('Creating new', flight);
             const flightList = this.db.list<Flight>('users/' + user.uid + '/flights');
-            // Clear any undefined values
-            Object.keys(flight).forEach(
-              key => {
-                if (!!!flight[key]) {
-                  flight[key] = null;
-                }
-              }
-            );
+
             return from(flightList.push(flight))
               .pipe(
                 map(reference => ({
@@ -170,6 +166,17 @@ export class FlightsService {
     );
   }
 
+}
+
+const clearFlight =  (flight: Flight) => {   // Clear any undefined values
+  Object.keys(flight).forEach(
+    key => {
+      if (!!!flight[key]) {
+        flight[key] = null;
+      }
+    }
+  );
+  return flight;
 }
 
 const flightsSortFn = (a: Flight, b: Flight) => {
