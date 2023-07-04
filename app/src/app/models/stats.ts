@@ -12,4 +12,5 @@ export class FlightStats {
 export class OverallStats {
   count = 0;
   distance = 0;
+  totalTimeMilliseconds = 0;
 }

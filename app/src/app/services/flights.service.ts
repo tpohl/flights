@@ -105,6 +105,7 @@ export class FlightsService {
               if (!!flight.distance && !isNaN(+flight.distance)) {
                 stats.distance = 0 + stats.distance + parseFloat('' + flight.distance);
               }
+              stats.totalTimeMilliseconds = stats.totalTimeMilliseconds + flight.durationMilliseconds;
               return stats;
             },
             new OverallStats()),

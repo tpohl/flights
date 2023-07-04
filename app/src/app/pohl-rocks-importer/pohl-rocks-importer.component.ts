@@ -1,10 +1,10 @@
 import { Component, OnInit } from '@angular/core';
-import { Flight } from 'functions/src/models/flight';
 import { AngularFireDatabase } from '@angular/fire/compat/database';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
 import dayjs from 'dayjs/esm';
 import { take, map, mergeMap } from 'rxjs/operators';
 
+import { Flight } from './../models/flight';
 
 @Component({
   selector: 'app-pohl-rocks-importer',

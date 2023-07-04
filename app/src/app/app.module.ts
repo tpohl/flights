@@ -1,7 +1,6 @@
 import { DatepickerComponent } from './datepicker/datepicker.component';
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
-import { MomentModule } from 'ngx-moment';
 import { AppComponent } from './app.component';
 import { environment } from '../environments/environment';
 import { FlightListComponent } from './flight-list/flight-list.component';
@@ -81,7 +80,6 @@ const appRoutes: Routes = [
     CommonModule,
     BrowserModule,
     FormsModule,
-    MomentModule,
     provideFirebaseApp(() => initializeApp(environment.firebase)),
     provideAuth(() => getAuth()),
     provideDatabase(() => getDatabase()),
