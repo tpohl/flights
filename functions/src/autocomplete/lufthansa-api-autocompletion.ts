@@ -2,7 +2,7 @@
 
 import { Flight } from '../models/flight';
 import { RxHR } from '@akanass/rx-http-request';
-import * as moment from 'moment';
+import DayJS from 'dayjs';
 import { defaultIfEmpty, filter, map, mergeMap, tap } from 'rxjs/operators';
 import { from, Observable } from 'rxjs';
 import { ClientCredentials, AccessToken, ModuleOptions } from 'simple-oauth2';
@@ -147,7 +147,7 @@ const toFlight = function (lhApiFlight: any): Flight {
 
 const autocomplete = function (flightNo, dateStr: string): Observable<Flight> {
   // Default to current Date.
-  const date = dateStr ? dateStr : moment().format('YYYY-MM-DD');
+  const date = dateStr ? dateStr : DayJS().format('YYYY-MM-DD');
 
   console.log('Autocomplete Flight', flightNo, date);
 

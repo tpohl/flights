@@ -7,8 +7,9 @@ import { tap, map, filter, mergeMap } from 'rxjs/operators';
 import { Airport } from './../models/airport';
 import { from, Observable, zip } from "rxjs";
 import * as functions from 'firebase-functions';
-import { DataSnapshot } from 'firebase-functions/lib/providers/database';
+
 import loadFlight from '../util/loadFlight';
+import { DataSnapshot } from 'firebase-functions/lib/common/providers/database';
 const admin = require('firebase-admin');
 
 
@@ -28,7 +29,9 @@ const addDistance = function (flight: Flight) {
     .pipe(map(ap => {
       const ap1 = ap[0].val() as Airport;
       const ap2 = ap[1].val() as Airport;
-      flight.distance = calculateDistance(ap1.latitude, ap1.longitude, ap2.latitude, ap2.longitude);
+      if (!!ap1 && !!ap2) {
+        flight.distance = calculateDistance(ap1.latitude, ap1.longitude, ap2.latitude, ap2.longitude);
+      }
       return flight;
     }));
 

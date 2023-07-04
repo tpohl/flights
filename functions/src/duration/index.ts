@@ -4,10 +4,14 @@ import { Flight } from './../models/flight';
  */
 
 import { tap, map, mergeMap } from 'rxjs/operators';
-import * as moment from 'moment';
+import DayJS from 'dayjs';
+import DayJSDuration from 'dayjs/plugin/duration';
+
+DayJS.extend(DayJSDuration);
 import { from } from "rxjs";
 import * as functions from 'firebase-functions';
 import loadFlight from '../util/loadFlight';
+
 
 
 const computeDuration = function (snapshot: functions.database.DataSnapshot, context: functions.EventContext) {
@@ -17,7 +21,7 @@ const computeDuration = function (snapshot: functions.database.DataSnapshot, con
     .pipe(
       map((flight: Flight) => {
         if (flight.departureTime && flight.arrivalTime) {
-          flight.durationMilliseconds = moment.duration(moment(flight.arrivalTime).diff(moment(flight.departureTime))).asMilliseconds();
+          flight.durationMilliseconds = DayJS.duration(DayJS(flight.arrivalTime).diff(DayJS(flight.departureTime))).asMilliseconds();
         }
         return flight;
       }
