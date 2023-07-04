@@ -22,6 +22,7 @@ import { FlightStatsComponent } from './flight-stats/flight-stats.component';
 import { FlightsService } from './services/flights.service';
 import { FlightTileComponent } from './flight-tile/flight-tile.component';
 import { SeatInfoComponent } from './seat-info/seat-info.component';
+import { RelativeTimePipe } from './pipes/relativeTimePipe';
 
 
 const appRoutes: Routes = [
@@ -67,6 +68,7 @@ const appRoutes: Routes = [
     FlightStatsComponent,
     DatepickerComponent,
     ExactDurationPipe,
+    RelativeTimePipe,
     PohlRocksImporterComponent,
     FlightsExportComponent,
     FlightTileComponent,

@@ -15,7 +15,7 @@ export class ExactDurationPipe implements PipeTransform {
       const duration = DayJS.duration(value);
       return duration.format('HH:mm');
     } else {
-      return "";
+      return '';
     }
   }
 }
