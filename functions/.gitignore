@@ -2,3 +2,4 @@ lib
 secrets.md
 .
 /.env.flights-159420
+node_modules
