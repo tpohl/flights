@@ -25,6 +25,12 @@
                 <p class="title is-3">{{stats.distance | number : '1.0-0'}} km</p>
               </div>
             </div>
+            <div class="level-item has-text-centered">
+              <div>
+                <p class="heading">Duration</p>
+                <p class="title is-3">{{stats.totalTimeMilliseconds | amDurationExact}}</p>
+              </div>
+            </div>
           </nav>
         </div>
         <footer class="card-footer is-hidden-mobile">

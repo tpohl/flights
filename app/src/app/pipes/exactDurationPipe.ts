@@ -8,12 +8,14 @@ DayJS.extend(DayJSDuration);
 @Pipe({ name: 'amDurationExact' })
 export class ExactDurationPipe implements PipeTransform {
   transform(value: any, ...args: string[]): string {
-    if (typeof args === 'undefined' || args.length !== 1) {
-      throw new Error('DurationPipe: missing required time unit argument');
-    }
     if (!!value) {
       const duration = DayJS.duration(value);
-      return duration.format('HH:mm');
+      if (value > 24 * 60 * 60 * 1000) {
+        // More than one day - humanize
+        return `${Math.floor(duration.asDays())} Days ${duration.hours()} Hours`;
+      } else {
+        return duration.format('HH:mm');
+      }
     } else {
       return '';
     }
