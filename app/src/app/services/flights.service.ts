@@ -180,7 +180,7 @@ const clearFlight =  (flight: Flight) => {   // Clear any undefined values
     }
   );
   return flight;
-}
+};
 
 const flightsSortFn = (a: Flight, b: Flight) => {
   if ((a.departureTime && !b.departureTime) || a.departureTime < b.departureTime) {
