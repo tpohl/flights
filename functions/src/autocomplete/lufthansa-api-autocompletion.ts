@@ -6,7 +6,8 @@ import DayJS from 'dayjs';
 import { defaultIfEmpty, filter, map, mergeMap, tap } from 'rxjs/operators';
 import { from, Observable } from 'rxjs';
 import { AccessToken, ClientCredentials, ModuleOptions } from 'simple-oauth2';
-import { LhAircraftResponse, LhFlight, LhFlightStatusResponse } from './lufthansa-api/models';
+import { LhAircraftResponse, LhFlightStatusResponse } from './lufthansa-api/models';
+import { replaceType, toFlight } from './lufthansa-api/transformers';
 
 const admin = require('firebase-admin');
 const functions = require('firebase-functions');
@@ -52,20 +53,6 @@ const getLhApiToken = function () {
   return from(promise);
 };
 
-const lhApiTypeReplacements = {
-  '32V': 'Airbus A320neo',
-  '31D': 'Airbus A319',
-  '34Q': 'Airbus A340-300'
-};
-const replaceType = function (lhApiType) {
-  const replacement = lhApiTypeReplacements[lhApiType];
-  if (replacement) {
-    return replacement;
-  } else {
-    return lhApiType;
-  }
-};
-
 
 
 const loadAircraftType = function (acTypeCode, aircraftType) {
@@ -85,46 +72,17 @@ const loadAircraftType = function (acTypeCode, aircraftType) {
         })
         .pipe(
           tap(data => console.log('Aircraft Response', data)),
-          filter(data => data.response.statusCode == 200),
+          filter(data => data.response.statusCode === 200),
           map(data => data.body),
           map(apiResponse => apiResponse.AircraftResource.AircraftSummaries.AircraftSummary.Names.Name.$),
           map(replaceType),
-          defaultIfEmpty((!!aircraftType && aircraftType != '') ? aircraftType : acTypeCode),
+          defaultIfEmpty((!!aircraftType && aircraftType !== '') ? aircraftType : acTypeCode),
           tap(replacedType => console.log('Replaced AC Type', acTypeCode, replacedType))
         )
     ));
 
 };
 
-
-const toFlight = function (lhApiFlight: LhFlight): Flight {
-  const flight = new Flight();
-  flight.lhApiFlight = lhApiFlight;
-  if (!!lhApiFlight.Departure && !!lhApiFlight.Arrival) {
-
-    flight.from = lhApiFlight.Departure.AirportCode;
-    if (!!lhApiFlight.Departure.ActualTimeUTC) {
-      flight.departureTime = lhApiFlight.Departure.ActualTimeUTC.DateTime;
-    } else {
-      flight.departureTime = lhApiFlight.Departure.ScheduledTimeUTC.DateTime;
-    }
-    flight.to = lhApiFlight.Arrival.AirportCode;
-    if (!!lhApiFlight.Arrival.ActualTimeUTC) {
-      flight.arrivalTime = lhApiFlight.Arrival.ActualTimeUTC.DateTime;
-    } else {
-      flight.arrivalTime = lhApiFlight.Arrival.ScheduledTimeUTC.DateTime;
-    }
-
-    flight.aircraftTypeCode = lhApiFlight.Equipment.AircraftCode;
-    if (!!lhApiFlight.Equipment.AircraftRegistration && !('' === lhApiFlight.Equipment.AircraftRegistration)) {
-      flight.aircraftRegistration = lhApiFlight.Equipment.AircraftRegistration;
-    }
-    flight.carrier = lhApiFlight.OperatingCarrier.AirlineID;
-  } else {
-    console.log('LH API FLight is invalid', lhApiFlight);
-  }
-  return flight;
-};
 
 const autocomplete = function (flightNo, dateStr: string): Observable<Flight> {
   // Default to current Date.
@@ -133,7 +91,7 @@ const autocomplete = function (flightNo, dateStr: string): Observable<Flight> {
   console.log('Autocomplete Flight', flightNo, date);
 
 
-  const flight$: Observable<Flight> = getLhApiToken()
+  return getLhApiToken()
     .pipe(
       map(apiTokenObj => apiTokenObj.token.access_token),
       mergeMap(apiToken =>
@@ -148,7 +106,7 @@ const autocomplete = function (flightNo, dateStr: string): Observable<Flight> {
           })
       ),
       //tap(data => console.log('Status from LH API', data.response.statusCode)),
-      filter(data => data.response.statusCode == 200),
+      filter(data => data.response.statusCode === 200),
       map(data => data.body)
     ).pipe(
       //tap(body => console.log('Body from LH API', body)),
@@ -167,8 +125,6 @@ const autocomplete = function (flightNo, dateStr: string): Observable<Flight> {
       //tap(body => console.log('Complete Flight after autocompletion', body)),
       defaultIfEmpty(new Flight())
     ) as Observable<Flight>;
-
-  return flight$;
 };
 
 const FlightAutoCompleter = {
