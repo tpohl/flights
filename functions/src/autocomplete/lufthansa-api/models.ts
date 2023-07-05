@@ -57,10 +57,41 @@ export interface LhCarrier {
 
 export interface Meta {
   "@Version": string;
-  Link:       Link[];
+  Link:       Link[] | Link;
 }
 
-export interface Link {
+export type Link = {
   "@Href": string;
   "@Rel":  string;
 }
+
+
+export interface LhAircraftResponse {
+  AircraftResource: LhAircraftResource;
+}
+
+export interface LhAircraftResource {
+  AircraftSummaries: LhAircraftSummaries;
+  Meta:              Meta;
+}
+
+export interface LhAircraftSummaries {
+  AircraftSummary: LhAircraftSummary;
+}
+
+export interface LhAircraftSummary {
+  AircraftCode:     string;
+  Names:            LhNames;
+  AirlineEquipCode: string;
+}
+
+export interface LhNames {
+  Name: LhName;
+}
+
+export interface LhName {
+  "@LanguageCode": string;
+  $:               string;
+}
+
+

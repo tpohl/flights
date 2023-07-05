@@ -6,7 +6,7 @@ import DayJS from 'dayjs';
 import { defaultIfEmpty, filter, map, mergeMap, tap } from 'rxjs/operators';
 import { from, Observable } from 'rxjs';
 import { AccessToken, ClientCredentials, ModuleOptions } from 'simple-oauth2';
-import { LhFlight, LhFlightStatusResponse } from './lufthansa-api/models';
+import { LhAircraftResponse, LhFlight, LhFlightStatusResponse } from './lufthansa-api/models';
 
 const admin = require('firebase-admin');
 const functions = require('firebase-functions');
@@ -66,31 +66,6 @@ const replaceType = function (lhApiType) {
   }
 };
 
-/* Types
-{
-    "AircraftResource": {
-        "AircraftSummaries": {
-            "AircraftSummary": {
-                "AircraftCode": "32N",
-                "Names": {
-                    "Name": {
-                        "@LanguageCode": "EN",
-                        "$": "Airbus A320neo"
-                    }
-                },
-                "AirlineEquipCode": "A20N"
-            }
-        },
-        "Meta": {
-            "@Version": "1.0.0",
-            "Link": {
-                "@Href": "https://api.lufthansa.com/v1/mds-references/aircraft/32N?limit=20&offset=0",
-                "@Rel": "self"
-            }
-        }
-    }
-}
- */
 
 
 const loadAircraftType = function (acTypeCode, aircraftType) {
@@ -99,7 +74,7 @@ const loadAircraftType = function (acTypeCode, aircraftType) {
     .pipe(map(apiTokenObj => apiTokenObj.token.access_token))
     .pipe(mergeMap(apiToken =>
 
-      RxHR.get('https://api.lufthansa.com/v1/mds-references/aircraft/' + acTypeCode,
+      RxHR.get<LhAircraftResponse>('https://api.lufthansa.com/v1/mds-references/aircraft/' + acTypeCode,
         {
           headers: {
             'User-Agent': 'request',
