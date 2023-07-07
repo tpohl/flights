@@ -103,7 +103,7 @@ export class FlightsService {
             (stats, flight) => {
               stats.count += 1;
               if (!!flight.distance && !isNaN(+flight.distance)) {
-                stats.distance = 0 + stats.distance + parseFloat('' + flight.distance);
+                stats.distance = stats.distance + parseFloat('' + flight.distance);
               }
               if (!!flight.durationMilliseconds && !isNaN(+flight.durationMilliseconds)) {
                 stats.totalTimeMilliseconds = stats.totalTimeMilliseconds + flight.durationMilliseconds;
@@ -134,12 +134,12 @@ export class FlightsService {
   }
 
   saveFlight(_flight: Flight): Observable<SaveResult> {
-    console.log('Saving Flight', _flight);
+    // console.log('Saving Flight', _flight);
     const flight = clearFlight(_flight);
     return this.afAuth.user.pipe(
       switchMap(user => {
           if (!!flight._objectReference) {
-            console.log('Saving');
+            // console.log('Saving', flight);
             const flightObject = this.db.object<Flight>(flight._objectReference);
             return from(flightObject.update(flight)).pipe(
               map(_ => ({
@@ -150,9 +150,7 @@ export class FlightsService {
             );
 
           } else {
-
-
-            console.log('Creating new', flight);
+            // console.log('Creating new', flight);
             const flightList = this.db.list<Flight>('users/' + user.uid + '/flights');
 
             return from(flightList.push(flight))

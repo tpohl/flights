@@ -115,6 +115,7 @@ export class FlightEditComponent implements OnInit, OnDestroy {
     this.flightsService.loadFlight(flightId).subscribe(
       (flight) => {
         this.flight = flight;
+        this.objectRef = flight._objectReference;
         this.loadFromAirport(this.flight.from);
         this.loadToAirport(this.flight.to);
       }
