@@ -19,9 +19,9 @@ export class Flight {
   aircraftType: string;
   aircraftTypeCode: string;
 
-  aircraftRegistration: string;
-  seat: string;
-  seatType: string;
+  aircraftRegistration?: string;
+  seat?: string;
+  seatType?: string;
   class: string;
 
   carrier: string;

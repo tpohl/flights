@@ -15,23 +15,26 @@ export const replaceType = function (lhApiType) {
   }
 };
 
-const transformRegistration = function (lhRegistration?: string){
-  if (!!! lhRegistration) {
-    return '';
-  }
-  else if (lhRegistration.startsWith('D')){
-    return `D-${lhRegistration.slice(1)}`
+const transformRegistration = function (lhRegistration?: string) {
+  if (!!!lhRegistration) {
+    return undefined;
+  } else if (lhRegistration.startsWith('D')) { // German Registration
+    return `D-${lhRegistration.slice(1)}`;
+  } else if (lhRegistration.startsWith('HB')) { // Swiss
+    return `HB-${lhRegistration.slice(2)}`;
+  } else if (lhRegistration.startsWith('OE')) { // Austrian Registrations
+    return `OE-${lhRegistration.slice(2)}`;
   } else {
     return lhRegistration;
   }
-}
+};
 
 const lhApiCarrierReplacements = {
   'LH': 'Lufthansa',
   'LX': 'Swiss',
   'OS': 'Austrian'
 };
-const transformCarrier = function (lhCarrier: LhCarrier){
+const transformCarrier = function (lhCarrier: LhCarrier) {
   const carrierId = lhCarrier.AirlineID;
   const replacement = lhApiCarrierReplacements[carrierId];
   if (replacement) {
@@ -39,7 +42,7 @@ const transformCarrier = function (lhCarrier: LhCarrier){
   } else {
     return carrierId;
   }
-}
+};
 
 export const toFlight = function (lhApiFlight: LhFlight): Flight {
   const flight = new Flight();

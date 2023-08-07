@@ -16,9 +16,9 @@ export interface LhFlight {
   Arrival:          LhArrivalOrDeparture;
   MarketingCarrier: LhCarrier;
   OperatingCarrier: LhCarrier;
-  Equipment:        LhEquipment;
-  FlightStatus:     LhStatus;
-  ServiceType:      string;
+  Equipment?:        LhEquipment;
+  FlightStatus?:     LhStatus;
+  ServiceType?:      string;
 }
 
 export interface LhArrivalOrDeparture {
@@ -46,8 +46,8 @@ export interface LhStatus {
 }
 
 export interface LhEquipment {
-  AircraftCode:         string;
-  AircraftRegistration: string;
+  AircraftCode?:         string;
+  AircraftRegistration?: string;
 }
 
 export interface LhCarrier {
