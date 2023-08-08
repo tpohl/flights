@@ -24,6 +24,8 @@ const transformRegistration = function (lhRegistration?: string) {
     return `HB-${lhRegistration.slice(2)}`;
   } else if (lhRegistration.startsWith('OE')) { // Austrian Registrations
     return `OE-${lhRegistration.slice(2)}`;
+  } else if (lhRegistration.startsWith('YL')) { // Air Baltic Registrations
+    return `YL-${lhRegistration.slice(2)}`;
   } else {
     return lhRegistration;
   }
