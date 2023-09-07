@@ -16,19 +16,19 @@ export const replaceType = function (lhApiType) {
   }
 };
 
-const transformRegistration = function (lhRegistration?: string) {
-  if (!!!lhRegistration) {
+const transformRegistration = function (lhApiRegistration?: string) {
+  if (!!!lhApiRegistration) {
     return undefined;
-  } else if (lhRegistration.startsWith('D')) { // German Registration
-    return `D-${lhRegistration.slice(1)}`;
-  } else if (lhRegistration.startsWith('HB')) { // Swiss
-    return `HB-${lhRegistration.slice(2)}`;
-  } else if (lhRegistration.startsWith('OE')) { // Austrian Registrations
-    return `OE-${lhRegistration.slice(2)}`;
-  } else if (lhRegistration.startsWith('YL')) { // Air Baltic Registrations
-    return `YL-${lhRegistration.slice(2)}`;
+  } else if (lhApiRegistration.startsWith('D')) { // German Registration
+    return `D-${lhApiRegistration.slice(1)}`;
+  } else if (lhApiRegistration.startsWith('HB')) { // Swiss
+    return `HB-${lhApiRegistration.slice(2)}`;
+  } else if (lhApiRegistration.startsWith('OE')) { // Austrian Registrations
+    return `OE-${lhApiRegistration.slice(2)}`;
+  } else if (lhApiRegistration.startsWith('YL')) { // Air Baltic Registrations
+    return `YL-${lhApiRegistration.slice(2)}`;
   } else {
-    return lhRegistration;
+    return lhApiRegistration;
   }
 };
 
