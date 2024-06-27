@@ -1,45 +1,55 @@
 <div class="media mb-0">
   <div class="media-left">
     <figure class="image is-64x64" style="background-size: cover;
-    background-position: center; background-image: url('https://flights-media.pohl.rocks/media/airport/image/{{flight.to}}'), url('https://flights-media.pohl.rocks/media/airport/image/LHR'">
+    background-position: center;
+    background-image: url('https://flights-media.pohl.rocks/media/airport/image/{{flight.from}}')">
     </figure>
   </div>
   <div class="media-content">
-    <div class="title is-4 pb-3">{{flight.flightno}}
-      <span *ngIf="compact && !!flight?.departureTime" class="heading is-pulled-right">{{flight.departureTime | date:'dd.MM.yyyy'}}</span>
-      <div *ngIf="!compact && !!flight?.aircraftRegistration" class="tag is-primary is-medium is-pulled-right has-text-centered ml-2">
-        <div>{{flight.aircraftRegistration}}</div>
+    <div class="title is-4 pb-3">{{ flight.flightno }}
+      <span *ngIf="compact && !!flight?.departureTime" class="heading is-pulled-right">{{ flight.departureTime | date:'dd.MM.yyyy' }}</span>
+      <div *ngIf="!compact && !!flight?.aircraftRegistration" class="tag is-primary is-small is-pulled-right has-text-centered ml-2">
+        <div>{{ flight.aircraftRegistration }}</div>
       </div>
-      <div *ngIf="!compact && !!flight?.aircraftTypeCode" class="tag is-info is-medium is-pulled-right has-text-centered">
-        <div>{{flight.aircraftTypeCode}}</div>
+      <div *ngIf="!compact && !!flight?.aircraftTypeCode" class="tag is-info is-small is-pulled-right has-text-centered">
+        <div>{{ flight.aircraftTypeCode }}</div>
       </div>
     </div>
     <div class="subtitle is-5 level is-mobile mb-0">
       <div class="level-item level-left has-text-centered">
-        <div>{{flight.from}}<br />
-          <span class="heading">{{flight.departureTime | date:'HH:mm'}}</span>
+        <div>{{ flight.from }}<br />
+          <span class="heading">{{ flight.departureTime | date:'HH:mm' }}</span>
         </div>
       </div>
       <div class="level-item has-text-centered">
         <div>
           <i class="fa fa-plane"></i>
           <span class="heading">
-            {{flight.distance | number : '1.0-0'}} km <br />
+            {{ flight.distance | number : '1.0-0' }} km <br />
             <app-seat-info *ngIf="compact" [flight]="flight"></app-seat-info>
           </span>
         </div>
       </div>
       <div class="level-item level-right has-text-centered">
-        <div>{{flight.to}}<br />
-          <span class="heading">{{flight.arrivalTime | date:'HH:mm'}}</span>
+        <div>{{ flight.to }}<br />
+          <span class="heading">{{ flight.arrivalTime | date:'HH:mm' }}</span>
         </div>
       </div>
     </div>
-    <div *ngIf="!compact">
-      <p class="heading">{{flight.departureTime | date:'dd.MM.yyyy'}} -
-        <app-seat-info [flight]="flight"></app-seat-info>
-        - {{flight.carrier}} - {{flight.aircraftType}}
-      </p>
-    </div>
+  </div>
+  <div class="media-right">
+    <figure class="image is-64x64" style="background-size: cover;
+    background-position: center;
+    background-image: url('https://flights-media.pohl.rocks/media/airport/image/{{flight.to}}')">
+    </figure>
+  </div>
+
+</div>
+<div class="content">
+  <div *ngIf="!compact">
+    <p class="heading">{{ flight.departureTime | date:'dd.MM.yyyy' }} -
+      <app-seat-info [flight]="flight"></app-seat-info>
+      - {{ flight.carrier }} - {{ flight.aircraftType }}
+    </p>
   </div>
 </div>
