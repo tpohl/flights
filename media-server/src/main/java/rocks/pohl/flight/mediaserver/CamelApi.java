@@ -119,8 +119,9 @@ public class CamelApi
                 .removeHeader(Exchange.HTTP_URI)
                 .toD("https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photo_reference=${header.photo_reference}" +
                          "&followRedirects=true&httpMethod=GET&key=" + googlePlacesApiKey)
-
-                //crop image to 400x400
+                // add 12 months expires to http response
+                .setHeader("CamelHttpCacheControl", constant("max-age=31536000"))
+                //TODO crop image to 400x400
             .otherwise()
             .log("Failed to get response from Google Places")
 
