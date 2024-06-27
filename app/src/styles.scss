@@ -13,7 +13,7 @@ $footer-padding: 2rem 1.5rem;
 // 6. Import the rest of Bulma
 @import "../node_modules/bulma/bulma";
 html {
-  font-size: 10px;
+  font-size: 10pt;
 }
 .tag.is-small {
     font-size: 0.8rem;
@@ -46,7 +46,7 @@ div.cesium-viewer {
   background: url(./assets/background.png);
   background: url(./assets/background.svg),
     linear-gradient(transparent, transparent);
-
-    max-width: 1440px;
+  background-size: cover;
+  //  max-width: 1440px;
     margin: 1rem auto;
 }

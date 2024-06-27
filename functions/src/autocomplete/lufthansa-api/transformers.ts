@@ -4,7 +4,8 @@ import { Flight } from '../../models/flight';
 const lhApiTypeReplacements = {
   '32V': 'Airbus A320neo',
   '31D': 'Airbus A319',
-  '34Q': 'Airbus A340-300'
+  '34Q': 'Airbus A340-300',
+  '31K': 'Airbus A319'
 };
 export const replaceType = function (lhApiType) {
   const replacement = lhApiTypeReplacements[lhApiType];

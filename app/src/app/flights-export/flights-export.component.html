@@ -1,11 +1,25 @@
 <div>
   <h1 class="title">Flights Export</h1>
   <p>
-    Just <a (click)="flightsToClipbord()"><i class="fa fa-clipboard" aria-hidden="true"></i> copy</a> the following JSON containing all your flights.
+    Just
+    <a (click)="flightsToClipbord()"><i class="fa fa-clipboard" aria-hidden="true"></i> copy</a>
+    the following JSON containing all your flights.
   </p>
-  <div>
-    <pre>
-      {{flights | async | json }}
+  <p>
+    Going to Flight Search?
+    <a (click)="flightsToClipbord()"><i class="fa fa-clipboard" aria-hidden="true"></i>Copy</a>
+    this script and declare a $token from flightsearch in the shell.
+  </p>
+  <div class="columns">
+    <div class="column">
+    <pre *ngIf="flights$ | async as flights " style="max-width: 400px; max-height: 300px; overflow: scroll">
+      {{flightsForFlightSearch(flights)  }}
     </pre>
+    </div>
+    <div class="column">
+    <pre style="max-width: 400px; max-height: 300px; overflow: scroll">
+      {{flights$ | async | json }}
+    </pre>
+    </div>
   </div>
 </div>

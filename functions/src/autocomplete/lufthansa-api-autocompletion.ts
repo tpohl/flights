@@ -3,8 +3,8 @@
 import { Flight } from '../models/flight';
 import { RxHR } from '@akanass/rx-http-request';
 import DayJS from 'dayjs';
-import { defaultIfEmpty, filter, map, mergeMap, tap } from 'rxjs/operators';
-import { from, Observable } from 'rxjs';
+import { catchError, defaultIfEmpty, filter, map, mergeMap, tap } from 'rxjs/operators';
+import { from, Observable, of } from 'rxjs';
 import { AccessToken, ClientCredentials, ModuleOptions } from 'simple-oauth2';
 import { LhAircraftResponse, LhFlightStatusResponse } from './lufthansa-api/models';
 import { replaceType, toFlight } from './lufthansa-api/transformers';
@@ -55,12 +55,12 @@ const getLhApiToken = function () {
 
 
 
-const loadAircraftType = function (acTypeCode, aircraftType) {
+const loadAircraftType = function (acTypeCode: string, aircraftType: string) {
 
   return getLhApiToken()
     .pipe(map(apiTokenObj => apiTokenObj.token.access_token))
     .pipe(mergeMap(apiToken =>
-
+      // Fetch the Aircraft Type from the Lufthansa API.
       RxHR.get<LhAircraftResponse>('https://api.lufthansa.com/v1/mds-references/aircraft/' + acTypeCode,
         {
           headers: {
@@ -75,8 +75,9 @@ const loadAircraftType = function (acTypeCode, aircraftType) {
           filter(data => data.response.statusCode === 200),
           map(data => data.body),
           map(apiResponse => apiResponse.AircraftResource.AircraftSummaries.AircraftSummary.Names.Name.$),
+          defaultIfEmpty(acTypeCode),
           map(replaceType),
-          defaultIfEmpty((!!aircraftType && aircraftType !== '') ? aircraftType : acTypeCode),
+          defaultIfEmpty(acTypeCode),
           tap(replacedType => console.log('Replaced AC Type', acTypeCode, replacedType))
         )
     ));
