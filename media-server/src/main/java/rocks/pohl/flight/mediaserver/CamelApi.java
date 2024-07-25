@@ -2,10 +2,15 @@ package rocks.pohl.flight.mediaserver;
 
 import org.apache.camel.AggregationStrategy;
 import org.apache.camel.Exchange;
+import org.apache.camel.Message;
 import org.apache.camel.PropertyInject;
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.builder.endpoint.dsl.FileEndpointBuilderFactory;
 import org.apache.camel.component.caffeine.CaffeineConstants;
+import org.apache.camel.component.file.FileEndpointUriFactory;
 import org.apache.camel.model.dataformat.JsonLibrary;
+
+import java.io.File;
 
 public class CamelApi
 
@@ -26,20 +31,23 @@ public class CamelApi
              .log("Has Result ${header.CamelCaffeineActionHasResult} ActionSucceeded ${header.CamelCaffeineActionSucceeded}")
             */
             .setHeader("airport_filename", header("airportcode"))
-            .log("Loading File ${header.airport_filename}.jpg }")
-            .pollEnrich(
-                "file://./imagecache/airports?fileName=${header.airport_filename}.jpg&noop=true&sendEmptyMessageWhenIdle=true",
-                new AggregationStrategy() {
-                    public Exchange aggregate(Exchange oldExchange, Exchange newExchange) {
-                        newExchange.getIn().setHeader("airport_filename", oldExchange.getIn().getHeader("airport_filename"));
-                        newExchange.getIn().setHeader("airportcode", oldExchange.getIn().getHeader("airportcode"));
-                        return newExchange;
+            .setHeader(Exchange.FILE_NAME, simple("${header.airport_filename}/"))
+            .log("Loading File ${header.airport_filename}.jpg")
+            .process(new org.apache.camel.Processor() {
+                public void process(Exchange exchange) {
+                    Message msg = exchange.getMessage();
+                    File airportImage = new File("./imagecache/airports/" + msg.getHeader("airport_filename") + ".jpg");
+                    if (airportImage.exists()) {
+                        msg.setBody(airportImage);
+                    } else {
+                        msg.setBody(null);
                     }
-                })
+                }
+            })
             //  .log("Loaded File ${header.airport_filename}.jpg ${header.airportcode}")
             .choice()
             //.when(header(CaffeineConstants.ACTION_HAS_RESULT).isEqualTo(Boolean.FALSE))
-            .when(body().isNull())
+            .when(simple("${body} == null"))
                 // Write a camel route that searches for a place (using an airport three letter code) in google places API and returns a picture of the airport
                 .log("File not found")
                 .removeHeader(Exchange.HTTP_URI)
@@ -80,7 +88,7 @@ public class CamelApi
                     .setHeader("CamelHttpCacheControl", constant("max-age=31536000"))
                     //TODO crop image to 400x400
                     .log("Saving File ${header.airport_filename}.jpg")
-                    .toD("file://./imagecache/airports?fileName=${header.airport_filename}.jpg")
+                    .toD("file://./imagecache/airports/?fileName=${header.airport_filename}.jpg")
                 .otherwise()
                     .log("Failed to get response from Google Places")
                 /* Removed Cafeine Cache
@@ -96,6 +104,6 @@ public class CamelApi
 
         from("direct:cacheInFile")
             .log(" Saving File")
-            .toD("file://./imagecache/airports?fileName=${header.airportcode}.jpg");
+            .toD("file://./imagecache/airports/?fileName=${header.airportcode}.jpg");
     }
 }

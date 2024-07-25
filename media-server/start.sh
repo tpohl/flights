@@ -2,7 +2,7 @@ docker stop flights-media-server
 docker rm flights-media-server
 
 mkdir -p airport-cache
-chown -R 1000:1000 airport-cache
+chown -R 185:root airport-cache
 chmod -R 777 airport-cache
 
 docker run -d --name flights-media-server --restart always  \
