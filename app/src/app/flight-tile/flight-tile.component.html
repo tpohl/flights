@@ -1,21 +1,24 @@
+<div class="content mb-0">
+  <div class="title is-4 pb-3">{{ flight.flightno }}
+    <span *ngIf="compact && !!flight?.departureTime" class="heading is-pulled-right">{{ flight.departureTime | date:'dd.MM.yyyy' }}</span>
+    <div *ngIf="!compact && !!flight?.aircraftRegistration" class="tag is-primary is-small is-pulled-right has-text-centered ml-2">
+      <div>{{ flight.aircraftRegistration }}</div>
+    </div>
+    <div *ngIf="!compact && !!flight?.aircraftTypeCode" class="tag is-info is-small is-pulled-right has-text-centered">
+      <div>{{ flight.aircraftTypeCode }}</div>
+    </div>
+  </div>
+
+</div>
 <div class="media mb-0">
-  <div class="media-left pt-3">
-    <figure class="image is-48x48" style="background-size: cover;
+  <div class="media-left">
+    <figure class="image" [ngClass]="{'compact':compact}" style="background-size: cover;
     background-position: center;
     background-image: url('https://flights-media.pohl.rocks/media/airport/image/{{flight.from}}')">
     </figure>
   </div>
   <div class="media-content">
-    <div class="title is-4 pb-3">{{ flight.flightno }}
-      <span *ngIf="compact && !!flight?.departureTime" class="heading is-pulled-right">{{ flight.departureTime | date:'dd.MM.yyyy' }}</span>
-      <div *ngIf="!compact && !!flight?.aircraftRegistration" class="tag is-primary is-small is-pulled-right has-text-centered ml-2">
-        <div>{{ flight.aircraftRegistration }}</div>
-      </div>
-      <div *ngIf="!compact && !!flight?.aircraftTypeCode" class="tag is-info is-small is-pulled-right has-text-centered">
-        <div>{{ flight.aircraftTypeCode }}</div>
-      </div>
-    </div>
-    <div class="subtitle is-5 level is-mobile mb-0">
+    <div class="subtitle is-5 level is-mobile mb-0 flight-info" [ngClass]="{'compact':compact}">
       <div class="level-item level-left has-text-centered">
         <div>{{ flight.from }}<br />
           <span class="heading">{{ flight.departureTime | date:'HH:mm' }}</span>
@@ -37,15 +40,16 @@
       </div>
     </div>
   </div>
-  <div class="media-right pt-3">
-    <figure class="image is-48x48" style="background-size: cover;
+  <div class="media-right">
+    <figure class="image"
+            [ngClass]="{'compact':compact}" style="background-size: cover;
     background-position: center;
     background-image: url('https://flights-media.pohl.rocks/media/airport/image/{{flight.to}}')">
     </figure>
   </div>
 
 </div>
-<div class="content">
+<div class="content has-text-centered">
   <div *ngIf="!compact">
     <p class="heading">{{ flight.departureTime | date:'dd.MM.yyyy' }} -
       <app-seat-info [flight]="flight"></app-seat-info>
