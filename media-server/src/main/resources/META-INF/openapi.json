@@ -44,39 +44,10 @@
         },
         "operationId": "getAirportImage"
       }
-    },
-    "/airport/imageurl/{airportcode}": {
-      "get": {
-        "parameters": [
-          {
-            "name": "airportcode",
-            "description": "identifier of individual to retrieve",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "example": "HAM"
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "url": "string"
-                }
-              }
-            }
-          }
-        },
-        "operationId": "searchAirportImage"
-      }
+    }
+  },
+  "components": {
+    "schemas": {
     }
   }
-},
-"components": {
-"schemas": {
-}
-}
 }
