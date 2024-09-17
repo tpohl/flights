@@ -1,3 +1,4 @@
+import { AeroApiFlight, AeroAPITrackResponse } from "../autocomplete/aero-api/models";
 import { FlightAwareFlight } from "../autocomplete/flightaware-autocompletion";
 
 export class Flight {
@@ -7,6 +8,9 @@ export class Flight {
   date: string;
 
   flightno: string;
+  icaoCarrier: string;
+  cleanFlightNo: string;
+
   from: string;
   to: string;
 
@@ -16,6 +20,7 @@ export class Flight {
   durationMilliseconds: number;
 
   distance: number;
+  flownDistance: number;
   aircraftType: string;
   aircraftTypeCode: string;
 
@@ -37,6 +42,10 @@ export class Flight {
 
   lhApiFlight: any;
   flightAwareFlight: FlightAwareFlight;
+
+  aeroApiFlight: AeroApiFlight;
+  aeroApiTrack: AeroAPITrackResponse;
+
   status: FlightStatus;
 
 }

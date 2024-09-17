@@ -1,10 +1,10 @@
 export interface AeroAPIIdentResponse {
-    flights:   Flight[];
+    flights:   AeroApiFlight[];
     links:     null;
     num_pages: number;
 }
 
-export interface Flight {
+export interface AeroApiFlight {
     ident:                           string;
     ident_icao:                      string;
     ident_iata:                      string;
@@ -99,3 +99,18 @@ export enum UpdateType {
     A = "A",
     X = "X",
 }
+
+export interface AeroAPIOperator {
+    icao:         string;
+    iata:         string;
+    callsign:     string;
+    name:         string;
+    country:      string;
+    location:     string;
+    phone:        string;
+    shortname:    string;
+    url:          string;
+    wiki_url:     string;
+    alternatives: any[];
+}
+
