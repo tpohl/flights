@@ -154,7 +154,7 @@
                 <input class="input" type="text" [(ngModel)]="flight.distance" placeholder="Distance">
               </div>
               <div class="control">
-                <p class="button is-static"> km</p>
+                <p class="button is-static"> km ( {{ flight | flightDistance | number : '1.0-0' }} km flown) </p>
               </div>
             </div>
           </div>

@@ -87,7 +87,8 @@ const autocompleteFlight = function (flightRef: admin.database.Reference, contex
               return loadAeroApiTrack(aeroApiFlight.fa_flight_id)
                 .pipe(
                   mergeMap(aeroApiTrack => {
-                    flight.aeroApiFlight = aeroApiFlight
+                    flight.aeroApiFlight = aeroApiFlight;
+                    flight.flightAwareFlightId = aeroApiFlight.fa_flight_id;
                     flight.flownDistance = aeroApiTrack.actual_distance * 1.60934;
                     const aeroApiTrackRef = flightRef.parent.parent.child("aeroApiTracks").child(aeroApiFlight.fa_flight_id)
                     return of(aeroApiTrackRef.set(aeroApiTrack))

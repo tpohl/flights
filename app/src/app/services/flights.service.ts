@@ -7,6 +7,7 @@ import { filter, map, reduce, switchMap, take, tap } from 'rxjs/operators';
 import { Flight } from '../models/flight';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { FlightStats, OverallStats } from '../models/stats';
+import { flightDistance } from '../pipes/flightDistancePipe';
 
 export const enum SaveResultType {CREATED, UPDATED}
 
@@ -103,7 +104,7 @@ export class FlightsService {
             (stats, flight) => {
               stats.count += 1;
               if (!!flight.distance && !isNaN(+flight.distance)) {
-                stats.distance = stats.distance + parseFloat('' + flight.distance);
+                stats.distance = stats.distance + flightDistance(flight);
               }
               if (!!flight.durationMilliseconds && !isNaN(+flight.durationMilliseconds)) {
                 stats.totalTimeMilliseconds = stats.totalTimeMilliseconds + flight.durationMilliseconds;

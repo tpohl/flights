@@ -31,6 +31,9 @@ export class Flight {
   created: Date;
   user: string;
 
+  flightAwareFlightId: string;
+  flownDistance: number;
+
   needsAutocomplete: boolean;
   errorMessage: string;
 

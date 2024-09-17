@@ -44,7 +44,7 @@ export class Flight {
   flightAwareFlight: FlightAwareFlight;
 
   aeroApiFlight: AeroApiFlight;
-  aeroApiTrack: AeroAPITrackResponse;
+  flightAwareFlightId: string;
 
   status: FlightStatus;
 

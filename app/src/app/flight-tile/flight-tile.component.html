@@ -28,7 +28,7 @@
         <div>
           <i class="fa fa-plane"></i>
           <span class="heading">
-            {{ flight.distance | number : '1.0-0' }} km <br />
+            {{ flight | flightDistance | number : '1.0-0' }} km <br />
             <app-seat-info *ngIf="compact" [flight]="flight"></app-seat-info>
           </span>
         </div>
