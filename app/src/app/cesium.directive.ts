@@ -2,11 +2,14 @@ import { debounceTime, filter, groupBy, map, mergeMap, tap, toArray } from 'rxjs
 import { Airport } from './models/airport';
 import { AirportService } from './services/airport.service';
 import { Flight } from './models/flight';
+import { AeroAPITrackResponse, Position } from './models/aeroapi';
 import { Component, ElementRef, Input, OnDestroy, OnInit } from '@angular/core';
-import { from, Observable, Subscription, zip } from 'rxjs';
+import { from, Observable, of, Subscription, zip } from 'rxjs';
 
 import { interpolateRainbow } from 'd3-scale-chromatic';
 import * as Cesium from 'cesium';
+import { FlightsService } from './services/flights.service';
+import { Environment } from '../environments/environment';
 
 /*
 const createPositions = function (route) {
@@ -60,9 +63,8 @@ export class CesiumDirective implements OnInit, OnDestroy {
   private viewer: any;
   private subs = new Subscription();
 
-  constructor(private element: ElementRef, private airportService: AirportService) {
-    //   Cesium.BingMapsApi.defaultKey = 'Arvxz11onv0TmhTvn0mMzbRDEVJ59LI35MI6YScmvQS3jzwzORkEZAv1Xs987i0T';
-    Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJkYWYxNzUzZi0yNjliLTQyYjYtYjJiYy1iZDk0YWUxYjQ4N2QiLCJpZCI6MjI2OCwiaWF0IjoxNTMyMzczMDQ0fQ.oWuIYi0TtUbwYeRHj5rE3nTI53c3v5HF8UJHgjehxoM';
+  constructor(private element: ElementRef, private airportService: AirportService, private flightService: FlightsService) {
+    Cesium.Ion.defaultAccessToken = Environment.cesium.accessToken;
   }
 
   ngOnDestroy() {
@@ -90,6 +92,7 @@ export class CesiumDirective implements OnInit, OnDestroy {
           this.routeEntities = [];
           let totalFlights = 0;
           let flightNumber = 0;
+          const many= flightArray.length > 10;
           return from(flightArray)
             // Remove Duplicates
             .pipe(
@@ -102,21 +105,28 @@ export class CesiumDirective implements OnInit, OnDestroy {
               })
             )
             .pipe(mergeMap(flight =>
-                zip(
-                  this.airportService.loadAirport(flight.from),
-                  this.airportService.loadAirport(flight.to),
-                  (fromAp: Airport, toAp: Airport) => {
-                    this.maxLatitude = Math.max(this.maxLatitude, fromAp.latitude, toAp.latitude);
-                    this.maxLongitude = Math.max(this.maxLongitude, fromAp.longitude, toAp.longitude);
-                    this.minLatitude = Math.min(this.minLatitude, fromAp.latitude, toAp.latitude);
-                    this.minLongitude = Math.min(this.minLongitude, fromAp.longitude, toAp.longitude);
+              zip(
+                this.airportService.loadAirport(flight.from),
+                this.airportService.loadAirport(flight.to),
+                many ? of(undefined) : this.flightService.loadFlightTrack(flight),
+                (fromAp: Airport, toAp: Airport, flightTrack: AeroAPITrackResponse) => {
+                  this.maxLatitude = Math.max(this.maxLatitude, fromAp.latitude, toAp.latitude);
+                  this.maxLongitude = Math.max(this.maxLongitude, fromAp.longitude, toAp.longitude);
+                  this.minLatitude = Math.min(this.minLatitude, fromAp.latitude, toAp.latitude);
+                  this.minLongitude = Math.min(this.minLongitude, fromAp.longitude, toAp.longitude);
+
+                  
                     const f = new CesiumFlight();
                     f.departureTime = new Date(flight.departureTime);
                     f.arrivalTime = new Date(flight.arrivalTime);
                     f.fromAp = fromAp;
                     f.toAp = toAp;
+                    if (!!flightTrack) {
+                      f.positions = flightTrack.positions;
+                    }
                     return f;
-                  }))
+                  
+                }))
               ,
               filter(f => {
                 if (f.fromAp && f.toAp) {
@@ -152,7 +162,7 @@ export class CesiumDirective implements OnInit, OnDestroy {
   }
 
 
-  drawFlight(route, colorString?) {
+  drawFlight(route: CesiumFlight, colorString?: string) {
     const color = Cesium.Color.fromCssColorString(colorString ? colorString : '#FFB300');
     // https://stackoverflow.com/questions/37381658/polyline-arcs-above-surface-in-cesium
 
@@ -167,31 +177,36 @@ export class CesiumDirective implements OnInit, OnDestroy {
     stopTime = Cesium.JulianDate.addSeconds(startTime, durationSeconds, new Cesium.JulianDate());
 
 
-
-    // Create a straight-line path.
     let property = new Cesium.SampledPositionProperty();
 
-    // For some reason, we nee to use the fromAp as stop Position here and to as start...
-    const stopPosition = Cesium.Cartesian3.fromDegrees(route.fromAp.longitude, route.fromAp.latitude, 0);
-    const startPosition = Cesium.Cartesian3.fromDegrees(route.toAp.longitude, route.toAp.latitude, 0);
+    if (!!route.positions && route.positions.length > 2) {
+      route.positions.forEach(position => {
+        property.addSample( Cesium.JulianDate.fromIso8601(position.timestamp, new Cesium.JulianDate()), Cesium.Cartesian3.fromDegrees(position.longitude, position.latitude, position.altitude*300));
+      });
+    } 
+    else {
+      // Create a straight-line path.
+      // For some reason, we nee to use the fromAp as stop Position here and to as start...
+      const stopPosition = Cesium.Cartesian3.fromDegrees(route.fromAp.longitude, route.fromAp.latitude, 0);
+      const startPosition = Cesium.Cartesian3.fromDegrees(route.toAp.longitude, route.toAp.latitude, 0);
 
-    property.addSample(startTime, startPosition);
-    property.addSample(stopTime, stopPosition);
+      property.addSample(startTime, startPosition);
+      property.addSample(stopTime, stopPosition);
 
-    const distance = Cesium.Cartesian3.distance(startPosition, stopPosition); // TODO: Distance is linear
+      const distance = Cesium.Cartesian3.distance(startPosition, stopPosition); // TODO: Distance is linear
 
-    // Find the midpoint of the straight path, and raise its altitude.
-    const midPoint = Cesium.Cartographic.fromCartesian(property.getValue(midTime));
-    midPoint.height = Cesium.Math.nextRandomNumber() * 100000 + Math.sqrt(distance) * 500;
-    const midPosition = this.viewer.scene.globe.ellipsoid.cartographicToCartesian(
-      midPoint, new Cesium.Cartesian3());
+      // Find the midpoint of the straight path, and raise its altitude.
+      const midPoint = Cesium.Cartographic.fromCartesian(property.getValue(midTime));
+      midPoint.height = Cesium.Math.nextRandomNumber() * 100000 + Math.sqrt(distance) * 500;
+      const midPosition = this.viewer.scene.globe.ellipsoid.cartographicToCartesian(
+        midPoint, new Cesium.Cartesian3());
 
-    // Redo the path to be the new arc.
-    property = new Cesium.SampledPositionProperty();
-    property.addSample(startTime, startPosition);
-    property.addSample(midTime, midPosition);
-    property.addSample(stopTime, stopPosition);
-
+      // Redo the path to be the new arc.
+      property = new Cesium.SampledPositionProperty();
+      property.addSample(startTime, startPosition);
+      property.addSample(midTime, midPosition);
+      property.addSample(stopTime, stopPosition);
+    }
     // Create an Entity to show the arc.
     const arcEntity = this.viewer.entities.add({
       position: property,
@@ -229,11 +244,9 @@ class CesiumFlight {
   arrivalTime: Date;
   fromAp: Airport;
   toAp: Airport;
+  name: string;
+  positions: Position[];
 }
 
-class Route extends CesiumFlight {
-  name: string;
-  count: number;
-  positions: any;
-}
+
 

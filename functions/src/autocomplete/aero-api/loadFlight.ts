@@ -52,7 +52,7 @@ export const loadAeroApiFlight = function (carrier: string, flightNo: string, da
 }
 
 export const loadAeroApiTrack = function (fa_flight_id: string): Observable<AeroAPITrackResponse> {
-    return RxHR.get<AeroAPITrackResponse>(`https://aeroapi.flightaware.com/aeroapi/flights/${fa_flight_id}/track?include_estimated_positions=true`,
+    return RxHR.get<AeroAPITrackResponse>(`https://aeroapi.flightaware.com/aeroapi/flights/${fa_flight_id}/track?include_estimated_positions=false`,
         {
             headers: {
                 'Accept': 'application/json; charset=UTF-8',

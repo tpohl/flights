@@ -2,7 +2,7 @@ import { DatepickerComponent } from './datepicker/datepicker.component';
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 import { AppComponent } from './app.component';
-import { environment } from '../environments/environment';
+import { Environment } from '../environments/environment';
 import { FlightListComponent } from './flight-list/flight-list.component';
 import { FormsModule } from '@angular/forms';
 import { RouterModule, Routes } from '@angular/router';
@@ -84,17 +84,17 @@ const appRoutes: Routes = [
     CommonModule,
     BrowserModule,
     FormsModule,
-    provideFirebaseApp(() => initializeApp(environment.firebase)),
+    provideFirebaseApp(() => initializeApp(Environment.firebase)),
     provideAuth(() => getAuth()),
     provideDatabase(() => getDatabase()),
     ServiceWorkerModule.register('ngsw-worker.js', {
-      enabled: environment.production,
+      enabled: Environment.production,
       // Register the ServiceWorker as soon as the application is stable
       // or after 30 seconds (whichever comes first).
       registrationStrategy: 'registerWhenStable:30000'
     })
   ],
-  providers: [AirportService, FlightsService, { provide: FIREBASE_OPTIONS, useValue: environment.firebase }],
+  providers: [AirportService, FlightsService, { provide: FIREBASE_OPTIONS, useValue: Environment.firebase }],
   bootstrap: [AppComponent]
 })
 export class AppModule {

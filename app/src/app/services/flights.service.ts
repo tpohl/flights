@@ -8,6 +8,7 @@ import { Flight } from '../models/flight';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { FlightStats, OverallStats } from '../models/stats';
 import { flightDistance } from '../pipes/flightDistancePipe';
+import { AeroAPITrackResponse } from '../models/aeroapi';
 
 export const enum SaveResultType {CREATED, UPDATED}
 
@@ -131,6 +132,19 @@ export class FlightsService {
             .pipe(
               tap(flight => flight._objectReference = objectRef)
             );
+        }));
+  }
+
+  loadFlightTrack(flight: Flight): Observable<AeroAPITrackResponse> {
+    if (!flight.flightAwareFlightId){
+      return undefined;
+    }
+    return this.afAuth.user
+      .pipe(
+        switchMap(user => {
+          const objectRef = 'users/' + user.uid + '/aeroApiTracks/' + flight.flightAwareFlightId;
+          const flightObject = this.db.object<AeroAPITrackResponse>(objectRef);
+          return flightObject.valueChanges();
         }));
   }
 
