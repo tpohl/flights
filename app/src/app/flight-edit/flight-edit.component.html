@@ -16,7 +16,7 @@
       <app-cesium [flights]="flightsForMap()" [timelineMode]="false"></app-cesium>
     </div>
     <div class="mt-2 mb-2">
-      <app-flight-stats [flight]="flight"></app-flight-stats>
+      <app-flight-stats [flight]="flight" [aeroApiTrack]=""></app-flight-stats>
     </div>
     <div class="card">
       <div class="card-header">
@@ -55,8 +55,8 @@
               <div class="control is-expanded">
                 <input class="input" type="text" [(ngModel)]="flight.flightno" placeholder="Flight Number">
               </div>
-              <div class="control">
-                <button (click)="autocomplete()" [class.is-loading]="flight.needsAutocomplete" class="button">
+              <div class="control"  (click)="autocomplete()">
+                <button [class.is-loading]="flight.needsAutocomplete" class="button">
                   <i class="fa fa-magic" aria-hidden="true"></i>
                 </button>
               </div>

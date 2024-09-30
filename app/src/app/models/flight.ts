@@ -31,7 +31,11 @@ export class Flight {
   created: Date;
   user: string;
 
+  lhApiFlight: any;
+  aeroApiFlight: any;
+
   flightAwareFlightId: string;
+
   flownDistance: number;
 
   needsAutocomplete: boolean;

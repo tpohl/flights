@@ -4,6 +4,7 @@ import { FlightsService } from '../services/flights.service';
 import { Observable } from 'rxjs';
 import { FlightStats } from '../models/stats';
 import { take } from 'rxjs/operators';
+import { AeroAPITrackResponse } from '../models/aeroapi';
 
 @Component({
   selector: 'app-flight-stats',
@@ -17,12 +18,15 @@ export class FlightStatsComponent implements OnInit {
 
   flightsHidden = true;
 
+  aeroApiTrack$: Observable<AeroAPITrackResponse>;
+
   constructor(private flightsService: FlightsService) {
   }
 
   @Input()
   set flight(newFlight: Flight) {
     this._flight = newFlight;
+    this.aeroApiTrack$ = this.flightsService.loadFlightTrack(newFlight);
     this.stats$ = this.flightsService.computeStats(this._flight);
   }
 

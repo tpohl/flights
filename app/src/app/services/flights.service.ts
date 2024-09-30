@@ -8,7 +8,7 @@ import { Flight } from '../models/flight';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { FlightStats, OverallStats } from '../models/stats';
 import { flightDistance } from '../pipes/flightDistancePipe';
-import { AeroAPITrackResponse } from '../models/aeroapi';
+import { AeroAPITrackResponse, UpdateType } from '../models/aeroapi';
 
 export const enum SaveResultType {CREATED, UPDATED}
 
@@ -135,9 +135,9 @@ export class FlightsService {
         }));
   }
 
-  loadFlightTrack(flight: Flight): Observable<AeroAPITrackResponse> {
-    if (!flight.flightAwareFlightId){
-      return undefined;
+  loadFlightTrack(flight: Flight, removeProjectedIfActualsAreAvailable = true): Observable<AeroAPITrackResponse> {
+    if (!flight.flightAwareFlightId) {
+      return of(undefined);
     }
     return this.afAuth.user
       .pipe(
@@ -145,6 +145,16 @@ export class FlightsService {
           const objectRef = 'users/' + user.uid + '/aeroApiTracks/' + flight.flightAwareFlightId;
           const flightObject = this.db.object<AeroAPITrackResponse>(objectRef);
           return flightObject.valueChanges();
+        }),
+        map(track => {
+          if (removeProjectedIfActualsAreAvailable
+            && !!track
+            && !!track.actual_distance
+            && track.actual_distance > 0
+            && track.positions.some(p => p.update_type !== UpdateType.P)) {
+            track.positions = track.positions.filter(p => p.update_type !== UpdateType.P);
+          }
+          return track;
         }));
   }
 
@@ -184,7 +194,7 @@ export class FlightsService {
 
 }
 
-const clearFlight =  (flight: Flight) => {   // Clear any undefined values
+const clearFlight = (flight: Flight) => {   // Clear any undefined values
   Object.keys(flight).forEach(
     key => {
       if (!!!flight[key]) {

@@ -4,7 +4,42 @@
   </div>
   <div class="card-content">
     <div class="section pl-0 pr-0">
-
+      <p class="heading is-5">
+        Data Accuracy
+      </p>
+      <nav class="level is-mobile">
+        <div class="level-item has-text-centered">
+          <div>
+            <p class="heading">Lufthansa API</p>
+            <p class="title is-4">
+              <i class="fa" [ngClass]="{'fa-check':!!flight.lhApiFlight , 'fa-times':!!!flight.lhApiFlight}"></i>
+            </p>
+          </div>
+        </div>
+        <div class="level-item has-text-centered">
+          <div>
+            <p class="heading">Aero API</p>
+            <p class="title is-4">
+              <i class="fa" [ngClass]="{'fa-check':!!flight.aeroApiFlight , 'fa-times':!!!flight.aeroApiFlight}"></i>
+            </p>
+          </div>
+        </div>
+        <div class="level-item has-text-centered" >
+          <div>
+            <p class="heading">Aero API Track</p>
+            <p class="title is-4">
+              <ng-container *ngIf="(aeroApiTrack$|async) as aeroApiTrack; else noAeroApiTrack">
+                <i class="fa" [ngClass]="{'fa-check':(!!aeroApiTrack && aeroApiTrack?.actual_distance>0) , 'fa-star-half':(!!aeroApiTrack && aeroApiTrack?.actual_distance<=0), 'fa-times':!!!aeroApiTrack}"></i>
+              </ng-container>
+              <ng-template #noAeroApiTrack>
+                <i class="fa fa-times"></i>
+              </ng-template>
+            </p>
+          </div>
+        </div>
+      </nav>
+    </div>
+    <div class="section pl-0 pr-0">
       <p class="heading is-5">
         Number of flights
       </p>
