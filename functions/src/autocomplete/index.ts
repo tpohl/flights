@@ -89,7 +89,9 @@ const autocompleteFlight = function (flightRef: admin.database.Reference, contex
                   mergeMap(aeroApiTrack => {
                     flight.aeroApiFlight = aeroApiFlight;
                     flight.flightAwareFlightId = aeroApiFlight.fa_flight_id;
-                    flight.flownDistance = aeroApiTrack.actual_distance * 1.60934;
+                    if (typeof aeroApiTrack.actual_distance === 'number') {
+                       flight.flownDistance = aeroApiTrack.actual_distance * 1.60934;
+                    }
                     const aeroApiTrackRef = flightRef.parent.parent.child("aeroApiTracks").child(aeroApiFlight.fa_flight_id)
                     return of(aeroApiTrackRef.set(aeroApiTrack))
                       .pipe(map(_=> flight))
