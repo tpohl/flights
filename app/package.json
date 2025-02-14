@@ -34,6 +34,7 @@
     "node-sass": "npm:sass@^1.50.1",
     "rxjs": "^6.6.0",
     "tslib": "^2.0.0",
+    "world-atlas": "^2.0.2",
     "zone.js": "~0.13.1"
   },
   "devDependencies": {

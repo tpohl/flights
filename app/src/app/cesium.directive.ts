@@ -1,10 +1,10 @@
-import { debounceTime, filter, groupBy, map, mergeMap, tap, toArray } from 'rxjs/operators';
-import { Airport } from './models/airport';
+import { bufferTime, debounceTime, filter, groupBy, map, mergeMap, shareReplay, take, tap, toArray } from 'rxjs/operators';
+import { Airport, Country } from './models/airport';
 import { AirportService } from './services/airport.service';
 import { Flight } from './models/flight';
 import { AeroAPITrackResponse, Position } from './models/aeroapi';
 import { Component, ElementRef, Input, OnDestroy, OnInit } from '@angular/core';
-import { from, Observable, of, Subscription, zip } from 'rxjs';
+import { combineLatest, from, Observable, of, Subscription, zip } from 'rxjs';
 
 import { interpolateRainbow } from 'd3-scale-chromatic';
 import * as Cesium from 'cesium';
@@ -54,6 +54,9 @@ export class CesiumDirective implements OnInit, OnDestroy {
   @Input()
   private timelineMode = true;
 
+
+  private _showCountries = true;
+
   private routeEntities = new Array<Cesium.Entity>();
 
   private maxLongitude = -400.0;
@@ -61,10 +64,26 @@ export class CesiumDirective implements OnInit, OnDestroy {
   private maxLatitude = -400.0;
   private minLatitude = 400.0;
   private viewer: any;
+
+  private countryDateSource : Cesium.GeoJsonDataSource;
+
   private subs = new Subscription();
 
   constructor(private element: ElementRef, private airportService: AirportService, private flightService: FlightsService) {
     Cesium.Ion.defaultAccessToken = Environment.cesium.accessToken;
+  }
+
+  public get showCountries() {
+    return this._showCountries;
+  }
+  @Input()
+  public set showCountries(flag: boolean) {
+    this._showCountries = flag;
+    if (this._showCountries && !! this.countryDateSource){
+      this.viewer.dataSources.add(this.countryDateSource);
+    } else if (!this._showCountries  && !! this.countryDateSource) {
+      this.viewer.dataSources.remove(this.countryDateSource);
+    }
   }
 
   ngOnDestroy() {
@@ -80,6 +99,66 @@ export class CesiumDirective implements OnInit, OnDestroy {
 
     });
 
+      const geoJSON$ = from(Cesium.GeoJsonDataSource.load('/assets/countries.geojson', {
+        stroke: Cesium.Color.LIGHTBLUE.withAlpha(0.5),
+        fill: Cesium.Color.BLUE.withAlpha(0.1),
+        strokeWidth: 3
+      })).pipe(take(1), shareReplay(1));
+
+
+      this.subs.add(
+        combineLatest([
+          geoJSON$,
+          this.flights.pipe(
+            filter(flights => flights.length > 0),
+            take(1),
+            mergeMap(flights =>
+              from(flights).pipe(
+                mergeMap(flight => this.airportService.loadAirport(flight.to)),
+                map(airport => airport.country),
+               bufferTime(1000),
+              )
+            ),
+            filter(countries => countries.length > 0),
+            map(countriesVisited => countriesVisited.reduce((acc, country) => {
+                const count = acc.get(country.isoNo) || 0;
+                acc.set(country.isoNo, count + 1);
+                return acc;
+              }, new Map<string, number>())
+            ))
+        ]).subscribe(([countries, countriesVisited]) => {
+          const data = countries;
+
+          if (countriesVisited.size > 0) {
+            for (let i = 0; i < data.entities.values.length; i++) {
+              const entity = data.entities.values[i];
+
+              // Fixing ArcType
+              if (Cesium.defined(entity.polygon)) {
+                entity.polygon.arcType = new Cesium.ConstantProperty(Cesium.ArcType.GEODESIC);
+              }
+
+              const isoCountryCode = entity.id.substring(0, 3);
+              if (!!!entity.id || countriesVisited.get(isoCountryCode) === undefined) {
+                entity.show = false;
+                //  console.log('Hiding', entity.id, entity.name, isoCountryCode);
+              } else {
+                const visits = (countriesVisited.get(isoCountryCode) || 0);
+                entity.polygon.extrudedHeight = new Cesium.ConstantProperty(Math.min(10000 * visits, 200000));
+
+              }
+            }
+
+            this.countryDateSource = data;
+
+            if (this.showCountries) {
+              this.viewer.dataSources.add(data);
+            }
+          }
+        }));
+
+
+
     const colorFunction = interpolateRainbow;
     this.subs.add(this.flights
       .pipe(
@@ -92,7 +171,7 @@ export class CesiumDirective implements OnInit, OnDestroy {
           this.routeEntities = [];
           let totalFlights = 0;
           let flightNumber = 0;
-          const many= flightArray.length > 10;
+          const many = flightArray.length > 10;
           return from(flightArray)
             // Remove Duplicates
             .pipe(
@@ -105,17 +184,17 @@ export class CesiumDirective implements OnInit, OnDestroy {
               })
             )
             .pipe(mergeMap(flight =>
-              zip(
-                this.airportService.loadAirport(flight.from),
-                this.airportService.loadAirport(flight.to),
-                many ? of(undefined) : this.flightService.loadFlightTrack(flight),
-                (fromAp: Airport, toAp: Airport, flightTrack: AeroAPITrackResponse) => {
-                  this.maxLatitude = Math.max(this.maxLatitude, fromAp.latitude, toAp.latitude);
-                  this.maxLongitude = Math.max(this.maxLongitude, fromAp.longitude, toAp.longitude);
-                  this.minLatitude = Math.min(this.minLatitude, fromAp.latitude, toAp.latitude);
-                  this.minLongitude = Math.min(this.minLongitude, fromAp.longitude, toAp.longitude);
+                zip(
+                  this.airportService.loadAirport(flight.from),
+                  this.airportService.loadAirport(flight.to),
+                  many ? of(undefined) : this.flightService.loadFlightTrack(flight),
+                  (fromAp: Airport, toAp: Airport, flightTrack: AeroAPITrackResponse) => {
+                    this.maxLatitude = Math.max(this.maxLatitude, fromAp.latitude, toAp.latitude);
+                    this.maxLongitude = Math.max(this.maxLongitude, fromAp.longitude, toAp.longitude);
+                    this.minLatitude = Math.min(this.minLatitude, fromAp.latitude, toAp.latitude);
+                    this.minLongitude = Math.min(this.minLongitude, fromAp.longitude, toAp.longitude);
 
-                  
+
                     const f = new CesiumFlight();
                     f.departureTime = new Date(flight.departureTime);
                     f.arrivalTime = new Date(flight.arrivalTime);
@@ -125,8 +204,8 @@ export class CesiumDirective implements OnInit, OnDestroy {
                       f.positions = flightTrack.positions;
                     }
                     return f;
-                  
-                }))
+
+                  }))
               ,
               filter(f => {
                 if (f.fromAp && f.toAp) {
@@ -181,10 +260,9 @@ export class CesiumDirective implements OnInit, OnDestroy {
 
     if (!!route.positions && route.positions.length > 2) {
       route.positions.forEach(position => {
-        property.addSample( Cesium.JulianDate.fromIso8601(position.timestamp, new Cesium.JulianDate()), Cesium.Cartesian3.fromDegrees(position.longitude, position.latitude, position.altitude*300));
+        property.addSample(Cesium.JulianDate.fromIso8601(position.timestamp, new Cesium.JulianDate()), Cesium.Cartesian3.fromDegrees(position.longitude, position.latitude, position.altitude * 300));
       });
-    } 
-    else {
+    } else {
       // Create a straight-line path.
       // For some reason, we nee to use the fromAp as stop Position here and to as start...
       const stopPosition = Cesium.Cartesian3.fromDegrees(route.fromAp.longitude, route.fromAp.latitude, 0);

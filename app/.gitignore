@@ -46,3 +46,4 @@ Thumbs.db
 functions/firebase-debug.log
 .firebase
 
+/src/assets/countries.geojson

@@ -1,9 +1,6 @@
 import { Flight } from './../models/flight';
 import { Component, OnInit } from '@angular/core';
-import { AngularFireDatabase } from '@angular/fire/compat/database';
-import { Observable, from, combineLatest, BehaviorSubject } from 'rxjs';
-import { map, reduce, mergeMap, tap } from 'rxjs/operators';
-import { AngularFireAuth } from '@angular/fire/compat/auth';
+import { Observable } from 'rxjs';
 import { FlightsService } from '../services/flights.service';
 import { OverallStats } from '../models/stats';
 
@@ -18,6 +15,11 @@ export class FlightListComponent implements OnInit {
 
   stats$: Observable<OverallStats>;
 
+  mapOptions: MapOptions = {
+    flights: true,
+    countries: true
+  };
+
   constructor(private flightsService: FlightsService) {
   }
 
@@ -31,4 +33,8 @@ export class FlightListComponent implements OnInit {
   }
 }
 
+class MapOptions {
+  flights: boolean;
+  countries: boolean;
+}
 

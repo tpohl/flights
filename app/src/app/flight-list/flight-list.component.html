@@ -4,42 +4,51 @@
   </h2>
 
   <div class="columns">
-    <div class="column">
-      <app-cesium *ngIf="flights" [flights]="flights"></app-cesium>
+    <div class="column is-full-mobile is-three-quarters is-four-fifths-fullhd">
+      <app-cesium *ngIf="flights" [flights]="flights" [showCountries]="mapOptions.countries"></app-cesium>
     </div>
-  </div>
-  <div class="columns">
     <div class="column">
-      <div class="card">
-        <div class="card-content">
-          <p class="subtitle is-hidden-mobile">
-            Add / Import / Export
-          </p>
-          <nav class="level is-mobile" *ngIf="(stats$|async) as stats">
-            <div class="level-item has-text-centered">
-              <div>
-                <p class="heading">Flights</p>
-                <p class="title is-3">{{stats.count }}</p>
-              </div>
-            </div>
-            <div class="level-item has-text-centered">
-              <div>
-                <p class="heading">Distance</p>
-                <p class="title is-3">{{stats.distance | number : '1.0-0'}} km</p>
-              </div>
-            </div>
-            <div class="level-item has-text-centered">
-              <div>
-                <p class="heading">Duration</p>
-                <p class="title is-3">{{stats.totalTimeMilliseconds | amDurationExact}}</p>
-              </div>
-            </div>
-          </nav>
+      <nav class="panel has-background-white">
+        <p class="panel-heading">Map Options</p>
+        <div class="panel-block">
+          <div class="field">
+            <input id="showVisitedCountries" type="checkbox" name="switchExample" class="switch" [(ngModel)]="mapOptions.countries">
+            <label for="showVisitedCountries"> Show visited Countries</label>
+          </div>
         </div>
-        <footer class="card-footer is-hidden-mobile">
-          <a [routerLink]="['/flight', 'new']" class="card-footer-item">Add Flight</a>
-        </footer>
-      </div>
+        <div *ngIf="(stats$|async) as stats">
+          <p class="panel-heading">Statistics</p>
+
+          <a class="panel-block">
+            <div class="field heading">
+             <span class="panel-icon">
+              <i class="fa fa-plane" aria-hidden="true"></i>
+            </span>
+              <label>Flights </label>{{ stats.count }}
+            </div>
+          </a>
+          <a class="panel-block">
+            <div class="field heading">
+             <span class="panel-icon">
+              <i class="fa fa-map" aria-hidden="true"></i>
+            </span>
+              <label>Distance </label>{{ stats.distance | number : '1.0-0' }} km
+            </div>
+          </a>
+          <a class="panel-block">
+            <div class="field heading">
+             <span class="panel-icon">
+              <i class="fa fa-clock-o" aria-hidden="true"></i>
+            </span>
+              <label>Duration </label>{{ stats.totalTimeMilliseconds | amDurationExact }}
+            </div>
+          </a>
+
+        </div>
+        <div class="panel-block">
+          <button class="button is-link is-outlined is-fullwidth" [routerLink]="['/flight', 'new']">Add Flight</button>
+        </div>
+      </nav>
     </div>
   </div>
 
