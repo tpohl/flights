@@ -73,7 +73,7 @@
               <div class="control is-expanded">
                 <input class="input" type="text" [(ngModel)]="flight.from" placeholder="Origin" (change)="loadFromAirport(flight.from)">
               </div>
-              <div class="control">{{(fromAirport$ | async) | json }}
+              <div class="control">
                 <p class="button is-static">{{ (fromAirport$ | async)?.name | slice:0:30 }}</p>
               </div>
             </div>
