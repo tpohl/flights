@@ -2,11 +2,11 @@
 
 
 import { Flight } from '../models/flight';
-import { RxHR } from "@akanass/rx-http-request";
+import { RxHR } from '@akanass/rx-http-request';
 import DayJS from 'dayjs';
 
-import { filter, map, tap, flatMap, defaultIfEmpty, take, catchError } from "rxjs/operators";
-import { from, zip, Observable, of, concat, EMPTY } from 'rxjs';
+import { catchError, defaultIfEmpty, filter, flatMap, map, take, tap } from 'rxjs/operators';
+import { concat, from, Observable, of } from 'rxjs';
 
 const functions = require('firebase-functions');
 const config = functions.config();
@@ -15,7 +15,7 @@ const config = functions.config();
 const credentials = {
   user: config.flightaware.username,
   password: config.flightaware.apikey,
-  auth: "Basic " + new Buffer(config.flightaware.username + ":" + config.flightaware.apikey).toString("base64")
+  auth: 'Basic ' + new Buffer(config.flightaware.username + ':' + config.flightaware.apikey).toString('base64')
 };
 
 
@@ -30,25 +30,25 @@ const cleanDate = function (date: string) {
   } else {
     return date;
   }
-}
+};
 const airlines = new Map(Object.entries({
-  'DLH': 'Lufthansa',
+  'DLH': 'Lufthansa'
 }));
 const airlineMapper = function (airlineCode: string) {
   return airlines.has(airlineCode) ? airlines.get(airlineCode) : airlineCode;
-}
+};
 
 const aircraft = new Map(Object.entries({
   'A319': 'Airbus A319',
   'A320': 'Airbus A320',
   'A321': 'Airbus A321',
   'A359': 'Airbus A350-900',
-  'B744': 'Boeing 747-400',
+  'B744': 'Boeing 747-400'
 })) as Map<string, string>;
 
 const aircraftMapper = function (acCode: string) {
   return aircraft.has(acCode) ? aircraft.get(acCode) : acCode;
-}
+};
 
 export interface FlightAwareFlight {
 
@@ -123,16 +123,18 @@ const FlightAwareAutoCompleter = {
       f.arrivalTime = DayJS.unix(arrivalEpoch).toISOString();
 
       f.aircraftRegistration = flight.tailnumber;
-      f.distance = Math.round(flight.distance_filed * 1.60934);// Kilometers
+      if (flight.distance_filed > 0) {
+        f.distance = Math.round(flight.distance_filed * 1.60934);// Kilometers
+      }
       f.note = flight.faFlightID;
       f.status = flight.progress_percent === 100 ? 'landed' : 'scheduled';
       console.log('Flightaware Result:', flight);
       return f;
-    }
+    };
 
 
     return RxHR.get('https://flightxml.flightaware.com/json/FlightXML3/FlightInfoStatus', {
-      headers: { "Authorization": credentials.auth },
+      headers: { 'Authorization': credentials.auth },
       qs: {
         ident: flightNo,
         howMany: 100
@@ -185,10 +187,10 @@ const FlightAwareAutoCompleter = {
                     originalArrivalTime: originalArrivalTime,
                     departureTime: departureTime,
                     arrivalTime: arrivalTime,
-                    y: flightDateMoment.get("year"),
-                    m: flightDateMoment.get("month"),
+                    y: flightDateMoment.get('year'),
+                    m: flightDateMoment.get('month'),
                     d: flightDateMoment.date()
-                  })
+                  });
 
                   flight.departureTime =
                     departureTime.toISOString();
@@ -198,7 +200,7 @@ const FlightAwareAutoCompleter = {
 
                   console.log('No Flight Found for the day. Guessing Flight: ', flight);
 
-                  flight.status = "guess";
+                  flight.status = 'guess';
                   return flight;
                 })
               )
@@ -206,9 +208,8 @@ const FlightAwareAutoCompleter = {
         )) as Observable<Flight>;
 
 
-
   }
-}
+};
 
 
 export default FlightAwareAutoCompleter;

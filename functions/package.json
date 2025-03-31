@@ -6,9 +6,10 @@
     "serve": "npm run build && firebase serve --only functions",
     "shell": "npm run build && firebase functions:shell",
     "start": "npm run shell",
+    "login": "firebase login",
     "deploy": "firebase deploy --only functions --project flights-159420",
     "logs": "firebase functions:log",
-    "postinstall": "npx --yes @kie/lock-treatment-tool -s && cp node_modules/world-atlas/countries-110m.json src/assets/countries.geojson"
+    "postinstall": "npx --yes @kie/lock-treatment-tool -s"
   },
   "main": "lib/index.js",
   "dependencies": {
