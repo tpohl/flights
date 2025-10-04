@@ -246,18 +246,11 @@
           <div class="field-body">
             <div class="field">
               <div class="control">
-                <label class="radio">
-                  <input type="radio" value="Y" name="class" [(ngModel)]="flight.class"> Economy
-                </label>
-                <label class="radio">
-                  <input type="radio" value="M" name="class" [(ngModel)]="flight.class"> Premium Eco
-                </label>
-                <label class="radio">
-                  <input type="radio" value="C" name="class" [(ngModel)]="flight.class"> Business
-                </label>
-                <label class="radio">
-                  <input type="radio" value="F" name="class" [(ngModel)]="flight.class"> First
-                </label>
+                <!--@for (travelClass of TRAVEL_CLASSES; track travelClass.key) {-->
+                  <label *ngFor="let travelClass of TRAVEL_CLASSES" class="radio">
+                    <input type="radio" [value]="travelClass.key" name="class" [(ngModel)]="flight.class"> {{ travelClass.long }}
+                  </label>
+                <!--}-->
               </div>
             </div>
           </div>

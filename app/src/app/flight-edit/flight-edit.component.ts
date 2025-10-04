@@ -19,6 +19,7 @@ DayJS.extend(DayJSTimezone);
 import firebase from 'firebase/compat';
 import { FlightsService, SaveResultType } from '../services/flights.service';
 import User = firebase.User;
+import { TRAVEL_CLASSES } from '../seat-info/seat-info.component';
 
 
 @Component({
@@ -47,6 +48,8 @@ export class FlightEditComponent implements OnInit, OnDestroy {
 
   departureTime = '00:00';
   arrivalTime = '00:00';
+
+  TRAVEL_CLASSES = TRAVEL_CLASSES;
 
   objectRef: string;
 
