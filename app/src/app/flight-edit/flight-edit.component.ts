@@ -49,7 +49,7 @@ export class FlightEditComponent implements OnInit, OnDestroy {
   departureTime = '00:00';
   arrivalTime = '00:00';
 
-  TRAVEL_CLASSES = TRAVEL_CLASSES;
+  TRAVEL_CLASSES_LIST = TRAVEL_CLASSES.values;
 
   objectRef: string;
 
