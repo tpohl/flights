@@ -78,18 +78,18 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "browserTarget": "flights:build"
+            "buildTarget": "flights:build"
           },
           "configurations": {
             "production": {
-              "browserTarget": "flights:build:production"
+              "buildTarget": "flights:build:production"
             }
           }
         },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "flights:build"
+            "buildTarget": "flights:build"
           }
         },
         "test": {
