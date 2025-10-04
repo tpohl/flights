@@ -29,12 +29,11 @@ export interface ClassInfo {
   long: string
   cssClass: string;
 }
-export const TRAVEL_CLASSES: Map<string, ClassInfo> =new Map( Object.entries({
+export const TRAVEL_CLASSES: Map<string, ClassInfo> = new Map(Object.entries({
   Y: { key: 'Y', short: 'ECO', long: 'Economy', cssClass: 'is-success' },
   M: { key: 'M', short: 'ECO+', long: 'Premium Economy', cssClass: 'is-primary' },
   C: { key: 'C', short: 'BIZ', long: 'Business', cssClass: 'is-info' },
   F: { key: 'F', short: '1ST', long: 'First Class', cssClass: 'is-danger' },
   J: { key: 'J', short: 'JMP', long: 'Jump Seat', cssClass: 'is-warning' },
-  P: { key: 'P', short: 'CPIT', long: 'Cockpit', cssClass: 'is-link' } // Cockpit
-}
-));
+  P: { key: 'P', short: 'CPIT', long: 'Cockpit', cssClass: 'is-link' }
+}));
