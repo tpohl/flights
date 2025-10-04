@@ -49,7 +49,7 @@ export class FlightEditComponent implements OnInit, OnDestroy {
   departureTime = '00:00';
   arrivalTime = '00:00';
 
-  TRAVEL_CLASSES_LIST = TRAVEL_CLASSES.values;
+  TRAVEL_CLASSES_LIST = Array.from(TRAVEL_CLASSES.values());
 
   objectRef: string;
 
@@ -63,6 +63,7 @@ export class FlightEditComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
 
+    console.log(TRAVEL_CLASSES, this.TRAVEL_CLASSES_LIST);
     this.subs.add(this.afAuth.user.subscribe(user => {
       this.user = user;
 

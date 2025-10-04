@@ -17,10 +17,10 @@ export class SeatInfoComponent implements OnInit {
   }
 
   translateClass(travelClass: string){
-    return TRAVEL_CLASSES[travelClass].short;
+    return TRAVEL_CLASSES.get(travelClass)?.short;
   }
   cssClass(travelClass: string){
-    return TRAVEL_CLASSES[travelClass].cssClass;
+    return TRAVEL_CLASSES.get(travelClass)?.cssClass;
   }
 }
 export interface ClassInfo {
@@ -29,7 +29,7 @@ export interface ClassInfo {
   long: string
   cssClass: string;
 }
-export const TRAVEL_CLASSES: { [key: string]: ClassInfo } = {
+export const TRAVEL_CLASSES: Map<string, ClassInfo> =new Map( Object.entries({
   Y: { key: 'Y', short: 'ECO', long: 'Economy', cssClass: 'is-success' },
   M: { key: 'M', short: 'ECO+', long: 'Premium Economy', cssClass: 'is-primary' },
   C: { key: 'C', short: 'BIZ', long: 'Business', cssClass: 'is-info' },
@@ -37,3 +37,4 @@ export const TRAVEL_CLASSES: { [key: string]: ClassInfo } = {
   J: { key: 'J', short: 'JMP', long: 'Jump Seat', cssClass: 'is-warning' },
   P: { key: 'P', short: 'CPIT', long: 'Cockpit', cssClass: 'is-link' } // Cockpit
 }
+));
