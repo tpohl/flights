@@ -25,6 +25,11 @@
                 "input": "node_modules/cesium/Build/Cesium",
                 "output": "./assets/cesium"
               },
+              {
+                "glob": "*.json",
+                "input": "node_modules/world-atlas",
+                "output": "./assets/world-atlas"
+              },
               "src/assets",
               "src/ATriggerVerify.txt",
               "src/site.webmanifest",

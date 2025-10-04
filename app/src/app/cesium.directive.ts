@@ -99,7 +99,7 @@ export class CesiumDirective implements OnInit, OnDestroy {
 
     });
 
-      const geoJSON$ = from(Cesium.GeoJsonDataSource.load('/assets/countries.geojson', {
+      const geoJSON$ = from(Cesium.GeoJsonDataSource.load('/assets/world-atlas/countries-110m.json', {
         stroke: Cesium.Color.LIGHTBLUE.withAlpha(0.5),
         fill: Cesium.Color.BLUE.withAlpha(0.1),
         strokeWidth: 3
