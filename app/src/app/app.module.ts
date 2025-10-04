@@ -77,24 +77,23 @@ const appRoutes: Routes = [
     SeatInfoComponent
   ],
   imports: [
-    RouterModule.forRoot(
-      appRoutes,
-      { enableTracing: false,  bindToComponentInputs: true }
-    ),
-    CommonModule,
     BrowserModule,
+    CommonModule,
     FormsModule,
-    provideFirebaseApp(() => initializeApp(Environment.firebase)),
-    provideAuth(() => getAuth()),
-    provideDatabase(() => getDatabase()),
+    RouterModule.forRoot(appRoutes, { enableTracing: false, bindToComponentInputs: true }),
     ServiceWorkerModule.register('ngsw-worker.js', {
       enabled: Environment.production,
-      // Register the ServiceWorker as soon as the application is stable
-      // or after 30 seconds (whichever comes first).
       registrationStrategy: 'registerWhenStable:30000'
     })
   ],
-  providers: [AirportService, FlightsService, { provide: FIREBASE_OPTIONS, useValue: Environment.firebase }],
+  providers: [
+    AirportService, 
+    FlightsService,
+    { provide: FIREBASE_OPTIONS, useValue: Environment.firebase },
+    provideFirebaseApp(() => initializeApp(Environment.firebase)),
+    provideAuth(() => getAuth()),
+    provideDatabase(() => getDatabase())
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule {
