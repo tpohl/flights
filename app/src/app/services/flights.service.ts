@@ -1,14 +1,15 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject, Injector, runInInjectionContext } from '@angular/core';
 import { BehaviorSubject, from, Observable, of } from 'rxjs';
-
-import { AngularFireDatabase } from '@angular/fire/compat/database';
 
 import { filter, map, reduce, switchMap, take, tap } from 'rxjs/operators';
 import { Flight } from '../models/flight';
-import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { FlightStats, OverallStats } from '../models/stats';
 import { flightDistance } from '../pipes/flightDistancePipe';
 import { AeroAPITrackResponse, UpdateType } from '../models/aeroapi';
+
+import { Database, ref, set, remove } from '@angular/fire/database';
+import { Auth, authState, User } from '@angular/fire/auth';
+import { listVal, objectVal } from 'rxfire/database';
 
 export const enum SaveResultType {CREATED, UPDATED}
 
@@ -26,7 +27,11 @@ export class FlightsService {
 
   private selectedFlight$ = new BehaviorSubject<Flight>(null);
 
-  constructor(private db: AngularFireDatabase, private afAuth: AngularFireAuth) {
+  private auth = inject(Auth);
+  private db = inject(Database);
+  private injector = inject(Injector);
+
+  constructor() {
     this.init();
   }
 
@@ -80,25 +85,23 @@ export class FlightsService {
 
   private init() {
 
-    this.afAuth.user
-      .pipe(
-        switchMap(user => this.db.list<Flight>('users/' + user.uid + '/flights').snapshotChanges()),
-        map(snapshots =>
-          snapshots.map(c => {
-            const f = c.payload.val();
-            f._id = c.key;
-            return f;
-          })
-            .filter(flight => !flight._deleted)
-            .filter(flight => !!flight.departureTime))
-        , map(_flights => _flights.sort(flightsSortFn))
-      ).subscribe(flights => this.flightSubject.next(flights));
+    runInInjectionContext(this.injector, () => authState(this.auth)).pipe(
+      filter((user): user is User => user !== null),
+      switchMap(user => {
+        const flightsRef = ref(this.db, `users/${user.uid}/flights`);
+        return runInInjectionContext(this.injector, () => listVal<Flight>(flightsRef, { keyField: '_id' }));
+      }),
+      map(flights => flights.filter(flight => !flight._deleted && !!flight.departureTime)),
+      map(flights => flights.sort(flightsSortFn))
+    ).subscribe(flights => this.flightSubject.next(flights));
 
     this.initStats();
   }
 
   private initStats() {
+    
     this.stats$ = this.flights$.pipe(
+      tap(console.log),
       switchMap(flightsArray => from(flightsArray)
         .pipe(
           reduce<Flight, OverallStats>(
@@ -123,72 +126,58 @@ export class FlightsService {
   }
 
   loadFlight(flightId: string): Observable<Flight> {
-    return this.afAuth.user
-      .pipe(
-        switchMap(user => {
-          const objectRef = 'users/' + user.uid + '/flights/' + flightId;
-          const flightObject = this.db.object<Flight>(objectRef);
-          return flightObject.valueChanges()
-            .pipe(
-              tap(flight => flight._objectReference = objectRef)
-            );
-        }));
+    return runInInjectionContext(this.injector, () => authState(this.auth)).pipe(
+      filter((user): user is User => user !== null),
+      switchMap(user => {
+        const objectRef = `users/${user.uid}/flights/${flightId}`;
+        const flightRef = ref(this.db, objectRef);
+        return objectVal<Flight>(flightRef).pipe(
+          map(flight => flight ? ({ ...flight, _objectReference: objectRef }) : null)
+        );
+      }));
   }
 
   loadFlightTrack(flight: Flight, removeProjectedIfActualsAreAvailable = true): Observable<AeroAPITrackResponse> {
     if (!flight.flightAwareFlightId) {
       return of(undefined);
     }
-    return this.afAuth.user
-      .pipe(
-        switchMap(user => {
-          const objectRef = 'users/' + user.uid + '/aeroApiTracks/' + flight.flightAwareFlightId;
-          const flightObject = this.db.object<AeroAPITrackResponse>(objectRef);
-          return flightObject.valueChanges();
-        }),
-        map(track => {
-          if (removeProjectedIfActualsAreAvailable
-            && !!track
-            && !!track.actual_distance
-            && track.actual_distance > 0
-            && track.positions.some(p => p.update_type !== UpdateType.P)) {
-            track.positions = track.positions.filter(p => p.update_type !== UpdateType.P);
-          }
-          return track;
-        }));
+    return runInInjectionContext(this.injector, () => authState(this.auth)).pipe(
+      filter((user): user is User => user !== null),
+      switchMap(user => {
+        const objectRef = `users/${user.uid}/aeroApiTracks/${flight.flightAwareFlightId}`;
+        const trackRef = ref(this.db, objectRef);
+        return objectVal<AeroAPITrackResponse>(trackRef);
+      }),
+      map(track => {
+        if (removeProjectedIfActualsAreAvailable
+          && !!track
+          && !!track.actual_distance
+          && track.actual_distance > 0
+          && track.positions.some(p => p.update_type !== UpdateType.P)) {
+          track.positions = track.positions.filter(p => p.update_type !== UpdateType.P);
+        }
+        return track;
+      }));
   }
 
   saveFlight(_flight: Flight): Observable<SaveResult> {
     // console.log('Saving Flight', _flight);
     const flight = clearFlight(_flight);
-    return this.afAuth.user.pipe(
+    return runInInjectionContext(this.injector, () => authState(this.auth)).pipe(
+      filter((user): user is User => user !== null),
       switchMap(user => {
-          if (!!flight._objectReference) {
-            // console.log('Saving', flight);
-            const flightObject = this.db.object<Flight>(flight._objectReference);
-            return from(flightObject.update(flight)).pipe(
-              map(_ => ({
-                  flightId: flight._id,
-                  type: SaveResultType.UPDATED
-                })
-              )
-            );
-
-          } else {
-            // console.log('Creating new', flight);
-            const flightList = this.db.list<Flight>('users/' + user.uid + '/flights');
-
-            return from(flightList.push(flight))
-              .pipe(
-                map(reference => ({
-                    flightId: reference.key,
-                    type: SaveResultType.CREATED
-                  })
-                )
-              );
-          }
+        if (!!flight._objectReference) {
+          const flightRef = ref(this.db, flight._objectReference);
+          return from(set(flightRef, flight)).pipe(
+            map(() => ({ flightId: flight._id, type: SaveResultType.UPDATED }))
+          );
+        } else {
+          const newFlightRef = ref(this.db, `users/${user.uid}/flights/${flight._id}`);
+          return from(set(newFlightRef, flight)).pipe(
+            map(() => ({ flightId: flight._id, type: SaveResultType.CREATED }))
+          );
         }
-      )
+      })
     );
   }
 

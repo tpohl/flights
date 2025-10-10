@@ -8,7 +8,7 @@ describe('PohlRocksImporterComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ PohlRocksImporterComponent ]
+      imports: [ PohlRocksImporterComponent ]
     })
     .compileComponents();
   }));

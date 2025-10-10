@@ -1,10 +1,17 @@
 import { Flight } from './../models/flight';
 import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 import { Observable } from 'rxjs';
 import { FlightsService } from '../services/flights.service';
+import { ExactDurationPipe } from '../pipes/exactDurationPipe';
+import { FlightTileComponent } from '../flight-tile/flight-tile.component';
 import { OverallStats } from '../models/stats';
 
 @Component({
+  standalone: true,
+  imports: [CommonModule, FormsModule, RouterModule, ExactDurationPipe, FlightTileComponent],
   selector: 'app-flight-list',
   templateUrl: './flight-list.component.html',
   styleUrls: ['./flight-list.component.css']

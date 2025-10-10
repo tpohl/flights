@@ -1,9 +1,14 @@
-import { Location, LocationStrategy, PathLocationStrategy } from '@angular/common';
+import { Location, LocationStrategy, PathLocationStrategy, CommonModule } from '@angular/common';
 import { AirportService } from '../services/airport.service';
 import { BehaviorSubject, Observable, of, Subscription } from 'rxjs';
 
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { FormsModule } from '@angular/forms';
+import { FlightStatsComponent } from '../flight-stats/flight-stats.component';
+import { RelativeTimePipe } from '../pipes/relativeTimePipe';
+import { FlightDistancePipe } from '../pipes/flightDistancePipe';
+import { ExactDurationPipe } from '../pipes/exactDurationPipe';
 
 import { Flight } from '../models/flight';
 import { AngularFireDatabase } from '@angular/fire/compat/database';
@@ -23,6 +28,8 @@ import { TRAVEL_CLASSES } from '../seat-info/seat-info.component';
 
 
 @Component({
+  standalone: true,
+  imports: [CommonModule, FormsModule, FlightStatsComponent, RelativeTimePipe, FlightDistancePipe, ExactDurationPipe],
   selector: 'app-flight-edit',
   providers: [Location, { provide: LocationStrategy, useClass: PathLocationStrategy }],
   templateUrl: './flight-edit.component.html',

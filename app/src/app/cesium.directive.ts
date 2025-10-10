@@ -49,7 +49,7 @@ const createPositions = function (route) {
 })
 export class CesiumDirective implements OnInit, OnDestroy {
   @Input()
-  private flights: Observable<Array<Flight>>;
+  private flights!: Observable<Array<Flight>>;
 
   @Input()
   private timelineMode = true;
@@ -65,7 +65,7 @@ export class CesiumDirective implements OnInit, OnDestroy {
   private minLatitude = 400.0;
   private viewer: any;
 
-  private countryDateSource : Cesium.GeoJsonDataSource;
+  private countryDateSource!: Cesium.GeoJsonDataSource;
 
   private subs = new Subscription();
 
@@ -121,8 +121,9 @@ export class CesiumDirective implements OnInit, OnDestroy {
             ),
             filter(countries => countries.length > 0),
             map(countriesVisited => countriesVisited.reduce((acc, country) => {
-                const count = acc.get(country.isoNo) || 0;
-                acc.set(country.isoNo, count + 1);
+                const iso = country ? country.isoNo : 'UNKNOWN';
+                const count = acc.get(iso) || 0;
+                acc.set(iso, count + 1);
                 return acc;
               }, new Map<string, number>())
             ))
@@ -132,20 +133,29 @@ export class CesiumDirective implements OnInit, OnDestroy {
           if (countriesVisited.size > 0) {
             for (let i = 0; i < data.entities.values.length; i++) {
               const entity = data.entities.values[i];
+              try {
+                // Fixing ArcType
+                if (Cesium.defined(entity.polygon)) {
+                  entity.polygon!.arcType = new Cesium.ConstantProperty(Cesium.ArcType.GEODESIC);
+                }
 
-              // Fixing ArcType
-              if (Cesium.defined(entity.polygon)) {
-                entity.polygon.arcType = new Cesium.ConstantProperty(Cesium.ArcType.GEODESIC);
-              }
+                const isoCountryCode = entity.id ? entity.id.substring(0, 3) : '';
+                if (!!!entity.id || countriesVisited.get(isoCountryCode) === undefined) {
+                  entity.show = false;
+                  //  console.log('Hiding', entity.id, entity.name, isoCountryCode);
+                } else {
+                  const visits = (countriesVisited.get(isoCountryCode) || 0);
+                  // Protect against unexpected polygon shapes causing deep internal comparisons
+                    try {
+                      entity.polygon!.extrudedHeight = new Cesium.ConstantProperty(Math.min(10000 * visits, 200000));
+                    } catch (e) {
+                      console.warn('Failed setting extrudedHeight for entity', entity.id, e);
+                    }
 
-              const isoCountryCode = entity.id.substring(0, 3);
-              if (!!!entity.id || countriesVisited.get(isoCountryCode) === undefined) {
-                entity.show = false;
-                //  console.log('Hiding', entity.id, entity.name, isoCountryCode);
-              } else {
-                const visits = (countriesVisited.get(isoCountryCode) || 0);
-                entity.polygon.extrudedHeight = new Cesium.ConstantProperty(Math.min(10000 * visits, 200000));
-
+                }
+              } catch (e) {
+                // Skip any entity that causes Cesium internals to recurse or throw
+                console.warn('Skipping problematic country entity', entity && entity.id, e);
               }
             }
 

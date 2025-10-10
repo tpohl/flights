@@ -5,7 +5,7 @@ import DayJSDuration from 'dayjs/plugin/duration';
 
 DayJS.extend(DayJSDuration);
 
-@Pipe({ name: 'amDurationExact' })
+@Pipe({ standalone: true, name: 'amDurationExact' })
 export class ExactDurationPipe implements PipeTransform {
   transform(value: any, ...args: string[]): string {
     if (!!value) {

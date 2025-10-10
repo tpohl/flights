@@ -8,7 +8,7 @@ describe('FlightsExportComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ FlightsExportComponent ]
+      imports: [ FlightsExportComponent ]
     })
     .compileComponents();
   }));

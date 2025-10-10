@@ -1,11 +1,14 @@
 import { Flight } from './../models/flight';
 import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { AngularFireDatabase } from '@angular/fire/compat/database';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
 
 @Component({
+  standalone: true,
+  imports: [CommonModule],
   selector: 'app-flights-export',
   templateUrl: './flights-export.component.html',
   styleUrls: ['./flights-export.component.css']

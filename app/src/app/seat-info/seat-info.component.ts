@@ -1,7 +1,10 @@
 import { Component, Input, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { Flight } from '../models/flight';
 
 @Component({
+  standalone: true,
+  imports: [CommonModule],
   selector: 'app-seat-info',
   templateUrl: './seat-info.component.html',
   styleUrls: ['./seat-info.component.scss']

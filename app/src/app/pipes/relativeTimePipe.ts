@@ -5,7 +5,7 @@ import DayJSRelativeTime from 'dayjs/plugin/relativeTime';
 
 DayJS.extend(DayJSRelativeTime);
 
-@Pipe({ name: 'amTimeAgo' })
+@Pipe({ standalone: true, name: 'amTimeAgo' })
 export class RelativeTimePipe implements PipeTransform {
   transform(value: any, ...args: string[]): string {
     if (!!value) {

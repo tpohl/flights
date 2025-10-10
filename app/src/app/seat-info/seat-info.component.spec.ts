@@ -8,7 +8,7 @@ describe('SeatInfoComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ SeatInfoComponent ]
+      imports: [ SeatInfoComponent ]
     })
     .compileComponents();
 

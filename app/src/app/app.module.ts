@@ -61,21 +61,7 @@ const appRoutes: Routes = [
 ];
 
 @NgModule({
-  declarations: [
-    CesiumDirective,
-    AppComponent,
-    FlightListComponent,
-    FlightEditComponent,
-    FlightStatsComponent,
-    DatepickerComponent,
-    ExactDurationPipe,
-    RelativeTimePipe,
-    FlightDistancePipe,
-    PohlRocksImporterComponent,
-    FlightsExportComponent,
-    FlightTileComponent,
-    SeatInfoComponent
-  ],
+  declarations: [],
   imports: [
     BrowserModule,
     CommonModule,
@@ -94,7 +80,7 @@ const appRoutes: Routes = [
     provideAuth(() => getAuth()),
     provideDatabase(() => getDatabase())
   ],
-  bootstrap: [AppComponent]
+  
 })
 export class AppModule {
 }

@@ -1,47 +1,37 @@
-import { Component } from '@angular/core';
-import { Router } from '@angular/router';
-import { AngularFireAuth } from '@angular/fire/compat/auth';
+import { Component, inject, Injector, runInInjectionContext } from '@angular/core';
+import { Router, RouterModule } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { Auth, authState } from '@angular/fire/auth';
 import { Observable } from 'rxjs';
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/auth'
-import User = firebase.User;
-import GoogleAuthProvider = firebase.auth.GoogleAuthProvider;
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
-  styleUrls: ['./app.component.css']
+  styleUrls: ['./app.component.css'],
+  standalone: true,
+  imports: [CommonModule, RouterModule]
 })
 export class AppComponent {
+  private auth = inject(Auth);
+  private router = inject(Router);
+  private injector = inject(Injector);
+  user: Observable<any> = runInInjectionContext(this.injector, () => authState(this.auth));
+  userDetails: any = null;
 
-  private user: Observable<User>;
-  private userDetails: User = null;
-
-  constructor(public afAuth: AngularFireAuth, private router: Router) {
-    this.user = afAuth.authState;
-    this.user.subscribe(
-      (user) => {
-        if (user) {
-          this.userDetails = user;
-          console.log(this.userDetails);
-        } else {
-          this.userDetails = null;
-        }
-      }
-    );
+  constructor() {
+    this.user.subscribe((user) => this.userDetails = user || null);
   }
+
   login() {
-    this.afAuth.signInWithPopup(new GoogleAuthProvider());
+    // migrate login to modular SDK if needed
+    console.warn('Login not implemented for modular SDK here.');
   }
+
   logout() {
-    this.afAuth.signOut().then((res) => this.router.navigate(['/']));
+    this.auth.signOut().then(() => this.router.navigate(['/']));
   }
 
   isLoggedIn() {
-    if (this.userDetails == null) {
-      return false;
-    } else {
-      return true;
-    }
+    return !!this.userDetails;
   }
 }

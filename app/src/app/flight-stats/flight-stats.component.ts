@@ -1,5 +1,7 @@
 import { Flight } from './../models/flight';
 import { Component, Input, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FlightTileComponent } from '../flight-tile/flight-tile.component';
 import { FlightsService } from '../services/flights.service';
 import { Observable } from 'rxjs';
 import { FlightStats } from '../models/stats';
@@ -7,6 +9,8 @@ import { take } from 'rxjs/operators';
 import { AeroAPITrackResponse } from '../models/aeroapi';
 
 @Component({
+  standalone: true,
+  imports: [CommonModule, FlightTileComponent],
   selector: 'app-flight-stats',
   templateUrl: './flight-stats.component.html',
   styleUrls: ['./flight-stats.component.css']

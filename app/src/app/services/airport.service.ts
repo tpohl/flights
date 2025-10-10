@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject, Injector, runInInjectionContext } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
@@ -12,15 +12,18 @@ export class AirportService {
 
   private airports = new Map<String, Observable<Airport>>();
 
-  constructor(private db: AngularFireDatabase) {  }
+  private db = inject(AngularFireDatabase);
+  private injector = inject(Injector);
+
+  constructor() {  }
 
   public loadAirport(airportCode: String): Observable<Airport> {
     let airport$ = this.airports.get(airportCode);
     if (airport$) return airport$;
 
     const objectRef = '/airports/' + airportCode;
-    const dbObject = this.db.object<Airport>(objectRef);
-    airport$ = dbObject.valueChanges().pipe(shareReplay());
+    // run inside injection context because compat database relies on AngularFire injection
+    airport$ = runInInjectionContext(this.injector, () => this.db.object<Airport>(objectRef).valueChanges()).pipe(shareReplay());
     this.airports.set(airportCode, airport$);
     return airport$;
   }

@@ -1,4 +1,6 @@
 import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { AngularFireDatabase } from '@angular/fire/compat/database';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
 import dayjs from 'dayjs/esm';
@@ -7,6 +9,8 @@ import { take, map, mergeMap } from 'rxjs/operators';
 import { Flight } from './../models/flight';
 
 @Component({
+  standalone: true,
+  imports: [CommonModule, FormsModule],
   selector: 'app-pohl-rocks-importer',
   templateUrl: './pohl-rocks-importer.component.html',
   styleUrls: ['./pohl-rocks-importer.component.css']

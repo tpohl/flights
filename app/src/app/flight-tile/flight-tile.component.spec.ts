@@ -8,7 +8,7 @@ describe('FlightTileComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ FlightTileComponent ]
+      imports: [ FlightTileComponent ]
     })
     .compileComponents();
 
