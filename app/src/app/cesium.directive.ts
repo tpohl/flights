@@ -3,13 +3,14 @@ import { Airport, Country } from './models/airport';
 import { AirportService } from './services/airport.service';
 import { Flight } from './models/flight';
 import { AeroAPITrackResponse, Position } from './models/aeroapi';
-import { Component, ElementRef, Input, OnDestroy, OnInit } from '@angular/core';
+import { Component, ElementRef, Input, OnDestroy, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { combineLatest, from, Observable, of, Subscription, zip } from 'rxjs';
 
 import { interpolateRainbow } from 'd3-scale-chromatic';
 import * as Cesium from 'cesium';
 import { FlightsService } from './services/flights.service';
 import { Environment } from '../environments/environment';
+import { CommonModule } from '@angular/common';
 
 /*
 const createPositions = function (route) {
@@ -45,7 +46,10 @@ const createPositions = function (route) {
 
 @Component({
   selector: 'app-cesium',
-  template: '<div></div>'
+  template: '<div></div>',
+  standalone: true,
+  imports: [CommonModule],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class CesiumDirective implements OnInit, OnDestroy {
   @Input()
@@ -121,9 +125,8 @@ export class CesiumDirective implements OnInit, OnDestroy {
             ),
             filter(countries => countries.length > 0),
             map(countriesVisited => countriesVisited.reduce((acc, country) => {
-                const iso = country ? country.isoNo : 'UNKNOWN';
-                const count = acc.get(iso) || 0;
-                acc.set(iso, count + 1);
+                const count = acc.get(country.isoNo) || 0;
+                acc.set(country.isoNo, count + 1);
                 return acc;
               }, new Map<string, number>())
             ))
@@ -133,29 +136,20 @@ export class CesiumDirective implements OnInit, OnDestroy {
           if (countriesVisited.size > 0) {
             for (let i = 0; i < data.entities.values.length; i++) {
               const entity = data.entities.values[i];
-              try {
-                // Fixing ArcType
-                if (Cesium.defined(entity.polygon)) {
-                  entity.polygon!.arcType = new Cesium.ConstantProperty(Cesium.ArcType.GEODESIC);
-                }
 
-                const isoCountryCode = entity.id ? entity.id.substring(0, 3) : '';
-                if (!!!entity.id || countriesVisited.get(isoCountryCode) === undefined) {
-                  entity.show = false;
-                  //  console.log('Hiding', entity.id, entity.name, isoCountryCode);
-                } else {
-                  const visits = (countriesVisited.get(isoCountryCode) || 0);
-                  // Protect against unexpected polygon shapes causing deep internal comparisons
-                    try {
-                      entity.polygon!.extrudedHeight = new Cesium.ConstantProperty(Math.min(10000 * visits, 200000));
-                    } catch (e) {
-                      console.warn('Failed setting extrudedHeight for entity', entity.id, e);
-                    }
+              // Fixing ArcType
+              if (Cesium.defined(entity.polygon)) {
+                entity.polygon.arcType = new Cesium.ConstantProperty(Cesium.ArcType.GEODESIC);
+              }
 
-                }
-              } catch (e) {
-                // Skip any entity that causes Cesium internals to recurse or throw
-                console.warn('Skipping problematic country entity', entity && entity.id, e);
+              const isoCountryCode = entity.id.substring(0, 3);
+              if (!!!entity.id || countriesVisited.get(isoCountryCode) === undefined) {
+                entity.show = false;
+                //  console.log('Hiding', entity.id, entity.name, isoCountryCode);
+              } else {
+                const visits = (countriesVisited.get(isoCountryCode) || 0);
+                entity.polygon.extrudedHeight = new Cesium.ConstantProperty(Math.min(10000 * visits, 200000));
+
               }
             }
 
@@ -328,12 +322,12 @@ export class CesiumDirective implements OnInit, OnDestroy {
 }
 
 class CesiumFlight {
-  departureTime: Date;
-  arrivalTime: Date;
-  fromAp: Airport;
-  toAp: Airport;
-  name: string;
-  positions: Position[];
+  departureTime!: Date;
+  arrivalTime!: Date;
+  fromAp!: Airport;
+  toAp!: Airport;
+  name!: string;
+  positions!: Position[];
 }
 
 

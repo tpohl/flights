@@ -8,10 +8,11 @@ import { FlightsService } from '../services/flights.service';
 import { ExactDurationPipe } from '../pipes/exactDurationPipe';
 import { FlightTileComponent } from '../flight-tile/flight-tile.component';
 import { OverallStats } from '../models/stats';
+import { CesiumDirective } from '../cesium.directive';
 
 @Component({
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, ExactDurationPipe, FlightTileComponent],
+  imports: [CommonModule, FormsModule, RouterModule, ExactDurationPipe, FlightTileComponent, CesiumDirective],
   selector: 'app-flight-list',
   templateUrl: './flight-list.component.html',
   styleUrls: ['./flight-list.component.css']

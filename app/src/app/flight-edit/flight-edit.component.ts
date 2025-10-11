@@ -8,7 +8,7 @@ import { FormsModule } from '@angular/forms';
 import { FlightStatsComponent } from '../flight-stats/flight-stats.component';
 import { RelativeTimePipe } from '../pipes/relativeTimePipe';
 import { FlightDistancePipe } from '../pipes/flightDistancePipe';
-import { ExactDurationPipe } from '../pipes/exactDurationPipe';
+import { CesiumDirective } from '../cesium.directive';
 
 import { Flight } from '../models/flight';
 import { AngularFireDatabase } from '@angular/fire/compat/database';
@@ -25,11 +25,12 @@ import firebase from 'firebase/compat';
 import { FlightsService, SaveResultType } from '../services/flights.service';
 import User = firebase.User;
 import { TRAVEL_CLASSES } from '../seat-info/seat-info.component';
+import { ExactDurationPipe } from '../pipes/exactDurationPipe';
 
 
 @Component({
   standalone: true,
-  imports: [CommonModule, FormsModule, FlightStatsComponent, RelativeTimePipe, FlightDistancePipe, ExactDurationPipe],
+  imports: [CommonModule, FormsModule, FlightStatsComponent, RelativeTimePipe, FlightDistancePipe, CesiumDirective, ExactDurationPipe],
   selector: 'app-flight-edit',
   providers: [Location, { provide: LocationStrategy, useClass: PathLocationStrategy }],
   templateUrl: './flight-edit.component.html',
