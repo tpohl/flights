@@ -23,7 +23,8 @@ export class FlightsService {
   private flightSubject = new BehaviorSubject<Flight[]>([]);
   flights$ = this.flightSubject.asObservable();
 
-  stats$: Observable<OverallStats>;
+  statsSubject = new BehaviorSubject<OverallStats>(new OverallStats());
+  stats$ = this.statsSubject.asObservable();
 
   private selectedFlight$ = new BehaviorSubject<Flight>(null);
 
@@ -105,7 +106,7 @@ export class FlightsService {
 
   private initStats() {
     
-    this.stats$ = this.flights$.pipe(
+    this.flights$.pipe(
       switchMap(flightsArray => from(flightsArray)
         .pipe(
           reduce<Flight, OverallStats>(
@@ -126,9 +127,10 @@ export class FlightsService {
             stats.distance = Math.round(stats.distance);
             return stats;
           })
+          
         )
       )
-    );
+    ).subscribe(stats => this.statsSubject.next(stats));
   }
 
   loadFlight(flightId: string): Observable<Flight | null> {
