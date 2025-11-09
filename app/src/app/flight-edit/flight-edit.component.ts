@@ -3,7 +3,7 @@ import { AirportService } from '../services/airport.service';
 import { BehaviorSubject, Observable, of, Subscription } from 'rxjs';
 
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { FlightStatsComponent } from '../flight-stats/flight-stats.component';
 import { RelativeTimePipe } from '../pipes/relativeTimePipe';
@@ -30,7 +30,7 @@ import { ExactDurationPipe } from '../pipes/exactDurationPipe';
 
 @Component({
   standalone: true,
-  imports: [CommonModule, FormsModule, FlightStatsComponent, RelativeTimePipe, FlightDistancePipe, CesiumDirective, ExactDurationPipe],
+  imports: [CommonModule, FormsModule, FlightStatsComponent, RelativeTimePipe, FlightDistancePipe, CesiumDirective, ExactDurationPipe, RouterLink],
   selector: 'app-flight-edit',
   providers: [Location, { provide: LocationStrategy, useClass: PathLocationStrategy }],
   templateUrl: './flight-edit.component.html',
