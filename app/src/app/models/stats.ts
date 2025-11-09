@@ -1,7 +1,7 @@
 import { Flight } from './flight';
 
 export class FlightStats {
-  flight: Flight;
+  flight!: Flight;
   hasAircraft = false;
   aircraft = 'select';
   flightsWithAircraft: Flight[] = [];
