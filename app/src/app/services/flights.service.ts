@@ -117,6 +117,8 @@ export class FlightsService {
               if (!!flight.durationMilliseconds && !isNaN(+flight.durationMilliseconds)) {
                 stats.totalTimeMilliseconds = stats.totalTimeMilliseconds + flight.durationMilliseconds;
               }
+              stats.airportsVisited.add(flight.from);
+              stats.airportsVisited.add(flight.to);
               return stats;
             },
             new OverallStats()),
