@@ -106,7 +106,6 @@ export class FlightsService {
   private initStats() {
     
     this.stats$ = this.flights$.pipe(
-      tap(console.log),
       switchMap(flightsArray => from(flightsArray)
         .pipe(
           reduce<Flight, OverallStats>(
