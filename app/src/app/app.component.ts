@@ -1,7 +1,7 @@
 import { Component, inject, Injector, runInInjectionContext } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { Auth, authState } from '@angular/fire/auth';
+import { Auth, authState, GoogleAuthProvider, signInWithPopup } from '@angular/fire/auth';
 import { Observable } from 'rxjs';
 
 @Component({
@@ -22,9 +22,14 @@ export class AppComponent {
     this.user.subscribe((user) => this.userDetails = user || null);
   }
 
-  login() {
-    // migrate login to modular SDK if needed
-    console.warn('Login not implemented for modular SDK here.');
+  async login() {
+    try {
+      const provider = new GoogleAuthProvider();
+      await signInWithPopup(this.auth, provider);
+      await this.router.navigate(['/flights']);
+    } catch (error) {
+      console.error('Error during login:', error);
+    }
   }
 
   logout() {
