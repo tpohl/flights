@@ -1,6 +1,6 @@
 {
   "hosting": {
-    "public": "app/dist/flights",
+    "public": "app/dist/flights/browser",
     "ignore": [
       "firebase.json",
       "**/.*",
