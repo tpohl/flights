@@ -14,8 +14,8 @@ import { listVal, objectVal } from 'rxfire/database';
 export const enum SaveResultType {CREATED, UPDATED}
 
 export class SaveResult {
-  flightId: string;
-  type: SaveResultType;
+  flightId!: string;
+  type!: SaveResultType;
 }
 
 @Injectable()
@@ -26,7 +26,7 @@ export class FlightsService {
   statsSubject = new BehaviorSubject<OverallStats>(new OverallStats());
   stats$ = this.statsSubject.asObservable();
 
-  private selectedFlight$ = new BehaviorSubject<Flight>(null);
+  private selectedFlight$ = new BehaviorSubject<Flight | null>(null);
 
   private auth = inject(Auth);
   private user = null as User | null;
@@ -92,6 +92,7 @@ export class FlightsService {
     
 
     runInInjectionContext(this.injector, () => of(this.user).pipe(
+      filter(user => !!user),
       switchMap(user => {
         const flightsRef = ref(this.db, `users/${user.uid}/flights`);
         return listVal<Flight>(flightsRef, { keyField: '_id' });
@@ -186,13 +187,13 @@ export class FlightsService {
         if (!!flight._objectReference) {
           const flightRef = ref(this.db, flight._objectReference);
           return from(set(flightRef, flight)).pipe(
-            map(() => ({ flightId: flight._id, type: SaveResultType.UPDATED }))
+            map(() => ({ flightId: flight._id, type: SaveResultType.UPDATED } as SaveResult))
           );
         } else {
           const newFlightRef = push(ref(this.db, `users/${user.uid}/flights`));
           flight._id = newFlightRef.key;
           return from(set(newFlightRef, flight)).pipe(
-            map(() => ({ flightId: flight._id, type: SaveResultType.CREATED }))
+            map(() => ({ flightId: flight._id, type: SaveResultType.CREATED } as SaveResult))
           );
         }
       })
@@ -202,10 +203,10 @@ export class FlightsService {
 }
 
 const clearFlight = (flight: Flight) => {   // Clear any undefined values
-  Object.keys(flight).forEach(
+  (Object.keys(flight) as (keyof Flight)[]).forEach(
     key => {
-      if (!!!flight[key]) {
-        flight[key] = null;
+      if (!flight[key]) {
+        (flight as any)[key] = null;
       }
     }
   );
