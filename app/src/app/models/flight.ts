@@ -1,46 +1,46 @@
 export class Flight {
-  _id: string;
-  name: string;
+  _id!: string | null;
+  name!: string;
 
-  date: string;
+  date!: string;
 
-  flightno: string;
-  from: string;
-  to: string;
+  flightno!: string;
+  from!: string;
+  to!: string;
 
-  departureTime: string;
-  arrivalTime: string;
+  departureTime!: string;
+  arrivalTime!: string;
 
-  durationMilliseconds: number;
+  durationMilliseconds!: number;
 
-  distance: number;
+  distance!: number;
 
-  aircraftTypeCode: string;
-  aircraftType: string;
+  aircraftTypeCode!: string;
+  aircraftType!: string;
 
-  aircraftRegistration: string;
-  seat: string;
-  seatType: string;
-  class: string;
+  aircraftRegistration!: string;
+  seat!: string;
+  seatType!: string;
+  class!: string;
 
-  carrier: string;
-  reason: string;
-  note: string;
-  filekey: string;
+  carrier!: string;
+  reason!: string;
+  note!: string;
+  filekey!: string;
 
-  created: Date;
-  user: string;
+  created!: Date;
+  user!: string;
 
   lhApiFlight: any;
   aeroApiFlight: any;
 
-  flightAwareFlightId: string;
+  flightAwareFlightId!: string;
 
-  flownDistance: number;
+  flownDistance!: number;
 
-  needsAutocomplete: boolean;
-  errorMessage: string;
+  needsAutocomplete!: boolean;
+  errorMessage!: string;
 
-  _objectReference: string;
-  _deleted: boolean;
+  _objectReference!: string;
+  _deleted!: boolean;
 }

@@ -1,6 +1,6 @@
 import { Location, LocationStrategy, PathLocationStrategy, CommonModule } from '@angular/common';
 import { AirportService } from '../services/airport.service';
-import { BehaviorSubject, Observable, of, Subscription } from 'rxjs';
+import { BehaviorSubject, filter, Observable, of, Subscription } from 'rxjs';
 
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -21,7 +21,7 @@ import DayJSTimezone from 'dayjs/plugin/timezone';
 DayJS.extend(DayJSUtc);
 DayJS.extend(DayJSTimezone);
 
-import firebase from 'firebase/compat';
+import firebase from 'firebase/compat/app';
 import { FlightsService, SaveResultType } from '../services/flights.service';
 import User = firebase.User;
 import { TRAVEL_CLASSES } from '../seat-info/seat-info.component';
@@ -49,20 +49,20 @@ export class FlightEditComponent implements OnInit, OnDestroy {
 
 
   @Input()
-  flightId: String;
+  flightId: string | undefined;
 
-  flight: Flight;
-  user: User;
+  flight: Flight = new Flight();
+  user: User | null = null;
 
   departureTime = '00:00';
   arrivalTime = '00:00';
 
   TRAVEL_CLASSES_LIST = Array.from(TRAVEL_CLASSES.values());
 
-  objectRef: string;
+  objectRef: string | undefined;
 
-  fromAirport$: BehaviorSubject<Airport> = new BehaviorSubject(null);
-  toAirport$: BehaviorSubject<Airport> = new BehaviorSubject(null);
+  fromAirport$: BehaviorSubject<Airport | null> = new BehaviorSubject<Airport | null>(null);
+  toAirport$: BehaviorSubject<Airport | null> = new BehaviorSubject<Airport | null>(null);
   private subs = new Subscription();
 
   flightsForMap() {
@@ -75,8 +75,8 @@ export class FlightEditComponent implements OnInit, OnDestroy {
     this.subs.add(this.afAuth.user.subscribe(user => {
       this.user = user;
 
-      if (this.flightId === 'new') {
-        this.objectRef = null;
+      if (!this.flightId || this.flightId === 'new') {
+        this.objectRef = undefined;
         this.flight = new Flight();
         this.flight._id = null;
         this.flight.date = DayJS().format('YYYY-MM-DD');
@@ -104,9 +104,11 @@ export class FlightEditComponent implements OnInit, OnDestroy {
     const time = this.departureTime;
 
     const dateWithWithTime = DayJS(this.flight.date).format('YYYY-MM-DD') + 'T' + time;
-    this.fromAirport$.subscribe(ap => {
-      this.flight.departureTime = DayJS.tz(dateWithWithTime, ap.timezoneId).clone().tz('UTC').format(); // '2013-06-01T00:00:00',
-    });
+    this.fromAirport$
+      .pipe(filter(ap => !!ap && !!ap.timezoneId))
+      .subscribe(ap => {
+        this.flight.departureTime = DayJS.tz(dateWithWithTime, ap!!.timezoneId).clone().tz('UTC').format(); // '2013-06-01T00:00:00',
+      });
   }
 
   selectArrivalTime() {
@@ -114,22 +116,29 @@ export class FlightEditComponent implements OnInit, OnDestroy {
     const time = this.arrivalTime;
 
     const dateWithWithTime = DayJS(this.flight.date).format('YYYY-MM-DD') + 'T' + time;
-    this.toAirport$.subscribe(ap => {
-      this.flight.arrivalTime = DayJS.tz(dateWithWithTime, ap.timezoneId).tz('UTC').format(); // '2013-06-01T00:00:00',
-      if (this.flight.arrivalTime < this.flight.departureTime) { // When the arrival is BEFORE the Departure, then we add a day.
-        this.flight.arrivalTime = DayJS(this.flight.arrivalTime).add(1, 'days').clone().tz('UTC').format();
-      }
+    this.toAirport$
+      .pipe(filter(ap => !!ap && !!ap.timezoneId))
+      .subscribe(ap => {
+        this.flight.arrivalTime = DayJS.tz(dateWithWithTime, ap!!.timezoneId).tz('UTC').format(); // '2013-06-01T00:00:00',
+        if (this.flight.arrivalTime < this.flight.departureTime) { // When the arrival is BEFORE the Departure, then we add a day.
+          this.flight.arrivalTime = DayJS(this.flight.arrivalTime).add(1, 'days').clone().tz('UTC').format();
+        }
     });
 
   }
 
-  loadFlight(flightId) {
+  loadFlight(flightId: string) {
     this.flightsService.loadFlight(flightId).subscribe(
       (flight) => {
-        this.flight = flight;
-        this.objectRef = flight._objectReference;
-        this.loadFromAirport(this.flight.from);
-        this.loadToAirport(this.flight.to);
+        if (!!flight) {
+          this.flight = flight;
+          this.objectRef = flight._objectReference;
+          this.loadFromAirport(this.flight.from);
+          this.loadToAirport(this.flight.to);
+        } else {
+          console.error('Flight not found: ' + flightId);
+          this.router.navigateByUrl('/flights');
+        }
       }
     );
   }
@@ -138,7 +147,7 @@ export class FlightEditComponent implements OnInit, OnDestroy {
     this.flight.date = momentDate.format('YYYY-MM-DD');
   }
 
-  loadAirport(code: String): Observable<Airport> {
+  loadAirport(code: String): Observable<Airport | null> {
     if (code && code.length === 3) {
       return this.airportService.loadAirport(code);
     } else {
@@ -146,13 +155,13 @@ export class FlightEditComponent implements OnInit, OnDestroy {
     }
   }
 
-  loadFromAirport(code: String): Observable<Airport> {
+  loadFromAirport(code: String): Observable<Airport | null> {
     const ap = this.loadAirport(code);
     ap.subscribe((a) => this.fromAirport$.next(a));
     return ap;
   }
 
-  loadToAirport(code: String): Observable<Airport> {
+  loadToAirport(code: String): Observable<Airport | null> {
     const ap = this.loadAirport(code);
     ap.subscribe((a) => this.toAirport$.next(a));
     return ap;
@@ -166,7 +175,7 @@ export class FlightEditComponent implements OnInit, OnDestroy {
   save(): void {
     const sub = this.flightsService.saveFlight(this.flight)
       .subscribe(result => {
-        if (result.type === SaveResultType.CREATED) {
+        if (!!result && result.type === SaveResultType.CREATED) {
           const flightId = result.flightId;
           this.loadFlight(flightId);
           this.location.replaceState('flight/' + flightId);
