@@ -7,7 +7,7 @@ import { FlightStats, OverallStats } from '../models/stats';
 import { flightDistance } from '../pipes/flightDistancePipe';
 import { AeroAPITrackResponse, UpdateType } from '../models/aeroapi';
 
-import { Database, ref, set, remove } from '@angular/fire/database';
+import { Database, ref, set, push } from '@angular/fire/database';
 import { Auth, authState, User } from '@angular/fire/auth';
 import { listVal, objectVal } from 'rxfire/database';
 
@@ -189,7 +189,8 @@ export class FlightsService {
             map(() => ({ flightId: flight._id, type: SaveResultType.UPDATED }))
           );
         } else {
-          const newFlightRef = ref(this.db, `users/${user.uid}/flights/${flight._id}`);
+          const newFlightRef = push(ref(this.db, `users/${user.uid}/flights`));
+          flight._id = newFlightRef.key;
           return from(set(newFlightRef, flight)).pipe(
             map(() => ({ flightId: flight._id, type: SaveResultType.CREATED }))
           );
