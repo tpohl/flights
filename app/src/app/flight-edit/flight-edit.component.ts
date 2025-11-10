@@ -62,8 +62,8 @@ export class FlightEditComponent implements OnInit, OnDestroy {
 
   objectRef: string | undefined;
 
-  fromAirport$: BehaviorSubject<Airport | null> = new BehaviorSubject<Airport | null>(null);
-  toAirport$: BehaviorSubject<Airport | null> = new BehaviorSubject<Airport | null>(null);
+  fromAirport$: Subject<Airport> = new ReplaySubject<Airport>(1);
+  toAirport$: Subject<Airport> = new ReplaySubject<Airport>(1);
   flightsForMap$: Subject<Flight[]> = new ReplaySubject<Flight[]>(1);
   
   private subs = new Subscription();
