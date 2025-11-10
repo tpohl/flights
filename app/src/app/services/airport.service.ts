@@ -10,14 +10,14 @@ import { shareReplay } from 'rxjs/operators';
 @Injectable()
 export class AirportService {
 
-  private airports = new Map<String, Observable<Airport>>();
+  private airports = new Map<String, Observable<Airport | null>>();
 
   private db = inject(AngularFireDatabase);
   private injector = inject(Injector);
 
   constructor() {  }
 
-  public loadAirport(airportCode: String): Observable<Airport> {
+  public loadAirport(airportCode: String): Observable<Airport | null> {
     let airport$ = this.airports.get(airportCode);
     if (airport$) return airport$;
 

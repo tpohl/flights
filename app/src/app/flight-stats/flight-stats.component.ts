@@ -16,13 +16,13 @@ import { AeroAPITrackResponse } from '../models/aeroapi';
   styleUrls: ['./flight-stats.component.css']
 })
 export class FlightStatsComponent implements OnInit {
-  private _flight: Flight;
+  private _flight!: Flight;
 
-  stats$: Observable<FlightStats>;
+  stats$: Observable<FlightStats> = new Observable<FlightStats>();
 
   flightsHidden = true;
 
-  aeroApiTrack$: Observable<AeroAPITrackResponse>;
+  aeroApiTrack$: Observable<AeroAPITrackResponse | null> = new Observable<AeroAPITrackResponse | null>();
 
   constructor(private flightsService: FlightsService) {
   }

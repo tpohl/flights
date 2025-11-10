@@ -19,11 +19,9 @@ import { CesiumDirective } from '../cesium.directive';
 })
 export class FlightListComponent implements OnInit {
   // https://angularfirebase.com/lessons/infinite-scroll-with-firebase-data-and-angular-animation/
-  flights: Observable<Flight[]>;
-
-  stats$: Observable<OverallStats>;
-
-  mapOptions: MapOptions = {
+  flights: Observable<Flight[]> = new Observable<Flight[]>();
+  
+  stats$: Observable<OverallStats> = new Observable<OverallStats>();  mapOptions: MapOptions = {
     flights: true,
     countries: true
   };
@@ -42,7 +40,7 @@ export class FlightListComponent implements OnInit {
 }
 
 class MapOptions {
-  flights: boolean;
-  countries: boolean;
+  flights: boolean = false;
+  countries: boolean = false;
 }
 
