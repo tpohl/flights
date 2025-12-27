@@ -1,4 +1,4 @@
-<div *ngIf="(stats$|async) as stats">
+<div>
     <div class="panel has-background-white">
         <p class="panel-heading">Statistics</p>
 
@@ -7,7 +7,7 @@
                 <span class="panel-icon">
                     <i class="fa fa-plane" aria-hidden="true"></i>
                 </span>
-                <label>Flights </label>{{ stats.count }}
+                <label>Flights </label>{{ stats().count }}
             </div>
         </a>
         <a class="panel-block">
@@ -15,7 +15,7 @@
                 <span class="panel-icon">
                     <i class="fa fa-map" aria-hidden="true"></i>
                 </span>
-                <label>Distance </label>{{ stats.distance | number : '1.0-0' }} km
+                <label>Distance </label>{{ stats().distance | number : '1.0-0' }} km
             </div>
         </a>
         <a class="panel-block">
@@ -23,7 +23,7 @@
                 <span class="panel-icon">
                     <i class="fa fa-clock-o" aria-hidden="true"></i>
                 </span>
-                <label>Duration </label>{{ stats.totalTimeMilliseconds | amDurationExact }}
+                <label>Duration </label>{{ stats().totalTimeMilliseconds | amDurationExact }}
             </div>
         </a>
     </div>
@@ -34,7 +34,7 @@
                 <span class="panel-icon">
                     <i class="fa fa-map-marker" aria-hidden="true"></i>
                 </span>
-                <label>Airports Visited </label>{{ stats.airportsVisited.size() }}
+                <label>Airports Visited </label>{{ stats().airportsVisited.size() }}
             </div>
         </a>
         <!--

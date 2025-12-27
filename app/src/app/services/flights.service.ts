@@ -1,4 +1,5 @@
-import { Injectable, inject, Injector, runInInjectionContext } from '@angular/core';
+import { Injectable, inject, Injector, runInInjectionContext, Signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { BehaviorSubject, from, Observable, of } from 'rxjs';
 
 import { filter, map, reduce, switchMap, take, tap } from 'rxjs/operators';
@@ -11,7 +12,7 @@ import { Database, ref, set, push } from '@angular/fire/database';
 import { Auth, authState, User } from '@angular/fire/auth';
 import { listVal, objectVal } from 'rxfire/database';
 
-export const enum SaveResultType {CREATED, UPDATED}
+export const enum SaveResultType { CREATED, UPDATED }
 
 export class SaveResult {
   flightId!: string;
@@ -21,10 +22,10 @@ export class SaveResult {
 @Injectable()
 export class FlightsService {
   private flightSubject = new BehaviorSubject<Flight[]>([]);
-  flights$ = this.flightSubject.asObservable();
+  flights: Signal<Flight[]> = toSignal(this.flightSubject, { initialValue: [] });
 
   statsSubject = new BehaviorSubject<OverallStats>(new OverallStats());
-  stats$ = this.statsSubject.asObservable();
+  stats: Signal<OverallStats> = toSignal(this.statsSubject, { initialValue: new OverallStats() });
 
   private selectedFlight$ = new BehaviorSubject<Flight | null>(null);
 
@@ -37,7 +38,7 @@ export class FlightsService {
     authState(this.auth).pipe(filter((user): user is User => user !== null), take(1)).subscribe(user => {
       this.user = user;
       this.init();
-  });
+    });
   }
 
   selectFlight(flight: Flight) {
@@ -55,7 +56,7 @@ export class FlightsService {
         statistics.flight = selectedFlight;
         return statistics;
       };
-      return this.flights$.pipe(
+      return this.flightSubject.pipe(
         filter(flightArray => !!flightArray && flightArray.length > 1),
         take(1),
         switchMap((flightArray) => from(flightArray)
@@ -89,7 +90,7 @@ export class FlightsService {
   }
 
   private init() {
-    
+
 
     runInInjectionContext(this.injector, () => of(this.user).pipe(
       filter(user => !!user),
@@ -100,14 +101,14 @@ export class FlightsService {
       map(flights => flights.filter(flight => !flight._deleted && !!flight.departureTime)),
       map(flights => flights.sort(flightsSortFn))
     ).subscribe(flights => this.flightSubject.next(flights))
-  );
+    );
 
     this.initStats();
   }
 
   private initStats() {
-    
-    this.flights$.pipe(
+
+    this.flightSubject.pipe(
       switchMap(flightsArray => from(flightsArray)
         .pipe(
           reduce<Flight, OverallStats>(
@@ -128,28 +129,28 @@ export class FlightsService {
             stats.distance = Math.round(stats.distance);
             return stats;
           })
-          
+
         )
       )
     ).subscribe(stats => this.statsSubject.next(stats));
   }
 
   loadFlight(flightId: string): Observable<Flight | null> {
-    var flight$ : Observable<Flight | null> = of(null);
+    var flight$: Observable<Flight | null> = of(null);
     const user = this.user;
     if (!user) {
       return of(null);
     } else {
-     runInInjectionContext(this.injector, () => {
+      runInInjectionContext(this.injector, () => {
         const objectRef = `users/${user.uid}/flights/${flightId}`;
         const flightRef = ref(this.db, objectRef);
-        flight$ =  objectVal<Flight>(flightRef).pipe(
+        flight$ = objectVal<Flight>(flightRef).pipe(
           map(flight => flight ? ({ ...flight, _objectReference: objectRef }) : null)
         );
       });
-    return flight$;
+      return flight$;
+    }
   }
-}
 
   loadFlightTrack(flight: Flight, removeProjectedIfActualsAreAvailable = true): Observable<AeroAPITrackResponse | null> {
     const user = this.user;
@@ -157,47 +158,47 @@ export class FlightsService {
       return of(null);
     }
     return runInInjectionContext(this.injector, () => {
-        const objectRef = `users/${user.uid}/aeroApiTracks/${flight.flightAwareFlightId}`;
-        const trackRef = ref(this.db, objectRef);
-        return objectVal<AeroAPITrackResponse>(trackRef)
+      const objectRef = `users/${user.uid}/aeroApiTracks/${flight.flightAwareFlightId}`;
+      const trackRef = ref(this.db, objectRef);
+      return objectVal<AeroAPITrackResponse>(trackRef)
         .pipe(
-           map(track => {
-        if (removeProjectedIfActualsAreAvailable
-          && !!track
-          && !!track.actual_distance
-          && track.actual_distance > 0
-          && track.positions.some(p => p.update_type !== UpdateType.P)) {
-          track.positions = track.positions.filter(p => p.update_type !== UpdateType.P);
-        }
-        return track;
+          map(track => {
+            if (removeProjectedIfActualsAreAvailable
+              && !!track
+              && !!track.actual_distance
+              && track.actual_distance > 0
+              && track.positions.some(p => p.update_type !== UpdateType.P)) {
+              track.positions = track.positions.filter(p => p.update_type !== UpdateType.P);
+            }
+            return track;
           })
         );
-      });
-     
+    });
+
   }
 
   saveFlight(_flight: Flight): Observable<SaveResult | null> {
     // console.log('Saving Flight', _flight);
-        const user = this.user;
-    if (!user ) {
+    const user = this.user;
+    if (!user) {
       return of(null);
     }
     const flight = clearFlight(_flight);
     return runInInjectionContext(this.injector, () => {
-        if (!!flight._objectReference) {
-          const flightRef = ref(this.db, flight._objectReference);
-          return from(set(flightRef, flight)).pipe(
-            map(() => ({ flightId: flight._id, type: SaveResultType.UPDATED } as SaveResult))
-          );
-        } else {
-          const newFlightRef = push(ref(this.db, `users/${user.uid}/flights`));
-          flight._id = newFlightRef.key;
-          return from(set(newFlightRef, flight)).pipe(
-            map(() => ({ flightId: flight._id, type: SaveResultType.CREATED } as SaveResult))
-          );
-        }
-      })
-    ;
+      if (!!flight._objectReference) {
+        const flightRef = ref(this.db, flight._objectReference);
+        return from(set(flightRef, flight)).pipe(
+          map(() => ({ flightId: flight._id, type: SaveResultType.UPDATED } as SaveResult))
+        );
+      } else {
+        const newFlightRef = push(ref(this.db, `users/${user.uid}/flights`));
+        flight._id = newFlightRef.key;
+        return from(set(newFlightRef, flight)).pipe(
+          map(() => ({ flightId: flight._id, type: SaveResultType.CREATED } as SaveResult))
+        );
+      }
+    })
+      ;
   }
 
 }

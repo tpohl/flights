@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Signal, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Flight } from '../models/flight';
 import { OverallStats } from '../models/stats';
@@ -14,16 +14,15 @@ import { ExactDurationPipe } from '../pipes/exactDurationPipe';
 })
 export class OverallStatsComponent implements OnInit {
 
+  private flightsService = inject(FlightsService);
 
-  flights: Observable<Flight[]> = new Observable<Flight[]>();
+  flights: Signal<Flight[]> = this.flightsService.flights;
 
-  stats$: Observable<OverallStats> = new Observable<OverallStats>();
+  stats: Signal<OverallStats> = this.flightsService.stats;
 
-  constructor(private flightsService: FlightsService) {
+  constructor() {
   }
 
   ngOnInit() {
-    this.flights = this.flightsService.flights$;
-    this.stats$ = this.flightsService.stats$;
   }
 }

@@ -1,6 +1,6 @@
 import { Flight } from './../models/flight';
 import { Component, OnInit, Signal, inject } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -22,9 +22,9 @@ export class FlightListComponent implements OnInit {
   private flightsService = inject(FlightsService);
 
   // https://angularfirebase.com/lessons/infinite-scroll-with-firebase-data-and-angular-animation/
-  flights: Signal<Flight[]> = toSignal(this.flightsService.flights$, { initialValue: [] });
+  flights: Signal<Flight[]> = this.flightsService.flights;
 
-  stats$: Observable<OverallStats> = new Observable<OverallStats>();
+  stats: Signal<OverallStats> = this.flightsService.stats;
   mapOptions: MapOptions = {
     flights: true,
     countries: true
@@ -39,7 +39,7 @@ export class FlightListComponent implements OnInit {
 
   ngOnInit() {
 
-    this.stats$ = this.flightsService.stats$;
+
   }
 }
 
