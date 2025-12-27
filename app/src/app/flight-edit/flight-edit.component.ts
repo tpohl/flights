@@ -2,7 +2,7 @@ import { Location, LocationStrategy, PathLocationStrategy, CommonModule } from '
 import { AirportService } from '../services/airport.service';
 import { BehaviorSubject, filter, Observable, of, ReplaySubject, Subject, Subscription } from 'rxjs';
 
-import { Component, Input, OnDestroy, OnInit, inject, effect } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit, inject, effect, ViewChild, ElementRef, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { FlightStatsComponent } from '../flight-stats/flight-stats.component';
@@ -106,6 +106,8 @@ export class FlightEditComponent implements OnInit, OnDestroy {
   flight: Flight | null = null;
   user: User | null = null;
 
+  @ViewChild('formCard', { read: ElementRef }) formCard?: ElementRef;
+
   private initializeFlight() {
     if (!this.user) return;
 
@@ -115,6 +117,13 @@ export class FlightEditComponent implements OnInit, OnDestroy {
       this.flight = new Flight();
       this.flight._id = null;
       this.flight.date = DayJS().format('YYYY-MM-DD');
+
+      // Focus on the form when creating a new flight
+      setTimeout(() => {
+        if (this.formCard) {
+          this.formCard.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 100);
     } else {
       this.loadFlight(this._flightId);
     }

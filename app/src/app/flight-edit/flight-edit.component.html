@@ -1,15 +1,16 @@
 <div class="edit-container">
+  @if (flight) {
   <!-- Header -->
   <div class="edit-header">
     <div class="header-content">
       <h1 class="page-title">
-        @if (flight) {
+        @if (flight._id) {
         Edit Flight
         } @else {
         New Flight
         }
       </h1>
-      @if (flight) {
+      @if (flight._id) {
       <p class="flight-summary">{{ flight.from }} → {{ flight.to }} · {{ flight.departureTime | amTimeAgo }}</p>
       }
     </div>
@@ -18,26 +19,27 @@
     </a>
   </div>
 
-  @if (flight) {
-  <!-- Flight Preview Card -->
-  <mat-card class="preview-card glass-card">
-    <mat-card-content>
-      <app-flight-tile [flight]="flight"></app-flight-tile>
-    </mat-card-content>
-  </mat-card>
+  <div [class.is-disabled]="!flight._id">
+    <!-- Flight Preview Card -->
+    <mat-card class="preview-card glass-card">
+      <mat-card-content>
+        <app-flight-tile [flight]="flight!"></app-flight-tile>
+      </mat-card-content>
+    </mat-card>
 
-  <!-- Map -->
-  <div class="map-container">
-    <app-cesium [flights]="(flightsForMap$ | async)!" [timelineMode]="false"></app-cesium>
-  </div>
+    <!-- Map -->
+    <div class="map-container">
+      <app-cesium [flights]="(flightsForMap$ | async)!" [timelineMode]="false"></app-cesium>
+    </div>
 
-  <!-- Flight Stats -->
-  <div class="stats-container">
-    <app-flight-stats [flight]="flight" [aeroApiTrack]=""></app-flight-stats>
+    <!-- Flight Stats -->
+    <div class="stats-container">
+      <app-flight-stats [flight]="flight!" [aeroApiTrack]=""></app-flight-stats>
+    </div>
   </div>
 
   <!-- Edit Form -->
-  <mat-card class="form-card glass-card">
+  <mat-card class="form-card glass-card" #formCard>
     <mat-card-header>
       <mat-card-title>Flight Details</mat-card-title>
     </mat-card-header>
