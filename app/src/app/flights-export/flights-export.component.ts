@@ -1,11 +1,7 @@
-import { AuthService } from '../services/auth.service';
-import { toObservable } from '@angular/core/rxjs-interop';
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { AngularFireDatabase } from '@angular/fire/compat/database';
-import { Observable } from 'rxjs';
-import { map, filter, switchMap } from 'rxjs/operators';
 import { Flight } from '../models/flight';
+import { FlightsService } from '../services/flights.service';
 
 @Component({
   standalone: true,
@@ -16,40 +12,21 @@ import { Flight } from '../models/flight';
 })
 export class FlightsExportComponent implements OnInit {
 
-  flights$!: Observable<Flight[]>;
-
-  private authService = inject(AuthService);
-  private db = inject(AngularFireDatabase);
+  private flightsService = inject(FlightsService);
+  flights = this.flightsService.flights;
 
   constructor() {
   }
 
   ngOnInit() {
-    this.flights$ = toObservable(this.authService.user).pipe(
-      filter(user => !!user),
-      switchMap(user => {
-        const flightList = this.db.list<Flight>('users/' + user!.uid + '/flights');
-        return flightList.snapshotChanges();
-      }),
-      map(snapshots =>
-        snapshots.map(c => {
-          const f = c.payload.val();
-          if (f) {
-            f._id = c.key;
-            return f;
-          }
-          return null;
-        }).filter(f => f !== null) as Flight[]
-      )
-    );
   }
 
   flightsToClipbord() {
-    this.flights$.pipe(map(flightsArray => JSON.stringify(flightsArray))).subscribe(this.copyToClipboard);
+    this.copyToClipboard(JSON.stringify(this.flightsService.flights()));
   }
 
   flightSearchToClipbord() {
-    this.flights$.pipe(map(flightsArray => this.flightsForFlightSearch(flightsArray))).subscribe(this.copyToClipboard);
+    this.copyToClipboard(this.flightsForFlightSearch(this.flightsService.flights()));
   }
 
   flightsForFlightSearch(flightsArray: Flight[]): string {

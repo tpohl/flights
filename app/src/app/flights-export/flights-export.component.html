@@ -12,13 +12,13 @@
   </p>
   <div class="columns">
     <div class="column">
-    <pre *ngIf="flights$ | async as flights " style="max-width: 400px; max-height: 300px; overflow: scroll">
-      {{flightsForFlightSearch(flights)  }}
+      <pre style="max-width: 400px; max-height: 300px; overflow: scroll">
+      {{flightsForFlightSearch(flights())  }}
     </pre>
     </div>
     <div class="column">
-    <pre style="max-width: 400px; max-height: 300px; overflow: scroll">
-      {{flights$ | async | json }}
+      <pre style="max-width: 400px; max-height: 300px; overflow: scroll">
+      {{flights() | json }}
     </pre>
     </div>
   </div>
