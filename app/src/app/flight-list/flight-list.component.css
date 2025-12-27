@@ -114,14 +114,17 @@
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
     gap: 28px;
-    /* Increased gap for shadow space */
-    padding: 12px;
-    /* Extra padding for hover shadows */
+    padding: 32px 12px;
+    /* Increased top/bottom padding for hover transforms */
+    margin: 0 -12px;
+    /* Negative margin to align tiles with the map above */
+    overflow: visible;
 }
 
 .flight-card-link {
     text-decoration: none;
     display: block;
+    overflow: visible !important;
 }
 
 /* Override mat-card default overflow hidden */
