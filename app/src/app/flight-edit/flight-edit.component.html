@@ -13,7 +13,7 @@
       </div>
     </div>
     <div class="mt-2 mb-2">
-      <app-cesium [flights]="flightsForMap$" [timelineMode]="false"></app-cesium>
+      <app-cesium [flights]="(flightsForMap$ | async)!" [timelineMode]="false"></app-cesium>
     </div>
     <div class="mt-2 mb-2">
       <app-flight-stats [flight]="flight" [aeroApiTrack]=""></app-flight-stats>
@@ -55,7 +55,7 @@
               <div class="control is-expanded">
                 <input class="input" type="text" [(ngModel)]="flight.flightno" placeholder="Flight Number">
               </div>
-              <div class="control"  (click)="autocomplete()">
+              <div class="control" (click)="autocomplete()">
                 <button [class.is-loading]="flight.needsAutocomplete" class="button">
                   <i class="fa fa-magic" aria-hidden="true"></i>
                 </button>
@@ -71,7 +71,8 @@
           <div class="field-body">
             <div class="field has-addons">
               <div class="control is-expanded">
-                <input class="input" type="text" [(ngModel)]="flight.from" placeholder="Origin" (change)="loadFromAirport(flight.from)">
+                <input class="input" type="text" [(ngModel)]="flight.from" placeholder="Origin"
+                  (change)="loadFromAirport(flight.from)">
               </div>
               <div class="control">
                 <p class="button is-static">{{ (fromAirport$ | async)?.name | slice:0:30 }}</p>
@@ -87,7 +88,8 @@
           <div class="field-body">
             <div class="field has-addons">
               <div class="control is-expanded">
-                <input class="input" type="text" [(ngModel)]="flight.to" placeholder="Destination" (change)="loadToAirport(flight.to)">
+                <input class="input" type="text" [(ngModel)]="flight.to" placeholder="Destination"
+                  (change)="loadToAirport(flight.to)">
               </div>
               <div class="control">
                 <p class="button is-static">{{ (toAirport$ | async)?.name | slice:0:30 }}</p>
@@ -167,8 +169,9 @@
           <div class="field-body">
             <div class="field">
               <div class="control">
-                <input class="input" type="text" value="{{flight.durationMilliseconds | amDurationExact:'milliseconds' }}" placeholder="Duration"
-                       readonly disabled>
+                <input class="input" type="text"
+                  value="{{flight.durationMilliseconds | amDurationExact:'milliseconds' }}" placeholder="Duration"
+                  readonly disabled>
               </div>
             </div>
           </div>
@@ -197,7 +200,8 @@
           <div class="field-body">
             <div class="field">
               <div class="control">
-                <input class="input" type="text" [(ngModel)]="flight.aircraftRegistration" placeholder="Aircraft Registration">
+                <input class="input" type="text" [(ngModel)]="flight.aircraftRegistration"
+                  placeholder="Aircraft Registration">
               </div>
             </div>
 
@@ -247,9 +251,10 @@
             <div class="field">
               <div class="control">
                 @for (travelClass of TRAVEL_CLASSES_LIST; track travelClass.key) {
-                  <label class="radio">
-                    <input type="radio" [value]="travelClass.key" name="class" [(ngModel)]="flight.class"> {{ travelClass.long }}
-                  </label>
+                <label class="radio">
+                  <input type="radio" [value]="travelClass.key" name="class" [(ngModel)]="flight.class"> {{
+                  travelClass.long }}
+                </label>
                 }
               </div>
             </div>

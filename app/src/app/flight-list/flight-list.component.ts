@@ -1,5 +1,6 @@
 import { Flight } from './../models/flight';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Signal, inject } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -18,16 +19,18 @@ import { CesiumDirective } from '../cesium.directive';
   styleUrls: ['./flight-list.component.css']
 })
 export class FlightListComponent implements OnInit {
+  private flightsService = inject(FlightsService);
+
   // https://angularfirebase.com/lessons/infinite-scroll-with-firebase-data-and-angular-animation/
-  flights: Observable<Flight[]> = new Observable<Flight[]>();
-  
-  stats$: Observable<OverallStats> = new Observable<OverallStats>();  
+  flights: Signal<Flight[]> = toSignal(this.flightsService.flights$, { initialValue: [] });
+
+  stats$: Observable<OverallStats> = new Observable<OverallStats>();
   mapOptions: MapOptions = {
     flights: true,
     countries: true
   };
 
-  constructor(private flightsService: FlightsService) {
+  constructor() {
   }
 
   selectFlight(flight: Flight) {
@@ -35,7 +38,7 @@ export class FlightListComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.flights = this.flightsService.flights$;
+
     this.stats$ = this.flightsService.stats$;
   }
 }
