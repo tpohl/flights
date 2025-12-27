@@ -1,8 +1,8 @@
 <span *ngIf="!!flight" class="seat-info-container">
-  <span class="seat-label">{{flight.seat}}</span>
-  <mat-chip-set class="class-chip">
-    <mat-chip [color]="cssClass(flight.class)" selected>
-      {{translateClass(flight.class)}}
+  <mat-chip-set aria-label="Seat selection">
+    <mat-chip class="seat-chip" *ngIf="flight.seat">{{ flight.seat }}</mat-chip>
+    <mat-chip class="class-chip" *ngIf="flight.class" [class]="cssClass(flight.class)">
+      {{ translateClass(flight.class) }}
     </mat-chip>
   </mat-chip-set>
 </span>

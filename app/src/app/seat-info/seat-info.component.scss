@@ -1,22 +1,68 @@
 .seat-info-container {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  vertical-align: middle;
+  gap: 0;
 }
 
 .seat-label {
-  font-weight: 600;
-  font-size: 0.9rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: rgba(0, 0, 0, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
-.class-chip {
-  display: inline-block;
-}
+::ng-deep .mat-mdc-chip-set {
+  display: inline-flex !important;
 
-::ng-deep .mat-mdc-chip {
-  --mdc-chip-label-text-size: 0.75rem !important;
-  min-height: 24px !important;
-  height: 24px !important;
-  padding-top: 0 !important;
-  padding-bottom: 0 !important;
+  .mdc-evolution-chip-set__chips {
+    display: inline-flex !important;
+  }
+
+  .mat-mdc-chip {
+    min-height: 24px !important;
+    padding: 0 8px !important;
+    font-size: 0.75rem !important;
+    font-weight: 600 !important;
+    border-radius: 6px !important;
+
+    &.class-chip {
+      &.class-y {
+        background-color: rgba(76, 175, 80, 0.15) !important;
+        color: #2e7d32 !important;
+        border: 1px solid rgba(76, 175, 80, 0.3) !important;
+      }
+
+      &.class-m {
+        background-color: rgba(139, 195, 74, 0.15) !important;
+        color: #558b2f !important;
+        border: 1px solid rgba(139, 195, 74, 0.3) !important;
+      }
+
+      &.class-c {
+        background-color: rgba(33, 150, 243, 0.15) !important;
+        color: #1565c0 !important;
+        border: 1px solid rgba(33, 150, 243, 0.3) !important;
+      }
+
+      &.class-f {
+        background-color: rgba(244, 67, 54, 0.15) !important;
+        color: #c62828 !important;
+        border: 1px solid rgba(244, 67, 54, 0.3) !important;
+      }
+
+      &.class-j {
+        background-color: rgba(255, 235, 59, 0.2) !important;
+        color: #f9a825 !important;
+        border: 1px solid rgba(255, 235, 59, 0.4) !important;
+      }
+
+      &.class-p {
+        background-color: rgba(255, 193, 7, 0.2) !important;
+        color: #ff8f00 !important;
+        border: 1px solid rgba(255, 193, 7, 0.4) !important;
+      }
+    }
+  }
 }

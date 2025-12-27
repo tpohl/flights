@@ -34,10 +34,10 @@ export interface ClassInfo {
   cssClass: string;
 }
 export const TRAVEL_CLASSES: Map<string, ClassInfo> = new Map(Object.entries({
-  Y: { key: 'Y', short: 'ECO', long: 'Economy', cssClass: 'success' },
-  M: { key: 'M', short: 'ECO+', long: 'Premium Economy', cssClass: 'primary' },
-  C: { key: 'C', short: 'BIZ', long: 'Business', cssClass: 'info' },
-  F: { key: 'F', short: '1ST', long: 'First Class', cssClass: 'warn' },
-  J: { key: 'J', short: 'JMP', long: 'Jump Seat', cssClass: 'accent' },
-  P: { key: 'P', short: 'CPIT', long: 'Cockpit', cssClass: 'primary' }
+  Y: { key: 'Y', short: 'ECO', long: 'Economy', cssClass: 'class-y' },
+  M: { key: 'M', short: 'ECO+', long: 'Premium Economy', cssClass: 'class-m' },
+  C: { key: 'C', short: 'BIZ', long: 'Business', cssClass: 'class-c' },
+  F: { key: 'F', short: '1ST', long: 'First Class', cssClass: 'class-f' },
+  J: { key: 'J', short: 'JMP', long: 'Jump Seat', cssClass: 'class-j' },
+  P: { key: 'P', short: 'CPIT', long: 'Cockpit', cssClass: 'class-p' }
 }));
