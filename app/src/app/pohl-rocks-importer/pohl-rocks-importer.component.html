@@ -1,59 +1,85 @@
-<div>
-  <div>
-    <h1 class="title">Paste your flights from <a href="https://flights-old.pohl.rocks">https://flights-old.pohl.rocks</a>
-      here.</h1>
-    <div>
-      <textarea [(ngModel)]="importJson" rows="20" cols="200"></textarea>
-    </div>
-    <p class="buttons">
-      <a (click)="parseFlights()" class="button is-primary">
-        <span class="icon"><i class="fa fa-code" aria-hidden="true"></i></span>
+<div class="import-container">
+  <header class="import-header">
+    <h1 class="page-title">Import Flights</h1>
+    <p class="subtitle">Paste your flight data JSON from <a href="https://flights-old.pohl.rocks"
+        target="_blank">flights-old.pohl.rocks</a></p>
+  </header>
+
+  <mat-card class="input-card glass-card">
+    <mat-card-content>
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>JSON Data</mat-label>
+        <textarea matInput [(ngModel)]="importJson" rows="10"
+          placeholder='[{"from": "VIE", "to": "HAM", ...}]'></textarea>
+        <mat-hint>Paste the array of flight objects here.</mat-hint>
+      </mat-form-field>
+    </mat-card-content>
+    <mat-card-actions align="end">
+      <button mat-flat-button color="primary" (click)="parseFlights()" [disabled]="!importJson">
+        <mat-icon>code</mat-icon>
         Parse Flights
-      </a>
-    </p>
-  </div>
-  <div>
-    <h2 class="title">Flights you are about to import:</h2>
+      </button>
+    </mat-card-actions>
+  </mat-card>
 
-    <p class="buttons">
-      <a (click)="importFlights()" class="button is-primary">
-        <span class="icon"><i class="fa fa-cloud-upload" aria-hidden="true"></i></span>
-        Do import
-      </a>
-      <a (click)="removeDuplicateImports()" class="button is-warning">Remove Duplicate Imports</a>
-      <a (click)="deleteAllMyFlights()" class="button is-danger">
-        <span class="icon is-small"><i class="fa fa-trash" aria-hidden="true"></i></span>
-        Delete all existing flights
-      </a>
-    </p>
-
-    <div class="columns is-multiline">
-      <div class="column is-half-tablet is-one-third-desktop is-one-quarter-fullhd" *ngFor="let flight of flights">
-
-        <div class="card">
-          <div class="card-content">
-
-            <div class="media">
-
-              <div class="media-content">
-                <p class="title is-3"> {{flight.from}} to {{flight.to}}</p>
-                <p class="subtitle is-6"> {{flight.departureTime | date:'dd.MM.yyyy HH:mm'}} - {{flight.flightno}} -
-                  {{flight.distance
-                  | number : '1.0-0'}} km
-                </p>
-              </div>
-
-            </div>
-            <span class="is-hidden-mobile">
-              {{flight.class}} - {{flight.seat}} - {{flight.carrier}} <br /> {{flight.aircraftType}}
-              {{flight.aircraftRegistration}}
-            </span>
-
-          </div>
-        </div>
-
+  @if (flights && flights.length > 0) {
+  <section class="preview-section">
+    <div class="section-header">
+      <h2 class="section-title">Flights to Import ({{ flights.length }})</h2>
+      <div class="action-buttons">
+        <button mat-flat-button color="accent" (click)="importFlights()">
+          <mat-icon>cloud_upload</mat-icon>
+          Import Now
+        </button>
+        <button mat-stroked-button color="warn" (click)="removeDuplicateImports()">
+          <mat-icon>content_copy</mat-icon>
+          Remove Duplicates
+        </button>
+        <button mat-stroked-button color="warn" (click)="deleteAllMyFlights()"
+          matTooltip="This action might be disabled in code">
+          <mat-icon>delete_forever</mat-icon>
+          Clear All Existing
+        </button>
       </div>
     </div>
 
-  </div>
+    <div class="flights-grid">
+      @for (flight of flights; track $index) {
+      <mat-card class="flight-preview-card glass-card">
+        <mat-card-content>
+          <div class="flight-main">
+            <div class="route">
+              <span class="airport">{{ flight.from }}</span>
+              <mat-icon class="arrow">east</mat-icon>
+              <span class="airport">{{ flight.to }}</span>
+            </div>
+            <div class="flight-no">{{ flight.flightno }}</div>
+          </div>
+
+          <mat-divider></mat-divider>
+
+          <div class="flight-details">
+            <div class="detail-row">
+              <mat-icon>calendar_today</mat-icon>
+              <span>{{ flight.departureTime | date:'dd.MM.yyyy HH:mm' }}</span>
+            </div>
+            <div class="detail-row">
+              <mat-icon>straighten</mat-icon>
+              <span>{{ flight.distance | number : '1.0-0' }} km</span>
+            </div>
+            <div class="detail-row extra-info">
+              <mat-icon>info_outline</mat-icon>
+              <span>{{ flight.class }} · {{ flight.seat }} · {{ flight.carrier }}</span>
+            </div>
+            <div class="detail-row aircraft">
+              <mat-icon>flight</mat-icon>
+              <span>{{ flight.aircraftType }} · {{ flight.aircraftRegistration }}</span>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+      }
+    </div>
+  </section>
+  }
 </div>

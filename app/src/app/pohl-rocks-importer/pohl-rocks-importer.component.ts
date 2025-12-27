@@ -9,9 +9,28 @@ import { toObservable } from '@angular/core/rxjs-interop';
 
 import { Flight } from './../models/flight';
 
+// Angular Material
+import { MatCardModule } from '@angular/material/card';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatTooltipModule } from '@angular/material/tooltip';
+
 @Component({
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    MatCardModule,
+    MatButtonModule,
+    MatIconModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatDividerModule,
+    MatTooltipModule
+  ],
   selector: 'app-pohl-rocks-importer',
   templateUrl: './pohl-rocks-importer.component.html',
   styleUrls: ['./pohl-rocks-importer.component.css']
