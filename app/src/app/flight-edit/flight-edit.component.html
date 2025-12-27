@@ -1,349 +1,223 @@
-<div class="container is-max-desktop">
-  <a routerLink="/flights" class="is-pulled-right" aria-label="Close Flight">
-    <span class="icon">
-      <i class="fa fa-times fa-2x" aria-hidden="true"></i>
-    </span>
-  </a>
-  <p class="title is-3 pb-0 mb-1">Edit Flight</p>
-  <div *ngIf="flight">
-    <p class="heading">{{ flight.from }} - {{ flight.to }} {{ flight.departureTime | amTimeAgo }}</p>
-    <div class="container flight-tile">
-      <div class="box">
-        <app-flight-tile [flight]="flight"></app-flight-tile>
-      </div>
+<div class="edit-container">
+  <!-- Header -->
+  <div class="edit-header">
+    <div class="header-content">
+      <h1 class="page-title">
+        @if (flight) {
+        Edit Flight
+        } @else {
+        New Flight
+        }
+      </h1>
+      @if (flight) {
+      <p class="flight-summary">{{ flight.from }} → {{ flight.to }} · {{ flight.departureTime | amTimeAgo }}</p>
+      }
     </div>
-    <div class="mt-2 mb-2">
-      <app-cesium [flights]="(flightsForMap$ | async)!" [timelineMode]="false"></app-cesium>
-    </div>
-    <div class="mt-2 mb-2">
-      <app-flight-stats [flight]="flight" [aeroApiTrack]=""></app-flight-stats>
-    </div>
-    <div class="card">
-      <div class="card-header">
-        <p class="card-header-title">Edit</p>
-      </div>
-      <div class="card-content">
-
-        <div class="field is-horizontal">
-          <div class="field-label is-normal">
-            <label class="label">Date</label>
-          </div>
-          <div class="field-body">
-            <div class="field">
-              <div class="control">
-                <div class="field has-addons">
-                  <div class="control is-expanded">
-                    <input class="input" [(ngModel)]="flight.date">
-                  </div>
-                  <div class="control">
-                    <button class="button">
-                      <app-datepicker locale="en" (emitSelectedDate)="selectedDate($event)"></app-datepicker>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="field is-horizontal">
-          <div class="field-label is-normal">
-            <label class="label">Flight Number</label>
-          </div>
-          <div class="field-body">
-            <div class="field has-addons">
-              <div class="control is-expanded">
-                <input class="input" type="text" [(ngModel)]="flight.flightno" placeholder="Flight Number">
-              </div>
-              <div class="control" (click)="autocomplete()">
-                <button [class.is-loading]="flight.needsAutocomplete" class="button">
-                  <i class="fa fa-magic" aria-hidden="true"></i>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="field is-horizontal">
-          <div class="field-label is-normal">
-            <label class="label">From</label>
-          </div>
-          <div class="field-body">
-            <div class="field has-addons">
-              <div class="control is-expanded">
-                <input class="input" type="text" [(ngModel)]="flight.from" placeholder="Origin"
-                  (change)="loadFromAirport(flight.from)">
-              </div>
-              <div class="control">
-                <p class="button is-static">{{ (fromAirport$ | async)?.name | slice:0:30 }}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="field is-horizontal">
-          <div class="field-label is-normal">
-            <label class="label">To</label>
-          </div>
-          <div class="field-body">
-            <div class="field has-addons">
-              <div class="control is-expanded">
-                <input class="input" type="text" [(ngModel)]="flight.to" placeholder="Destination"
-                  (change)="loadToAirport(flight.to)">
-              </div>
-              <div class="control">
-                <p class="button is-static">{{ (toAirport$ | async)?.name | slice:0:30 }}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="field is-horizontal">
-          <div class="field-label is-normal">
-            <label class="label">Departure Time</label>
-          </div>
-          <div class="field-body">
-            <div class="field">
-              <div class="control">
-                <div class="field has-addons">
-                  <div class="control is-expanded">
-                    <input class="input" type="time" [(ngModel)]="departureTime" />
-                  </div>
-                  <div class="control">
-                    <button class="button" (click)="selectDepartureTime()">
-                      <i class="fa fa-clock-o" aria-hidden="true"></i>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="field is-horizontal">
-          <div class="field-label is-normal">
-            <label class="label">Arrival Time</label>
-          </div>
-          <div class="field-body">
-            <div class="field">
-              <div class="control">
-                <div class="field has-addons">
-                  <div class="control is-expanded">
-                    <input class="input" type="time" [(ngModel)]="arrivalTime" />
-                  </div>
-                  <div class="control">
-                    <button class="button" (click)="selectArrivalTime()">
-                      <i class="fa fa-clock-o" aria-hidden="true"></i>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <!--
-            <app-local-datetime label="Departure Time" [instant]="departureTimeLocal" (timeUpdated)="timeUpdated('departureTime', $event)"></app-local-datetime>
-
-          <app-local-datetime label="Arrival Time" [instant]="arrivalTimeLocal" (timeUpdated)="timeUpdated('arrivalTime', $event)"></app-local-datetime>
-        -->
-
-        <div class="field is-horizontal">
-          <div class="field-label is-normal">
-            <label class="label">Distance</label>
-          </div>
-          <div class="field-body">
-            <div class="field has-addons">
-              <div class="control is-expanded">
-                <input class="input" type="text" [(ngModel)]="flight.distance" placeholder="Distance">
-              </div>
-              <div class="control">
-                <p class="button is-static"> km ( {{ flight | flightDistance | number : '1.0-0' }} km flown) </p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="field is-horizontal">
-          <div class="field-label is-normal">
-            <label class="label">Duration</label>
-          </div>
-          <div class="field-body">
-            <div class="field">
-              <div class="control">
-                <input class="input" type="text"
-                  value="{{flight.durationMilliseconds | amDurationExact:'milliseconds' }}" placeholder="Duration"
-                  readonly disabled>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="field is-horizontal">
-          <div class="field-label is-normal">
-            <label class="label">Aircraft Type</label>
-          </div>
-          <div class="field-body">
-            <div class="field has-addons">
-              <div class="control is-expanded">
-                <input class="input" type="text" [(ngModel)]="flight.aircraftTypeCode" placeholder="Aircraft Type">
-              </div>
-              <div class="control">
-                <p class="button is-static">{{ flight.aircraftType }}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="field is-horizontal">
-          <div class="field-label is-normal">
-            <label class="label">Aircraft Registration</label>
-          </div>
-          <div class="field-body">
-            <div class="field">
-              <div class="control">
-                <input class="input" type="text" [(ngModel)]="flight.aircraftRegistration"
-                  placeholder="Aircraft Registration">
-              </div>
-            </div>
-
-          </div>
-        </div>
-
-        <div class="field is-horizontal">
-          <div class="field-label is-normal">
-            <label class="label">Seat</label>
-          </div>
-          <div class="field-body">
-            <div class="field">
-              <div class="control">
-                <input class="input" type="text" [(ngModel)]="flight.seat" placeholder="Seat">
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="field is-horizontal">
-          <div class="field-label is-normal">
-            <label class="label">Seat Type:</label>
-          </div>
-          <div class="field-body">
-            <div class="field">
-              <div class="control">
-                <label class="radio">
-                  <input type="radio" value="A" name="seatType" [(ngModel)]="flight.seatType"> Aisle
-                </label>
-                <label class="radio">
-                  <input type="radio" value="M" name="seatType" [(ngModel)]="flight.seatType"> Middle
-                </label>
-                <label class="radio">
-                  <input type="radio" value="W" name="seatType" [(ngModel)]="flight.seatType"> Window
-                </label>
-              </div>
-            </div>
-
-          </div>
-        </div>
-
-        <div class="field is-horizontal">
-          <div class="field-label is-normal">
-            <label class="label">Class:</label>
-          </div>
-          <div class="field-body">
-            <div class="field">
-              <div class="control">
-                @for (travelClass of TRAVEL_CLASSES_LIST; track travelClass.key) {
-                <label class="radio">
-                  <input type="radio" [value]="travelClass.key" name="class" [(ngModel)]="flight.class"> {{
-                  travelClass.long }}
-                </label>
-                }
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="field is-horizontal">
-          <div class="field-label is-normal">
-            <label class="label">Reason:</label>
-          </div>
-          <div class="field-body">
-            <div class="field">
-              <div class="control">
-                <label class="radio">
-                  <input type="radio" value="B" name="reason" [(ngModel)]="flight.reason"> Work
-                </label>
-                <label class="radio">
-                  <input type="radio" value="L" name="reason" [(ngModel)]="flight.reason"> Leisure
-                </label>
-                <label class="radio">
-                  <input type="radio" value="C" name="reason" [(ngModel)]="flight.reason"> Crew
-                </label>
-                <label class="radio">
-                  <input type="radio" value="O" name="reason" [(ngModel)]="flight.reason"> Other
-                </label>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="field is-horizontal">
-          <div class="field-label is-normal">
-            <label class="label">Carrier:</label>
-          </div>
-          <div class="field-body">
-            <div class="field">
-              <div class="control is-expanded">
-                <input class="input" type="text" [(ngModel)]="flight.carrier" placeholder="Carrier">
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="field is-horizontal">
-          <div class="field-label is-normal">
-            <label class="label">Name:</label>
-          </div>
-          <div class="field-body">
-            <div class="field">
-              <div class="control is-expanded">
-                <input class="input" type="text" [(ngModel)]="flight.name" placeholder="Name">
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="field is-horizontal">
-          <div class="field-label is-small">
-            <label class="label">Note:</label>
-          </div>
-          <div class="field-body">
-            <div class="field">
-              <div class="control is-expanded">
-                <input class="input" type="text" [(ngModel)]="flight.note" placeholder="Note">
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="field is-horizontal" *ngIf="flight.errorMessage">
-          <div class="field-label is-danger">
-            <label class="label">Error Message:</label>
-          </div>
-          <div class="field-body">
-            <div class="field">
-              <div class="control is-expanded is-danger">
-                <input class="input" type="text" disabled="disabled" [(ngModel)]="flight.errorMessage" placeholder="">
-              </div>
-            </div>
-          </div>
-        </div>
-        <footer class="card-footer">
-          <a (click)="save()" class="card-footer-item is-success button">
-            <i class="fa fa-floppy-o" aria-hidden="true"></i> Save
-          </a>
-          <a (click)="delete()" class="card-footer-item is-danger button">
-            <i class="fa fa-trash-o" aria-hidden="true"></i> Delete
-          </a>
-        </footer>
-      </div>
-    </div>
+    <a mat-icon-button routerLink="/flights" aria-label="Close" class="close-button">
+      <mat-icon>close</mat-icon>
+    </a>
   </div>
+
+  @if (flight) {
+  <!-- Flight Preview Card -->
+  <mat-card class="preview-card glass-card">
+    <mat-card-content>
+      <app-flight-tile [flight]="flight"></app-flight-tile>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Map -->
+  <div class="map-container">
+    <app-cesium [flights]="(flightsForMap$ | async)!" [timelineMode]="false"></app-cesium>
+  </div>
+
+  <!-- Flight Stats -->
+  <div class="stats-container">
+    <app-flight-stats [flight]="flight" [aeroApiTrack]=""></app-flight-stats>
+  </div>
+
+  <!-- Edit Form -->
+  <mat-card class="form-card glass-card">
+    <mat-card-header>
+      <mat-card-title>Flight Details</mat-card-title>
+    </mat-card-header>
+
+    <mat-card-content>
+      <div class="form-grid">
+        <!-- Date -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Date</mat-label>
+          <input matInput [matDatepicker]="picker" [value]="flight.date" (dateChange)="onDateChange($event)"
+            placeholder="YYYY-MM-DD">
+          <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+          <mat-datepicker #picker></mat-datepicker>
+        </mat-form-field>
+
+        <!-- Flight Number with autocomplete -->
+        <div class="input-with-action">
+          <mat-form-field appearance="outline" class="flex-grow">
+            <mat-label>Flight Number</mat-label>
+            <input matInput [(ngModel)]="flight.flightno" placeholder="e.g. LH123">
+            <mat-icon matSuffix>flight</mat-icon>
+          </mat-form-field>
+          <button mat-icon-button (click)="autocomplete()" [class.loading]="flight.needsAutocomplete"
+            matTooltip="Auto-complete flight info">
+            <mat-icon>auto_fix_high</mat-icon>
+          </button>
+        </div>
+
+        <mat-divider></mat-divider>
+
+        <!-- From Airport -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>From</mat-label>
+          <input matInput [(ngModel)]="flight.from" placeholder="Origin (e.g. VIE)"
+            (change)="loadFromAirport(flight.from)">
+          <mat-hint>{{ (fromAirport$ | async)?.name }}</mat-hint>
+        </mat-form-field>
+
+        <!-- To Airport -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>To</mat-label>
+          <input matInput [(ngModel)]="flight.to" placeholder="Destination (e.g. HAM)"
+            (change)="loadToAirport(flight.to)">
+          <mat-hint>{{ (toAirport$ | async)?.name }}</mat-hint>
+        </mat-form-field>
+
+        <mat-divider></mat-divider>
+
+        <!-- Departure Time -->
+        <div class="input-with-action">
+          <mat-form-field appearance="outline" class="flex-grow">
+            <mat-label>Departure Time</mat-label>
+            <input matInput type="time" [(ngModel)]="departureTime">
+          </mat-form-field>
+          <button mat-icon-button (click)="selectDepartureTime()" matTooltip="Set departure time">
+            <mat-icon>schedule</mat-icon>
+          </button>
+        </div>
+
+        <!-- Arrival Time -->
+        <div class="input-with-action">
+          <mat-form-field appearance="outline" class="flex-grow">
+            <mat-label>Arrival Time</mat-label>
+            <input matInput type="time" [(ngModel)]="arrivalTime">
+          </mat-form-field>
+          <button mat-icon-button (click)="selectArrivalTime()" matTooltip="Set arrival time">
+            <mat-icon>schedule</mat-icon>
+          </button>
+        </div>
+
+        <!-- Distance -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Distance</mat-label>
+          <input matInput [(ngModel)]="flight.distance" placeholder="Distance in km">
+          <mat-hint>Calculated: {{ flight | flightDistance | number : '1.0-0' }} km</mat-hint>
+        </mat-form-field>
+
+        <!-- Duration (read-only) -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Duration</mat-label>
+          <input matInput [value]="flight.durationMilliseconds | amDurationExact:'milliseconds'" readonly>
+          <mat-icon matSuffix>timer</mat-icon>
+        </mat-form-field>
+
+        <mat-divider></mat-divider>
+
+        <!-- Aircraft Type -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Aircraft Type Code</mat-label>
+          <input matInput [(ngModel)]="flight.aircraftTypeCode" placeholder="e.g. A320">
+          <mat-hint>{{ flight.aircraftType }}</mat-hint>
+        </mat-form-field>
+
+        <!-- Aircraft Registration -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Aircraft Registration</mat-label>
+          <input matInput [(ngModel)]="flight.aircraftRegistration" placeholder="e.g. OE-LBL">
+        </mat-form-field>
+
+        <mat-divider></mat-divider>
+
+        <!-- Seat -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Seat</mat-label>
+          <input matInput [(ngModel)]="flight.seat" placeholder="e.g. 12A">
+          <mat-icon matSuffix>airline_seat_recline_normal</mat-icon>
+        </mat-form-field>
+
+        <!-- Seat Type -->
+        <div class="radio-group-container">
+          <label class="radio-label">Seat Type</label>
+          <mat-radio-group [(ngModel)]="flight.seatType" class="radio-group">
+            <mat-radio-button value="A">Aisle</mat-radio-button>
+            <mat-radio-button value="M">Middle</mat-radio-button>
+            <mat-radio-button value="W">Window</mat-radio-button>
+          </mat-radio-group>
+        </div>
+
+        <!-- Class -->
+        <div class="radio-group-container">
+          <label class="radio-label">Class</label>
+          <mat-radio-group [(ngModel)]="flight.class" class="radio-group">
+            @for (travelClass of TRAVEL_CLASSES_LIST; track travelClass.key) {
+            <mat-radio-button [value]="travelClass.key">{{ travelClass.long }}</mat-radio-button>
+            }
+          </mat-radio-group>
+        </div>
+
+        <!-- Reason -->
+        <div class="radio-group-container">
+          <label class="radio-label">Reason</label>
+          <mat-radio-group [(ngModel)]="flight.reason" class="radio-group">
+            <mat-radio-button value="B">Work</mat-radio-button>
+            <mat-radio-button value="L">Leisure</mat-radio-button>
+            <mat-radio-button value="C">Crew</mat-radio-button>
+            <mat-radio-button value="O">Other</mat-radio-button>
+          </mat-radio-group>
+        </div>
+
+        <mat-divider></mat-divider>
+
+        <!-- Carrier -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Carrier</mat-label>
+          <input matInput [(ngModel)]="flight.carrier" placeholder="e.g. Austrian Airlines">
+        </mat-form-field>
+
+        <!-- Name -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Name</mat-label>
+          <input matInput [(ngModel)]="flight.name" placeholder="Flight name">
+        </mat-form-field>
+
+        <!-- Note -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Note</mat-label>
+          <input matInput [(ngModel)]="flight.note" placeholder="Additional notes">
+        </mat-form-field>
+
+        <!-- Error Message -->
+        @if (flight.errorMessage) {
+        <div class="error-message">
+          <mat-icon>error</mat-icon>
+          <span>{{ flight.errorMessage }}</span>
+        </div>
+        }
+      </div>
+    </mat-card-content>
+
+    <!-- Actions -->
+    <mat-card-actions class="form-actions">
+      <button mat-flat-button color="primary" (click)="save()" class="save-button">
+        <mat-icon>save</mat-icon>
+        Save
+      </button>
+      <button mat-stroked-button color="warn" (click)="delete()" class="delete-button">
+        <mat-icon>delete</mat-icon>
+        Delete
+      </button>
+    </mat-card-actions>
+  </mat-card>
+  }
 </div>

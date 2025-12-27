@@ -30,9 +30,41 @@ import { FlightTileComponent } from '../flight-tile/flight-tile.component';
 import { AuthService } from '../services/auth.service';
 import { toObservable } from '@angular/core/rxjs-interop';
 
+// Angular Material
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatCardModule } from '@angular/material/card';
+import { MatRadioModule } from '@angular/material/radio';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
+
 @Component({
   standalone: true,
-  imports: [CommonModule, FormsModule, FlightTileComponent, FlightStatsComponent, RelativeTimePipe, FlightDistancePipe, CesiumDirective, ExactDurationPipe, RouterLink],
+  imports: [
+    CommonModule,
+    FormsModule,
+    FlightTileComponent,
+    FlightStatsComponent,
+    RelativeTimePipe,
+    FlightDistancePipe,
+    CesiumDirective,
+    ExactDurationPipe,
+    RouterLink,
+    MatFormFieldModule,
+    MatInputModule,
+    MatButtonModule,
+    MatIconModule,
+    MatCardModule,
+    MatRadioModule,
+    MatDividerModule,
+    MatTooltipModule,
+    MatDatepickerModule,
+    MatNativeDateModule
+  ],
   selector: 'app-flight-edit',
   providers: [Location, { provide: LocationStrategy, useClass: PathLocationStrategy }],
   templateUrl: './flight-edit.component.html',
@@ -193,8 +225,15 @@ export class FlightEditComponent implements OnInit, OnDestroy {
     }
   }
 
+  onDateChange(event: any): void {
+    if (!!this.flight && event.value) {
+      this.flight.date = DayJS(event.value).format('YYYY-MM-DD');
+    }
+  }
+
   save(): void {
     if (!!this.flight) {
+
       const sub = this.flightsService.saveFlight(this.flight)
         .subscribe(result => {
           if (!!result && result.type === SaveResultType.CREATED) {

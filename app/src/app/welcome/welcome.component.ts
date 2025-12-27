@@ -3,10 +3,15 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 
+// Angular Material
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatCardModule } from '@angular/material/card';
+
 @Component({
     selector: 'app-welcome',
     standalone: true,
-    imports: [CommonModule],
+    imports: [CommonModule, MatButtonModule, MatIconModule, MatCardModule],
     templateUrl: './welcome.component.html',
     styleUrls: ['./welcome.component.css']
 })

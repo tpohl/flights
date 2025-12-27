@@ -1,37 +1,81 @@
-<nav class="navbar is-fixed-top" *ngIf="isLoggedIn()">
-  <div class="navbar-brand">
-    <a class="navbar-item" routerLink="/">
-      <i class="fa fa-paper-plane-o" aria-hidden="true"></i>&nbsp;&nbsp;&nbsp;<span class="title is-4">Thorstens Flight
-        Tracker</span>
-    </a>
-    <a role="button" class="navbar-burger burger" aria-label="menu" aria-expanded="false" data-target="navbar">
-      <span aria-hidden="true"></span>
-      <span aria-hidden="true"></span>
-      <span aria-hidden="true"></span>
-    </a>
-  </div>
-  <div class="navbar-menu" id="navbar">
-    <div class="navbar-start">
-      <a class="navbar-item" *ngIf="isLoggedIn()" routerLink="/flights" routerLinkActive="active">List Flights</a>
-      <a class="navbar-item" *ngIf="isLoggedIn()" routerLink="/stats" routerLinkActive="active">Statistics</a>
-      <a class="navbar-item" *ngIf="isLoggedIn()" (click)="logout()">Logout</a>
-      <hr class="navbar-divider">
-      <a class="navbar-item" *ngIf="isLoggedIn()" [routerLink]="['/import', 'pohl.rocks']">Import Flights</a>
-      <a class="navbar-item" *ngIf="isLoggedIn()" [routerLink]="['/export']">Export Flights</a>
-    </div>
-  </div>
-</nav>
+<!-- App Shell with Material Toolbar and Sidenav -->
+<mat-sidenav-container class="app-container" *ngIf="isLoggedIn(); else welcomeContent">
+  <!-- Sidenav for mobile -->
+  <mat-sidenav #sidenav mode="over" [opened]="sidenavOpen()" (closed)="closeSidenav()" class="mobile-sidenav">
+    <mat-nav-list>
+      <a mat-list-item routerLink="/flights" routerLinkActive="active" (click)="closeSidenav()">
+        <mat-icon matListItemIcon>flight</mat-icon>
+        <span matListItemTitle>Flights</span>
+      </a>
+      <a mat-list-item routerLink="/stats" routerLinkActive="active" (click)="closeSidenav()">
+        <mat-icon matListItemIcon>bar_chart</mat-icon>
+        <span matListItemTitle>Statistics</span>
+      </a>
+      <mat-divider></mat-divider>
+      <a mat-list-item [routerLink]="['/import', 'pohl.rocks']" (click)="closeSidenav()">
+        <mat-icon matListItemIcon>cloud_upload</mat-icon>
+        <span matListItemTitle>Import Flights</span>
+      </a>
+      <a mat-list-item routerLink="/export" (click)="closeSidenav()">
+        <mat-icon matListItemIcon>cloud_download</mat-icon>
+        <span matListItemTitle>Export Flights</span>
+      </a>
+      <mat-divider></mat-divider>
+      <a mat-list-item (click)="logout(); closeSidenav()">
+        <mat-icon matListItemIcon>logout</mat-icon>
+        <span matListItemTitle>Logout</span>
+      </a>
+    </mat-nav-list>
+  </mat-sidenav>
 
+  <!-- Main content area -->
+  <mat-sidenav-content>
+    <!-- Glass Toolbar -->
+    <mat-toolbar class="glass-toolbar">
+      <button mat-icon-button class="menu-button" (click)="toggleSidenav()">
+        <mat-icon>menu</mat-icon>
+      </button>
 
-<div [ngClass]="{'section mainContent': isLoggedIn()}">
+      <a routerLink="/" class="brand">
+        <mat-icon>flight_takeoff</mat-icon>
+        <span class="brand-text">Flight Tracker</span>
+      </a>
+
+      <span class="spacer"></span>
+
+      <!-- Desktop navigation -->
+      <nav class="desktop-nav">
+        <a mat-button routerLink="/flights" routerLinkActive="active-link">
+          <mat-icon>list</mat-icon>
+          Flights
+        </a>
+        <a mat-button routerLink="/stats" routerLinkActive="active-link">
+          <mat-icon>bar_chart</mat-icon>
+          Statistics
+        </a>
+        <a mat-button [routerLink]="['/import', 'pohl.rocks']">
+          <mat-icon>cloud_upload</mat-icon>
+          Import
+        </a>
+        <a mat-button routerLink="/export">
+          <mat-icon>cloud_download</mat-icon>
+          Export
+        </a>
+      </nav>
+
+      <button mat-icon-button (click)="logout()" matTooltip="Logout">
+        <mat-icon>logout</mat-icon>
+      </button>
+    </mat-toolbar>
+
+    <!-- Page content -->
+    <main class="page-content">
+      <router-outlet></router-outlet>
+    </main>
+  </mat-sidenav-content>
+</mat-sidenav-container>
+
+<!-- Welcome page for non-logged in users -->
+<ng-template #welcomeContent>
   <router-outlet></router-outlet>
-</div>
-<footer class="footer" *ngIf="isLoggedIn()">
-  <div class="container">
-    <div class="content has-text-centered">
-      <p>
-        Made by Thorsten
-      </p>
-    </div>
-  </div>
-</footer>
+</ng-template>
