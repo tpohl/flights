@@ -1,76 +1,66 @@
-<div>
-  <h2 class="title">Your flights
-    <a [routerLink]="['/flight', 'new']" class="button is-hidden-tablet is-pulled-right">Add</a>
-  </h2>
+<div class="flight-list-container">
+  <header class="page-header">
+    <h2 class="page-title">Your Flights</h2>
+    <button mat-fab extended color="primary" [routerLink]="['/flight', 'new']">
+      <mat-icon>add</mat-icon>
+      Add Flight
+    </button>
+  </header>
 
-  <div class="columns">
-    <div class="column is-full-mobile is-three-quarters is-four-fifths-fullhd">
+  <div class="main-content">
+    <!-- Map Section -->
+    <div class="map-section">
       <app-cesium *ngIf="flights()" [flights]="flights()" [showCountries]="mapOptions.countries"></app-cesium>
     </div>
-    <div class="column">
-      <nav class="panel has-background-white">
-        <p class="panel-heading">Map Options</p>
-        <div class="panel-block">
-          <div class="field">
-            <input id="showVisitedCountries" type="checkbox" name="switchExample" class="switch"
-              [(ngModel)]="mapOptions.countries">
-            <label for="showVisitedCountries"> Show visited Countries</label>
-          </div>
-        </div>
-        <div>
-          <p class="panel-heading">Statistics</p>
 
-          <a class="panel-block">
-            <div class="field heading">
-              <span class="panel-icon">
-                <i class="fa fa-plane" aria-hidden="true"></i>
-              </span>
-              <label>Flights </label>{{ stats().count }}
-            </div>
-          </a>
-          <a class="panel-block">
-            <div class="field heading">
-              <span class="panel-icon">
-                <i class="fa fa-map" aria-hidden="true"></i>
-              </span>
-              <label>Distance </label>{{ stats().distance | number : '1.0-0' }} km
-            </div>
-          </a>
-          <a class="panel-block">
-            <div class="field heading">
-              <span class="panel-icon">
-                <i class="fa fa-clock-o" aria-hidden="true"></i>
-              </span>
-              <label>Duration </label>{{ stats().totalTimeMilliseconds | amDurationExact }}
-            </div>
-          </a>
-          <a class="panel-block">
-            <div class="field heading">
-              <span class="panel-icon">
-                <i class="fa fa-map-marker" aria-hidden="true"></i>
-              </span>
-              <label>Airports Visited </label>{{ stats().airportsVisited.size() }}
-            </div>
-          </a>
-        </div>
-        <div class="panel-block">
-          <button class="button is-link is-outlined is-fullwidth" [routerLink]="['/flight', 'new']">Add Flight</button>
-        </div>
-      </nav>
-    </div>
+    <!-- Stats Panel -->
+    <aside class="stats-panel glass-panel">
+      <h3 class="panel-title">Map Options</h3>
+      <div class="option-row">
+        <mat-slide-toggle [(ngModel)]="mapOptions.countries" color="primary">
+          Show visited Countries
+        </mat-slide-toggle>
+      </div>
+
+      <h3 class="panel-title">Statistics</h3>
+      <div class="stat-item">
+        <mat-icon>flight</mat-icon>
+        <span class="stat-label">Flights</span>
+        <span class="stat-value">{{ stats().count }}</span>
+      </div>
+      <div class="stat-item">
+        <mat-icon>map</mat-icon>
+        <span class="stat-label">Distance</span>
+        <span class="stat-value">{{ stats().distance | number : '1.0-0' }} km</span>
+      </div>
+      <div class="stat-item">
+        <mat-icon>schedule</mat-icon>
+        <span class="stat-label">Duration</span>
+        <span class="stat-value">{{ stats().totalTimeMilliseconds | amDurationExact }}</span>
+      </div>
+      <div class="stat-item">
+        <mat-icon>place</mat-icon>
+        <span class="stat-label">Airports</span>
+        <span class="stat-value">{{ stats().airportsVisited.size() }}</span>
+      </div>
+
+      <button mat-flat-button color="primary" class="add-flight-btn" [routerLink]="['/flight', 'new']">
+        <mat-icon>add</mat-icon>
+        Add Flight
+      </button>
+    </aside>
   </div>
 
-
-  <div class="columns is-multiline">
-    <div class="column is-half-tablet is-one-third-desktop is-one-quarter-fullhd" *ngFor="let flight of flights()"
-      id="flight-{{flight._id}}">
-      <a [routerLink]="['/flight', flight._id]">
-        <div class="card">
-          <div class="card-content">
-            <app-flight-tile [flight]="flight"></app-flight-tile>
-          </div>
-        </div>
-      </a>
-    </div>
-  </div>
+  <!-- Flight Cards Grid -->
+  <section class="flights-grid">
+    @for (flight of flights(); track flight._id) {
+    <a [routerLink]="['/flight', flight._id]" class="flight-card-link" matRipple>
+      <mat-card class="flight-card glass-card">
+        <mat-card-content>
+          <app-flight-tile [flight]="flight"></app-flight-tile>
+        </mat-card-content>
+      </mat-card>
+    </a>
+    }
+  </section>
 </div>

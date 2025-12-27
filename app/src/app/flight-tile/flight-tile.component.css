@@ -1,16 +1,190 @@
-.image {
+.flight-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Header */
+.tile-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.flight-number {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1d1d1f;
+  letter-spacing: -0.02em;
+}
+
+.tags {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.date-tag {
+  font-size: 0.8rem;
+  color: #6e6e73;
+  font-weight: 500;
+}
+
+/* Clean chip styling - no visible borders */
+::ng-deep .mat-mdc-chip {
+  --mdc-chip-container-shape-radius: 8px !important;
+  --mdc-chip-outline-width: 0 !important;
+  border: none !important;
+}
+
+.aircraft-chip,
+.type-chip {
+  font-size: 0.7rem !important;
+  font-weight: 600 !important;
+  min-height: 24px !important;
+  height: 24px !important;
+  padding: 0 10px !important;
+  border: none !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+}
+
+.aircraft-chip {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  color: white !important;
+}
+
+.type-chip {
+  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%) !important;
+  color: white !important;
+}
+
+/* Route Section */
+.route-section {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.airport-image {
   width: 64px;
   height: 64px;
-  border-radius: 0.5rem;
+  border-radius: 12px;
+  background-size: cover;
+  background-position: center;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
-.image.compact {
+
+.airport-image.compact {
   width: 48px;
   height: 48px;
-  border-radius: 0.5rem;
 }
+
+/* Flight Info */
 .flight-info {
-  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex: 1;
+  gap: 12px;
 }
-.flight-info.compact {
-  height: 48px;
+
+.endpoint {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 56px;
+}
+
+.airport-code {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1d1d1f;
+  letter-spacing: -0.01em;
+}
+
+.time {
+  font-size: 0.8rem;
+  color: #6e6e73;
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+/* Route Line - Fixed alignment */
+.route-line {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  flex: 1;
+  position: relative;
+  min-height: 48px;
+}
+
+.route-line::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg,
+      rgba(102, 126, 234, 0.2) 0%,
+      rgba(102, 126, 234, 0.6) 50%,
+      rgba(102, 126, 234, 0.2) 100%);
+  z-index: 0;
+  transform: translateY(-50%);
+}
+
+/* Plane icon - centered properly */
+.plane-icon {
+  color: #667eea !important;
+  background: white;
+  z-index: 1;
+  font-size: 20px !important;
+  width: 20px !important;
+  height: 20px !important;
+  transform: rotate(90deg);
+  border-radius: 50%;
+  padding: 6px;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+}
+
+.distance-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  z-index: 1;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.distance {
+  font-size: 0.75rem;
+  color: #667eea;
+  font-weight: 600;
+}
+
+/* Footer */
+.tile-footer {
+  text-align: center;
+  padding-top: 12px;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.flight-details {
+  font-size: 0.8rem;
+  color: #6e6e73;
+  font-weight: 500;
+}
+
+.separator {
+  margin: 0 8px;
+  color: #d1d1d6;
 }

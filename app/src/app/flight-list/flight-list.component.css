@@ -1,0 +1,174 @@
+.flight-list-container {
+    padding: 24px;
+    max-width: 1600px;
+    margin: 0 auto;
+    min-height: 100vh;
+    /* Remove local background - it's now global */
+}
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.page-title {
+    font-size: 2rem;
+    font-weight: 600;
+    margin: 0;
+    color: white;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.main-content {
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    gap: 24px;
+    margin-bottom: 32px;
+}
+
+@media (max-width: 1024px) {
+    .main-content {
+        grid-template-columns: 1fr;
+    }
+
+    .stats-panel {
+        order: -1;
+    }
+}
+
+.map-section {
+    min-height: 400px;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+}
+
+.stats-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    background: rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+}
+
+.panel-title {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: rgba(0, 0, 0, 0.5);
+    margin: 0;
+    margin-top: 8px;
+}
+
+.panel-title:first-child {
+    margin-top: 0;
+}
+
+.option-row {
+    padding: 8px 0;
+}
+
+.stat-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 0;
+}
+
+.stat-item mat-icon {
+    color: #667eea;
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+}
+
+.stat-label {
+    flex: 1;
+    color: rgba(0, 0, 0, 0.6);
+    font-size: 0.875rem;
+}
+
+.stat-value {
+    font-weight: 600;
+    color: #1d1d1f;
+}
+
+.add-flight-btn {
+    margin-top: 16px;
+    width: 100%;
+    border-radius: 12px !important;
+}
+
+/* Flight Cards Grid - extra space for shadows */
+.flights-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 28px;
+    /* Increased gap for shadow space */
+    padding: 12px;
+    /* Extra padding for hover shadows */
+}
+
+.flight-card-link {
+    text-decoration: none;
+    display: block;
+}
+
+/* Override mat-card default overflow hidden */
+::ng-deep .mat-mdc-card {
+    overflow: visible !important;
+}
+
+.flight-card {
+    cursor: pointer;
+    overflow: visible !important;
+    background: rgba(255, 255, 255, 0.75) !important;
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.5) !important;
+    border-radius: 20px !important;
+    box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.12),
+        inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+        box-shadow 0.3s ease !important;
+}
+
+.flight-card:hover {
+    transform: translateY(-6px) scale(1.01);
+    box-shadow:
+        0 20px 60px rgba(0, 0, 0, 0.2),
+        0 8px 24px rgba(102, 126, 234, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
+}
+
+.flight-card mat-card-content {
+    padding: 20px !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .flight-list-container {
+        padding: 16px;
+    }
+
+    .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
+
+    .flights-grid {
+        grid-template-columns: 1fr;
+    }
+}

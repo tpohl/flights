@@ -13,6 +13,7 @@ import { FormsModule } from '@angular/forms';
 import { ServiceWorkerModule } from '@angular/service-worker';
 import { AirportService } from './services/airport.service';
 import { FlightsService } from './services/flights.service';
+import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -33,6 +34,6 @@ export const appConfig: ApplicationConfig = {
     provideDatabase(() => getDatabase()),
     AirportService,
     FlightsService,
-    { provide: FIREBASE_OPTIONS, useValue: Environment.firebase }
+    { provide: FIREBASE_OPTIONS, useValue: Environment.firebase }, provideAnimationsAsync()
   ]
 };

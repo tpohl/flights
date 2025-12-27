@@ -1,59 +1,68 @@
-<div class="content mb-0">
-  <div class="title is-4 pb-3">{{ flight.flightno }}
-    <span *ngIf="compact && !!flight?.departureTime" class="heading is-pulled-right">{{ flight.departureTime | date:'dd.MM.yyyy' }}</span>
-    <div *ngIf="!compact && !!flight?.aircraftRegistration" class="tag is-primary is-small is-pulled-right has-text-centered ml-2">
-      <div>{{ flight.aircraftRegistration }}</div>
-    </div>
-    <div *ngIf="!compact && !!flight?.aircraftTypeCode" class="tag is-info is-small is-pulled-right has-text-centered">
-      <div>{{ flight.aircraftTypeCode }}</div>
+<div class="flight-tile">
+  <!-- Header: Flight number + tags -->
+  <div class="tile-header">
+    <span class="flight-number">{{ flight.flightno }}</span>
+    <div class="tags">
+      @if (compact && flight?.departureTime) {
+      <span class="date-tag">{{ flight.departureTime | date:'dd.MM.yyyy' }}</span>
+      }
+      @if (!compact && flight?.aircraftRegistration) {
+      <mat-chip class="aircraft-chip">{{ flight.aircraftRegistration }}</mat-chip>
+      }
+      @if (!compact && flight?.aircraftTypeCode) {
+      <mat-chip class="type-chip">{{ flight.aircraftTypeCode }}</mat-chip>
+      }
     </div>
   </div>
 
-</div>
-<div class="media mb-0">
-  <div class="media-left">
-    <figure class="image" [ngClass]="{'compact':compact}" style="background-size: cover;
-    background-position: center;
-    background-image: url('https://flights-media.pohl.rocks/media/airport/image/{{flight.from}}')">
-    </figure>
-  </div>
-  <div class="media-content">
-    <div class="subtitle is-5 level is-mobile mb-0 flight-info" [ngClass]="{'compact':compact}">
-      <div class="level-item level-left has-text-centered">
-        <div>{{ flight.from }}<br />
-          <span class="heading">{{ flight.departureTime | date:'HH:mm' }}</span>
+  <!-- Route visualization -->
+  <div class="route-section">
+    <!-- Origin airport image -->
+    <div class="airport-image origin"
+      [style.background-image]="'url(https://flights-media.pohl.rocks/media/airport/image/' + flight.from + ')'">
+    </div>
+
+    <!-- Flight info -->
+    <div class="flight-info">
+      <div class="endpoint origin">
+        <span class="airport-code">{{ flight.from }}</span>
+        <span class="time">{{ flight.departureTime | date:'HH:mm' }}</span>
+      </div>
+
+      <div class="route-line">
+        <mat-icon class="plane-icon">flight</mat-icon>
+        <div class="distance-info">
+          <span class="distance">{{ flight | flightDistance | number : '1.0-0' }} km</span>
+          @if (compact) {
+          <app-seat-info [flight]="flight"></app-seat-info>
+          }
         </div>
       </div>
-      <div class="level-item has-text-centered">
-        <div>
-          <i class="fa fa-plane"></i>
-          <span class="heading">
-            {{ flight | flightDistance | number : '1.0-0' }} km <br />
-            <app-seat-info *ngIf="compact" [flight]="flight"></app-seat-info>
-          </span>
-        </div>
-      </div>
-      <div class="level-item level-right has-text-centered">
-        <div>{{ flight.to }}<br />
-          <span class="heading">{{ flight.arrivalTime | date:'HH:mm' }}</span>
-        </div>
+
+      <div class="endpoint destination">
+        <span class="airport-code">{{ flight.to }}</span>
+        <span class="time">{{ flight.arrivalTime | date:'HH:mm' }}</span>
       </div>
     </div>
-  </div>
-  <div class="media-right">
-    <figure class="image"
-            [ngClass]="{'compact':compact}" style="background-size: cover;
-    background-position: center;
-    background-image: url('https://flights-media.pohl.rocks/media/airport/image/{{flight.to}}')">
-    </figure>
+
+    <!-- Destination airport image -->
+    <div class="airport-image destination"
+      [style.background-image]="'url(https://flights-media.pohl.rocks/media/airport/image/' + flight.to + ')'">
+    </div>
   </div>
 
-</div>
-<div class="content has-text-centered">
-  <div *ngIf="!compact">
-    <p class="heading">{{ flight.departureTime | date:'dd.MM.yyyy' }} -
+  <!-- Footer: Additional info -->
+  @if (!compact) {
+  <div class="tile-footer">
+    <span class="flight-details">
+      {{ flight.departureTime | date:'dd.MM.yyyy' }}
+      <span class="separator">•</span>
       <app-seat-info [flight]="flight"></app-seat-info>
-      - {{ flight.carrier }} - {{ flight.aircraftType }}
-    </p>
+      <span class="separator">•</span>
+      {{ flight.carrier }}
+      <span class="separator">•</span>
+      {{ flight.aircraftType }}
+    </span>
   </div>
+  }
 </div>

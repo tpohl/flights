@@ -7,6 +7,7 @@ import { CommonModule } from '@angular/common';
 import { ExactDurationPipe } from '../pipes/exactDurationPipe';
 
 @Component({
+  standalone: true,
   selector: 'app-overall-stats',
   imports: [CommonModule, ExactDurationPipe],
   templateUrl: './overall-stats.component.html',

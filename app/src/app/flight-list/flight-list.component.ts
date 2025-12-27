@@ -11,9 +11,28 @@ import { FlightTileComponent } from '../flight-tile/flight-tile.component';
 import { OverallStats } from '../models/stats';
 import { CesiumDirective } from '../cesium.directive';
 
+// Angular Material
+import { MatCardModule } from '@angular/material/card';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatRippleModule } from '@angular/material/core';
+
 @Component({
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, ExactDurationPipe, FlightTileComponent, CesiumDirective],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    ExactDurationPipe,
+    FlightTileComponent,
+    CesiumDirective,
+    MatCardModule,
+    MatButtonModule,
+    MatIconModule,
+    MatSlideToggleModule,
+    MatRippleModule
+  ],
   selector: 'app-flight-list',
   templateUrl: './flight-list.component.html',
   styleUrls: ['./flight-list.component.css']

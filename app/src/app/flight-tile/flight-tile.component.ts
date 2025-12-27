@@ -4,9 +4,13 @@ import { FlightDistancePipe } from '../pipes/flightDistancePipe';
 import { SeatInfoComponent } from '../seat-info/seat-info.component';
 import { Flight } from '../models/flight';
 
+// Angular Material
+import { MatChipsModule } from '@angular/material/chips';
+import { MatIconModule } from '@angular/material/icon';
+
 @Component({
   standalone: true,
-  imports: [CommonModule, FlightDistancePipe, SeatInfoComponent],
+  imports: [CommonModule, FlightDistancePipe, SeatInfoComponent, MatChipsModule, MatIconModule],
   selector: 'app-flight-tile',
   templateUrl: './flight-tile.component.html',
   styleUrls: ['./flight-tile.component.css'],
