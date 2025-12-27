@@ -1,10 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AngularFireDatabase } from '@angular/fire/compat/database';
-import { AngularFireAuth } from '@angular/fire/compat/auth';
+import { AuthService } from '../services/auth.service';
 import dayjs from 'dayjs/esm';
 import { take, map, mergeMap } from 'rxjs/operators';
+import { toObservable } from '@angular/core/rxjs-interop';
 
 import { Flight } from './../models/flight';
 
@@ -17,17 +18,20 @@ import { Flight } from './../models/flight';
 })
 export class PohlRocksImporterComponent implements OnInit {
 
-  importJson: string;
+  importJson!: string;
 
-  flights: Array<Flight>;
+  flights!: Array<Flight>;
 
-  userId: string;
+  userId!: string;
 
-  constructor(private db: AngularFireDatabase, private afAuth: AngularFireAuth) { }
+  private authService = inject(AuthService);
+  private db = inject(AngularFireDatabase);
+
+  constructor() { }
 
   ngOnInit() {
-    this.afAuth.user.subscribe(user => {
-      this.userId = user.uid;
+    toObservable(this.authService.user).subscribe(user => {
+      this.userId = user?.uid || '';
     });
     this.flights = [];
   }
@@ -40,22 +44,22 @@ export class PohlRocksImporterComponent implements OnInit {
 
   removeDuplicateImports() {
     if (confirm('Are you sure to delete all duplicate Imports')) {
-      this.afAuth.user.pipe(
-        mergeMap(user => this.db.list('users/' + user.uid + '/flights').snapshotChanges()),
+      toObservable(this.authService.user).pipe(
+        mergeMap(user => this.db.list('users/' + user!.uid + '/flights').snapshotChanges()),
         take(1),
         map(snapshots =>
           snapshots.map(c => {
             const f = c.payload.val() as Flight;
-            f._id = c.key;
+            if (f) f._id = c.key;
             return f;
-          }) as Flight[])
+          }).filter(f => !!f) as Flight[])
       ).subscribe(flightArr => {
 
         flightArr.forEach(flight => {
-          const importedId = flight['importedId'];
+          const importedId = (flight as any)['importedId'];
 
           if (importedId) {
-            const flightsWithImportedId = flightArr.filter(f => (importedId === f['importedId']));
+            const flightsWithImportedId = flightArr.filter(f => (importedId === (f as any)['importedId']));
             if (flightsWithImportedId.length > 1) {
 
               const idToDelete = flightsWithImportedId[1]._id;
@@ -73,17 +77,17 @@ export class PohlRocksImporterComponent implements OnInit {
   }
 
   deleteAllMyFlights() {
-    this.afAuth.user.subscribe(user => {
+    toObservable(this.authService.user).subscribe(user => {
       // this.db.list('users/' + user.uid + '/flights').remove();
     });
   }
 
   importFlights(): void {
     console.log('Saving Flights', this.flights);
-    this.afAuth.user.subscribe(user => {
-      const flightList = this.db.list<Flight>('users/' + user.uid + '/flights');
+    toObservable(this.authService.user).subscribe(user => {
+      const flightList = this.db.list<Flight>('users/' + user!.uid + '/flights');
       this.flights.forEach(flight => {
-        flight[`importedId`] = flight['_id'];
+        (flight as any)[`importedId`] = flight['_id'];
         flight.date = dayjs(flight.departureTime).startOf('day').format('YYYY-MM-DD');
         flightList.push(flight);
       });

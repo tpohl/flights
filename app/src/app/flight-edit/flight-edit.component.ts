@@ -2,7 +2,7 @@ import { Location, LocationStrategy, PathLocationStrategy, CommonModule } from '
 import { AirportService } from '../services/airport.service';
 import { BehaviorSubject, filter, Observable, of, ReplaySubject, Subject, Subscription } from 'rxjs';
 
-import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit, inject, effect } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { FlightStatsComponent } from '../flight-stats/flight-stats.component';
@@ -12,7 +12,6 @@ import { CesiumDirective } from '../cesium.directive';
 
 import { Flight } from '../models/flight';
 import { AngularFireDatabase } from '@angular/fire/compat/database';
-import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { Airport } from '../models/airport';
 import DayJS from 'dayjs';
 import DayJSUtc from 'dayjs/plugin/utc';
@@ -21,13 +20,15 @@ import DayJSTimezone from 'dayjs/plugin/timezone';
 DayJS.extend(DayJSUtc);
 DayJS.extend(DayJSTimezone);
 
-import firebase from 'firebase/compat/app';
+import { User } from 'firebase/auth';
 import { FlightsService, SaveResultType } from '../services/flights.service';
-import User = firebase.User;
 import { TRAVEL_CLASSES } from '../seat-info/seat-info.component';
 import { ExactDurationPipe } from '../pipes/exactDurationPipe';
 import { FlightTileComponent } from '../flight-tile/flight-tile.component';
 
+
+import { AuthService } from '../services/auth.service';
+import { toObservable } from '@angular/core/rxjs-interop';
 
 @Component({
   standalone: true,
@@ -39,12 +40,23 @@ import { FlightTileComponent } from '../flight-tile/flight-tile.component';
 })
 export class FlightEditComponent implements OnInit, OnDestroy {
 
+  private authService = inject(AuthService);
+
   constructor(private route: ActivatedRoute,
-              private router: Router, private db: AngularFireDatabase,
-              private afAuth: AngularFireAuth,
-              private airportService: AirportService,
-              private flightsService: FlightsService,
-              private location: Location) {
+    private router: Router, private db: AngularFireDatabase,
+    private airportService: AirportService,
+    private flightsService: FlightsService,
+    private location: Location) {
+    effect(() => {
+      const flight = this.flightsService.activeFlight();
+      if (flight) {
+        this.flight = flight;
+        this.objectRef = flight._objectReference;
+        if (this.flight.from) this.loadFromAirport(this.flight.from);
+        if (this.flight.to) this.loadToAirport(this.flight.to);
+        this.flightsForMap$.next([flight]);
+      }
+    });
   }
 
 
@@ -65,14 +77,19 @@ export class FlightEditComponent implements OnInit, OnDestroy {
   fromAirport$: Subject<Airport> = new ReplaySubject<Airport>(1);
   toAirport$: Subject<Airport> = new ReplaySubject<Airport>(1);
   flightsForMap$: Subject<Flight[]> = new ReplaySubject<Flight[]>(1);
-  
+
   private subs = new Subscription();
 
 
 
 
+  private user$ = toObservable(this.authService.user);
+
   ngOnInit() {
-    this.subs.add(this.afAuth.user.subscribe(user => {
+    // Existing logic used: this.afAuth.user.subscribe(...)
+    // Let's maintain that pattern by piping the signal.
+
+    this.subs.add(this.user$.subscribe(user => {
       this.user = user;
 
       if (!this.flightId || this.flightId === 'new') {
@@ -124,20 +141,14 @@ export class FlightEditComponent implements OnInit, OnDestroy {
           if (this.flight!.arrivalTime < this.flight!.departureTime) { // When the arrival is BEFORE the Departure, then we add a day.
             this.flight!.arrivalTime = DayJS(this.flight!.arrivalTime).add(1, 'days').clone().tz('UTC').format();
           }
-      });
+        });
     }
   }
 
   loadFlight(flightId: string) {
     this.flightsService.loadFlight(flightId).subscribe(
       (flight) => {
-        if (!!flight) {
-          this.flight = flight;
-          this.objectRef = flight._objectReference;
-          this.loadFromAirport(this.flight.from);
-          this.loadToAirport(this.flight.to);
-          this.flightsForMap$.next([flight]);
-        } else {
+        if (!flight) {
           console.error('Flight not found: ' + flightId);
           this.router.navigateByUrl('/flights');
         }
@@ -161,13 +172,17 @@ export class FlightEditComponent implements OnInit, OnDestroy {
 
   loadFromAirport(code: String): Observable<Airport | null> {
     const ap = this.loadAirport(code);
-    ap.subscribe((a) => this.fromAirport$.next(a));
+    ap.subscribe((a) => {
+      if (a) this.fromAirport$.next(a);
+    });
     return ap;
   }
 
   loadToAirport(code: String): Observable<Airport | null> {
     const ap = this.loadAirport(code);
-    ap.subscribe((a) => this.toAirport$.next(a));
+    ap.subscribe((a) => {
+      if (a) this.toAirport$.next(a);
+    });
     return ap;
   }
 

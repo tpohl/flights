@@ -1,10 +1,11 @@
-import { Flight } from './../models/flight';
-import { Component, OnInit } from '@angular/core';
+import { AuthService } from '../services/auth.service';
+import { toObservable } from '@angular/core/rxjs-interop';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AngularFireDatabase } from '@angular/fire/compat/database';
 import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
-import { AngularFireAuth } from '@angular/fire/compat/auth';
+import { map, filter, switchMap } from 'rxjs/operators';
+import { Flight } from '../models/flight';
 
 @Component({
   standalone: true,
@@ -15,24 +16,32 @@ import { AngularFireAuth } from '@angular/fire/compat/auth';
 })
 export class FlightsExportComponent implements OnInit {
 
-  flights$: Observable<Flight[]>;
+  flights$!: Observable<Flight[]>;
 
-  constructor(private db: AngularFireDatabase, private afAuth: AngularFireAuth) {
+  private authService = inject(AuthService);
+  private db = inject(AngularFireDatabase);
+
+  constructor() {
   }
 
   ngOnInit() {
-    this.afAuth.user.subscribe(user => {
-      const flightList = this.db.list<Flight>('users/' + user.uid + '/flights');
-      this.flights$ = flightList.snapshotChanges()
-        .pipe(map(snapshots =>
-          snapshots.map(c => {
-            const f = c.payload.val();
+    this.flights$ = toObservable(this.authService.user).pipe(
+      filter(user => !!user),
+      switchMap(user => {
+        const flightList = this.db.list<Flight>('users/' + user!.uid + '/flights');
+        return flightList.snapshotChanges();
+      }),
+      map(snapshots =>
+        snapshots.map(c => {
+          const f = c.payload.val();
+          if (f) {
             f._id = c.key;
             return f;
-          })))
-      ;
-
-    });
+          }
+          return null;
+        }).filter(f => f !== null) as Flight[]
+      )
+    );
   }
 
   flightsToClipbord() {
@@ -44,7 +53,7 @@ export class FlightsExportComponent implements OnInit {
   }
 
   flightsForFlightSearch(flightsArray: Flight[]): string {
-console.log('Flights');
+    console.log('Flights');
     let script = '';
 
     flightsArray.forEach(flight => {

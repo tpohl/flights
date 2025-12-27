@@ -1,8 +1,7 @@
-import { Component, inject, Injector, runInInjectionContext } from '@angular/core';
-import { Router, RouterModule } from '@angular/router';
+import { Component, inject } from '@angular/core';
+import { RouterModule, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { Auth, authState, GoogleAuthProvider, signInWithPopup } from '@angular/fire/auth';
-import { Observable } from 'rxjs';
+import { AuthService } from './services/auth.service';
 
 @Component({
   selector: 'app-root',
@@ -12,31 +11,22 @@ import { Observable } from 'rxjs';
   imports: [CommonModule, RouterModule]
 })
 export class AppComponent {
-  private auth = inject(Auth);
+  private authService = inject(AuthService);
   private router = inject(Router);
-  private injector = inject(Injector);
-  user: Observable<any> = runInInjectionContext(this.injector, () => authState(this.auth));
-  userDetails: any = null;
 
   constructor() {
-    this.user.subscribe((user) => this.userDetails = user || null);
   }
 
-  async login() {
-    try {
-      const provider = new GoogleAuthProvider();
-      await signInWithPopup(this.auth, provider);
-      await this.router.navigate(['/flights']);
-    } catch (error) {
-      console.error('Error during login:', error);
-    }
+  login() {
+    this.authService.login();
   }
 
-  logout() {
-    this.auth.signOut().then(() => this.router.navigate(['/']));
+  async logout() {
+    await this.authService.logout();
+    this.router.navigate(['/welcome']);
   }
 
   isLoggedIn() {
-    return !!this.userDetails;
+    return !!this.authService.user();
   }
 }

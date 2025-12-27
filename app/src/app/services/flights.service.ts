@@ -1,4 +1,4 @@
-import { Injectable, inject, Injector, runInInjectionContext, Signal } from '@angular/core';
+import { Injectable, inject, Injector, runInInjectionContext, Signal, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { BehaviorSubject, from, Observable, of } from 'rxjs';
 
@@ -23,6 +23,7 @@ export class SaveResult {
 export class FlightsService {
   private flightSubject = new BehaviorSubject<Flight[]>([]);
   flights: Signal<Flight[]> = toSignal(this.flightSubject, { initialValue: [] });
+  activeFlight = signal<Flight | null>(null);
 
   statsSubject = new BehaviorSubject<OverallStats>(new OverallStats());
   stats: Signal<OverallStats> = toSignal(this.statsSubject, { initialValue: new OverallStats() });
@@ -145,7 +146,11 @@ export class FlightsService {
         const objectRef = `users/${user.uid}/flights/${flightId}`;
         const flightRef = ref(this.db, objectRef);
         flight$ = objectVal<Flight>(flightRef).pipe(
-          map(flight => flight ? ({ ...flight, _objectReference: objectRef }) : null)
+          map(flight => {
+            const f = flight ? ({ ...flight, _objectReference: objectRef }) : null;
+            this.activeFlight.set(f);
+            return f;
+          })
         );
       });
       return flight$;

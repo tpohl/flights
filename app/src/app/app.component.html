@@ -1,7 +1,8 @@
-<nav class="navbar is-fixed-top">
+<nav class="navbar is-fixed-top" *ngIf="isLoggedIn()">
   <div class="navbar-brand">
     <a class="navbar-item" routerLink="/">
-      <i class="fa fa-paper-plane-o" aria-hidden="true"></i>&nbsp;&nbsp;&nbsp;<span class="title is-4">Thorstens Flight Tracker</span>
+      <i class="fa fa-paper-plane-o" aria-hidden="true"></i>&nbsp;&nbsp;&nbsp;<span class="title is-4">Thorstens Flight
+        Tracker</span>
     </a>
     <a role="button" class="navbar-burger burger" aria-label="menu" aria-expanded="false" data-target="navbar">
       <span aria-hidden="true"></span>
@@ -14,42 +15,18 @@
       <a class="navbar-item" *ngIf="isLoggedIn()" routerLink="/flights" routerLinkActive="active">List Flights</a>
       <a class="navbar-item" *ngIf="isLoggedIn()" routerLink="/stats" routerLinkActive="active">Statistics</a>
       <a class="navbar-item" *ngIf="isLoggedIn()" (click)="logout()">Logout</a>
-      <a class="navbar-item" *ngIf="!isLoggedIn()" (click)="login()">Login</a>
       <hr class="navbar-divider">
-      <a class="navbar-item" *ngIf="isLoggedIn()" [routerLink]="['/import', 'pohl.rocks']" >Import Flights</a>
-      <a class="navbar-item" *ngIf="isLoggedIn()" [routerLink]="['/export']" >Export Flights</a>
+      <a class="navbar-item" *ngIf="isLoggedIn()" [routerLink]="['/import', 'pohl.rocks']">Import Flights</a>
+      <a class="navbar-item" *ngIf="isLoggedIn()" [routerLink]="['/export']">Export Flights</a>
     </div>
   </div>
 </nav>
 
 
-<section class="section mainContent">
-  <div *ngIf="isLoggedIn()">
-    <router-outlet></router-outlet>
-  </div>
-
-  <section class="hero is-primary" *ngIf="! isLoggedIn()">
-
-    <div class="hero-body">
-      <div class="container">
-        <h1 class="title">
-          Welcome to Thorstens Flight Tracker
-        </h1>
-        <h2 class="subtitle">
-          Log all your flights with ease.
-        </h2>
-
-
-
-        Please <a (click)="login()">login</a> to use the flight tracker.
-
-        <p>You can find my old flight tracker at <a href="https://flights-old.pohl.rocks">https://flights-old.pohl.rocks</a>.
-          Please extract and import your flights soon.</p>
-      </div>
-    </div>
-  </section>
-</section>
-<footer class="footer">
+<div [ngClass]="{'section mainContent': isLoggedIn()}">
+  <router-outlet></router-outlet>
+</div>
+<footer class="footer" *ngIf="isLoggedIn()">
   <div class="container">
     <div class="content has-text-centered">
       <p>
