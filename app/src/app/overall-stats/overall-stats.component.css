@@ -1,0 +1,60 @@
+.stats-container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 24px;
+}
+
+.page-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: white;
+    margin: 0 0 24px 0;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.stats-card {
+    margin-bottom: 20px;
+    background: rgba(255, 255, 255, 0.8) !important;
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.5) !important;
+    border-radius: 20px !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1) !important;
+}
+
+.stats-card mat-card-header {
+    padding: 16px 20px;
+}
+
+.stats-card mat-icon[mat-card-avatar] {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 8px;
+    border-radius: 12px;
+    font-size: 24px;
+    width: 24px;
+    height: 24px;
+}
+
+.stats-card mat-card-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.stats-card mat-card-content {
+    padding: 0 !important;
+}
+
+.stats-card mat-list-item {
+    height: 56px !important;
+}
+
+.stat-value {
+    font-weight: 600;
+    color: #667eea;
+    font-size: 1rem;
+}
+
+mat-divider {
+    margin: 0 16px !important;
+}

@@ -1,25 +1,40 @@
-<div>
-  <h1 class="title">Flights Export</h1>
-  <p>
-    Just
-    <a (click)="flightsToClipbord()"><i class="fa fa-clipboard" aria-hidden="true"></i> copy</a>
-    the following JSON containing all your flights.
-  </p>
-  <p>
-    Going to Flight Search?
-    <a (click)="flightsToClipbord()"><i class="fa fa-clipboard" aria-hidden="true"></i>Copy</a>
-    this script and declare a $token from flightsearch in the shell.
-  </p>
-  <div class="columns">
-    <div class="column">
-      <pre style="max-width: 400px; max-height: 300px; overflow: scroll">
-      {{flightsForFlightSearch(flights())  }}
-    </pre>
-    </div>
-    <div class="column">
-      <pre style="max-width: 400px; max-height: 300px; overflow: scroll">
-      {{flights() | json }}
-    </pre>
-    </div>
-  </div>
+<div class="export-container">
+  <h1 class="page-title">Export Flights</h1>
+
+  <!-- JSON Export Card -->
+  <mat-card class="export-card glass-card">
+    <mat-card-header>
+      <mat-icon mat-card-avatar>code</mat-icon>
+      <mat-card-title>JSON Export</mat-card-title>
+      <mat-card-subtitle>Export all flights as JSON</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      <pre class="code-block">{{ flights() | json }}</pre>
+    </mat-card-content>
+    <mat-card-actions>
+      <button mat-flat-button color="primary" (click)="flightsToClipbord()">
+        <mat-icon>content_copy</mat-icon>
+        Copy JSON
+      </button>
+    </mat-card-actions>
+  </mat-card>
+
+  <!-- FlightSearch Export Card -->
+  <mat-card class="export-card glass-card">
+    <mat-card-header>
+      <mat-icon mat-card-avatar>terminal</mat-icon>
+      <mat-card-title>FlightSearch Script</mat-card-title>
+      <mat-card-subtitle>Export as curl commands for FlightSearch API</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      <p class="hint">Declare a <code>$token</code> from FlightSearch in your shell before running.</p>
+      <pre class="code-block">{{ flightsForFlightSearch(flights()) }}</pre>
+    </mat-card-content>
+    <mat-card-actions>
+      <button mat-flat-button color="primary" (click)="flightSearchToClipbord()">
+        <mat-icon>content_copy</mat-icon>
+        Copy Script
+      </button>
+    </mat-card-actions>
+  </mat-card>
 </div>

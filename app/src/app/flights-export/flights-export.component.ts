@@ -3,9 +3,14 @@ import { CommonModule } from '@angular/common';
 import { Flight } from '../models/flight';
 import { FlightsService } from '../services/flights.service';
 
+// Angular Material
+import { MatCardModule } from '@angular/material/card';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+
 @Component({
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, MatCardModule, MatButtonModule, MatIconModule],
   selector: 'app-flights-export',
   templateUrl: './flights-export.component.html',
   styleUrls: ['./flights-export.component.css']

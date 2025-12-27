@@ -1,66 +1,50 @@
-<div>
-    <div class="panel has-background-white">
-        <p class="panel-heading">Statistics</p>
+<div class="stats-container">
+    <h1 class="page-title">Statistics</h1>
 
-        <a class="panel-block">
-            <div class="field heading">
-                <span class="panel-icon">
-                    <i class="fa fa-plane" aria-hidden="true"></i>
-                </span>
-                <label>Flights </label>{{ stats().count }}
-            </div>
-        </a>
-        <a class="panel-block">
-            <div class="field heading">
-                <span class="panel-icon">
-                    <i class="fa fa-map" aria-hidden="true"></i>
-                </span>
-                <label>Distance </label>{{ stats().distance | number : '1.0-0' }} km
-            </div>
-        </a>
-        <a class="panel-block">
-            <div class="field heading">
-                <span class="panel-icon">
-                    <i class="fa fa-clock-o" aria-hidden="true"></i>
-                </span>
-                <label>Duration </label>{{ stats().totalTimeMilliseconds | amDurationExact }}
-            </div>
-        </a>
-    </div>
-    <div class="panel has-background-white">
-        <p class="panel-heading">Airports</p>
-        <a class="panel-block">
-            <div class="field heading">
-                <span class="panel-icon">
-                    <i class="fa fa-map-marker" aria-hidden="true"></i>
-                </span>
-                <label>Airports Visited </label>{{ stats().airportsVisited.size() }}
-            </div>
-        </a>
-        <!--
-        <div class="card" *ngFor="let airport of stats.airportsVisited.getItems()">
-            <div class="field heading">
-                <div class="media mb-0">
-                    <div class="media-left">
-                        <figure class="image" [ngClass]="{'compact':compact}" style="background-size: cover;
-    background-position: center;
-    background-image: url('https://flights-media.pohl.rocks/media/airport/image/{{airport.name}}')">
-                        </figure>
-                    </div>
-                    <div class="media-content">
-                        <div class="subtitle is-5 level is-mobile mb-0 flight-info" [ngClass]="{'compact':compact}">
-                            <div class="level-item level-left has-text-centered">
-                                <span class="panel-icon">
-                                    <i class="fa fa-map-marker" aria-hidden="true"></i>
-                                </span>
-                                <label>{{airport.name}}</label>{{ airport.count }}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+    <!-- Main Stats Card -->
+    <mat-card class="stats-card glass-card">
+        <mat-card-header>
+            <mat-icon mat-card-avatar>analytics</mat-icon>
+            <mat-card-title>Flight Summary</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+            <mat-list>
+                <mat-list-item>
+                    <mat-icon matListItemIcon>flight</mat-icon>
+                    <span matListItemTitle>Total Flights</span>
+                    <span matListItemMeta class="stat-value">{{ stats().count }}</span>
+                </mat-list-item>
+                <mat-divider></mat-divider>
+                <mat-list-item>
+                    <mat-icon matListItemIcon>route</mat-icon>
+                    <span matListItemTitle>Total Distance</span>
+                    <span matListItemMeta class="stat-value">{{ stats().distance | number : '1.0-0' }} km</span>
+                </mat-list-item>
+                <mat-divider></mat-divider>
+                <mat-list-item>
+                    <mat-icon matListItemIcon>schedule</mat-icon>
+                    <span matListItemTitle>Total Duration</span>
+                    <span matListItemMeta class="stat-value">{{ stats().totalTimeMilliseconds | amDurationExact
+                        }}</span>
+                </mat-list-item>
+            </mat-list>
+        </mat-card-content>
+    </mat-card>
 
-        </div>
-    -->
-    </div>
+    <!-- Airports Card -->
+    <mat-card class="stats-card glass-card">
+        <mat-card-header>
+            <mat-icon mat-card-avatar>location_on</mat-icon>
+            <mat-card-title>Airports</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+            <mat-list>
+                <mat-list-item>
+                    <mat-icon matListItemIcon>place</mat-icon>
+                    <span matListItemTitle>Airports Visited</span>
+                    <span matListItemMeta class="stat-value">{{ stats().airportsVisited.size() }}</span>
+                </mat-list-item>
+            </mat-list>
+        </mat-card-content>
+    </mat-card>
 </div>

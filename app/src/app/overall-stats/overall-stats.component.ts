@@ -6,10 +6,15 @@ import { FlightsService } from '../services/flights.service';
 import { CommonModule } from '@angular/common';
 import { ExactDurationPipe } from '../pipes/exactDurationPipe';
 
+// Angular Material
+import { MatCardModule } from '@angular/material/card';
+import { MatIconModule } from '@angular/material/icon';
+import { MatListModule } from '@angular/material/list';
+
 @Component({
   standalone: true,
   selector: 'app-overall-stats',
-  imports: [CommonModule, ExactDurationPipe],
+  imports: [CommonModule, ExactDurationPipe, MatCardModule, MatIconModule, MatListModule],
   templateUrl: './overall-stats.component.html',
   styleUrl: './overall-stats.component.css'
 })
