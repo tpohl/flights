@@ -133,3 +133,11 @@ body {
   background-attachment: fixed;
   min-height: 100vh;
 }
+
+/* Ensure Material components don't obscure the background */
+.mat-drawer-container,
+.mat-drawer-content,
+.mat-sidenav-container,
+.mat-sidenav-content {
+  background-color: transparent !important;
+}
