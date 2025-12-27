@@ -94,10 +94,31 @@ export class FlightEditComponent implements OnInit, OnDestroy {
 
 
   @Input()
-  flightId: string | undefined;
+  set flightId(id: string | undefined) {
+    this._flightId = id;
+    this.initializeFlight();
+  }
+  get flightId(): string | undefined {
+    return this._flightId;
+  }
+  private _flightId: string | undefined;
 
   flight: Flight | null = null;
   user: User | null = null;
+
+  private initializeFlight() {
+    if (!this.user) return;
+
+    if (!this._flightId || this._flightId === 'new') {
+      this.flightsService.activeFlight.set(null);
+      this.objectRef = undefined;
+      this.flight = new Flight();
+      this.flight._id = null;
+      this.flight.date = DayJS().format('YYYY-MM-DD');
+    } else {
+      this.loadFlight(this._flightId);
+    }
+  }
 
   departureTime = '00:00';
   arrivalTime = '00:00';
@@ -123,15 +144,7 @@ export class FlightEditComponent implements OnInit, OnDestroy {
 
     this.subs.add(this.user$.subscribe(user => {
       this.user = user;
-
-      if (!this.flightId || this.flightId === 'new') {
-        this.objectRef = undefined;
-        this.flight = new Flight();
-        this.flight._id = null;
-        this.flight.date = DayJS().format('YYYY-MM-DD');
-      } else {
-        this.loadFlight(this.flightId);
-      }
+      this.initializeFlight();
     }));
 
 
