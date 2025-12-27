@@ -12,6 +12,7 @@
   <div class="navbar-menu" id="navbar">
     <div class="navbar-start">
       <a class="navbar-item" *ngIf="isLoggedIn()" routerLink="/flights" routerLinkActive="active">List Flights</a>
+      <a class="navbar-item" *ngIf="isLoggedIn()" routerLink="/stats" routerLinkActive="active">Statistics</a>
       <a class="navbar-item" *ngIf="isLoggedIn()" (click)="logout()">Logout</a>
       <a class="navbar-item" *ngIf="!isLoggedIn()" (click)="login()">Login</a>
       <hr class="navbar-divider">

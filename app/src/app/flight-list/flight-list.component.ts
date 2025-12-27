@@ -21,7 +21,8 @@ export class FlightListComponent implements OnInit {
   // https://angularfirebase.com/lessons/infinite-scroll-with-firebase-data-and-angular-animation/
   flights: Observable<Flight[]> = new Observable<Flight[]>();
   
-  stats$: Observable<OverallStats> = new Observable<OverallStats>();  mapOptions: MapOptions = {
+  stats$: Observable<OverallStats> = new Observable<OverallStats>();  
+  mapOptions: MapOptions = {
     flights: true,
     countries: true
   };
