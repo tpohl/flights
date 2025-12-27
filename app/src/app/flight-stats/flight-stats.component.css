@@ -1,0 +1,139 @@
+.stats-glass-card {
+    padding: 0 !important;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.8) !important;
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.5) !important;
+}
+
+.stats-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 20px;
+}
+
+.stats-header mat-icon {
+    color: #667eea;
+}
+
+.header-title {
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: #1a1a1a;
+}
+
+.stats-content {
+    padding: 0;
+}
+
+.stats-section {
+    padding: 20px;
+}
+
+.section-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #888;
+    margin-bottom: 16px;
+    letter-spacing: 0.05em;
+}
+
+/* Accuracy Grid */
+.status-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+}
+
+.status-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    text-align: center;
+}
+
+.status-label {
+    font-size: 0.75rem;
+    color: #6e6e73;
+}
+
+.status-item mat-icon {
+    font-size: 24px;
+    width: 24px;
+    height: 24px;
+}
+
+.status-item mat-icon.success {
+    color: #34c759;
+}
+
+.status-item mat-icon.warning {
+    color: #ff9500;
+}
+
+.status-item mat-icon.error {
+    color: #ff3b30;
+}
+
+/* Count Grid */
+.count-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+}
+
+.count-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.count-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1a1a1a;
+}
+
+.count-label {
+    font-size: 0.7rem;
+    color: #888;
+    text-transform: lowercase;
+}
+
+/* Expansion Panel */
+.aircraft-panel {
+    background: transparent !important;
+    box-shadow: none !important;
+    border: none !important;
+}
+
+::ng-deep .aircraft-panel .mat-expansion-panel-body {
+    padding: 0 0 16px 0 !important;
+}
+
+.aircraft-flights-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.preview-tile {
+    background: rgba(255, 255, 255, 0.5);
+    padding: 8px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+@media (max-width: 600px) {
+
+    .status-grid,
+    .count-grid {
+        gap: 8px;
+    }
+}

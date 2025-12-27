@@ -1,10 +1,11 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Flight } from '../models/flight';
+import { MatChipsModule } from '@angular/material/chips';
 
 @Component({
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, MatChipsModule],
   selector: 'app-seat-info',
   templateUrl: './seat-info.component.html',
   styleUrls: ['./seat-info.component.scss']
@@ -12,17 +13,17 @@ import { Flight } from '../models/flight';
 export class SeatInfoComponent implements OnInit {
 
   @Input()
-  flight: Flight;
+  flight!: Flight;
 
   constructor() { }
 
   ngOnInit(): void {
   }
 
-  translateClass(travelClass: string){
+  translateClass(travelClass: string) {
     return TRAVEL_CLASSES.get(travelClass)?.short;
   }
-  cssClass(travelClass: string){
+  cssClass(travelClass: string) {
     return TRAVEL_CLASSES.get(travelClass)?.cssClass;
   }
 }
@@ -33,10 +34,10 @@ export interface ClassInfo {
   cssClass: string;
 }
 export const TRAVEL_CLASSES: Map<string, ClassInfo> = new Map(Object.entries({
-  Y: { key: 'Y', short: 'ECO', long: 'Economy', cssClass: 'is-success' },
-  M: { key: 'M', short: 'ECO+', long: 'Premium Economy', cssClass: 'is-primary' },
-  C: { key: 'C', short: 'BIZ', long: 'Business', cssClass: 'is-info' },
-  F: { key: 'F', short: '1ST', long: 'First Class', cssClass: 'is-danger' },
-  J: { key: 'J', short: 'JMP', long: 'Jump Seat', cssClass: 'is-warning' },
-  P: { key: 'P', short: 'CPIT', long: 'Cockpit', cssClass: 'is-link' }
+  Y: { key: 'Y', short: 'ECO', long: 'Economy', cssClass: 'success' },
+  M: { key: 'M', short: 'ECO+', long: 'Premium Economy', cssClass: 'primary' },
+  C: { key: 'C', short: 'BIZ', long: 'Business', cssClass: 'info' },
+  F: { key: 'F', short: '1ST', long: 'First Class', cssClass: 'warn' },
+  J: { key: 'J', short: 'JMP', long: 'Jump Seat', cssClass: 'accent' },
+  P: { key: 'P', short: 'CPIT', long: 'Cockpit', cssClass: 'primary' }
 }));

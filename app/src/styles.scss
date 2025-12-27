@@ -74,35 +74,16 @@ $flights-theme: mat.define-theme((color: (theme-type: light,
 
 // Comment out the line below if you want to use the deprecated `color` inputs.
 // @include mat.color-variants-backwards-compatibility($flights-theme);
-/* You can add global styles to this file, and also import other style files */
-// 1. Import the initial variables
-@import '../node_modules/bulma/sass/utilities/initial-variables';
-@import '../node_modules/bulma/sass/utilities/functions';
-
-
-$section-padding: 1rem 0.5rem;
-$section-padding-desktop: 1.5rem 1.5rem;
-$section-padding-medium: 3rem 3rem;
-$section-padding-large: 3rem 3rem;
-
-$footer-padding: 2rem 1.5rem;
-
-// 6. Import the rest of Bulma
-@import "../node_modules/bulma/bulma";
-
+/* Global styles */
 html {
   font-size: 10pt;
-}
-
-.tag.is-small {
-  font-size: 0.8rem;
 }
 
 div.cesium-viewer {
   border-radius: 0.5rem;
 }
 
-@include mobile {
+@media (max-width: 768px) {
   app-cesium {
     width: 100%;
     min-height: 400px;
@@ -119,7 +100,7 @@ div.cesium-viewer {
   }
 }
 
-@include from($tablet) {
+@media (min-width: 769px) {
   app-cesium {
     width: 100%;
     min-height: 400px;
@@ -138,20 +119,6 @@ div.cesium-viewer {
   }
 }
 
-
-/*
-.mainContent {
-  padding: 3rem 1.5rem;
-  background: url(./assets/background.png);
-  background: url(./assets/background.svg),
-    linear-gradient(transparent, transparent);
-  background-size: cover;
-  //  max-width: 1440px;
-  margin: 1rem auto;
-}
-  */
-
-@import "../node_modules/bulma-switch/src/sass";
 
 html,
 body {
