@@ -2,12 +2,11 @@
 @use '../mixins' as *;
 
 .stats-glass-card {
+  @include glass-effect($bg-lighter, $glass-blur-strong, rgba(255, 255, 255, 0.5), 
+    0 8px 32px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.8));
+  border-radius: $radius-3xl !important;
   padding: 0 !important;
   overflow: hidden;
-  background: $bg-lighter !important;
-  backdrop-filter: blur($glass-blur-strong) saturate(180%);
-  -webkit-backdrop-filter: blur($glass-blur-strong) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.5) !important;
 }
 
 .stats-header {
@@ -23,8 +22,8 @@
 
 .header-title {
   font-weight: $font-weight-semibold;
-  font-size: 1.1rem;
-  color: #1a1a1a;
+  font-size: $font-size-xl;
+  color: $text-primary;
 }
 
 .stats-content {
@@ -39,7 +38,7 @@
   font-size: $font-size-sm;
   font-weight: $font-weight-bold;
   text-transform: uppercase;
-  color: #888;
+  color: $text-secondary;
   margin-bottom: $spacing-lg;
   letter-spacing: 0.05em;
 }
@@ -91,12 +90,12 @@
 .count-value {
   font-size: $font-size-2xl;
   font-weight: $font-weight-bold;
-  color: #1a1a1a;
+  color: $text-primary;
 }
 
 .count-label {
   font-size: $font-size-xs;
-  color: #888;
+  color: $text-secondary;
   text-transform: lowercase;
 }
 
