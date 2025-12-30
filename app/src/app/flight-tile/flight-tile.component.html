@@ -17,11 +17,12 @@
 
   <!-- Route visualization -->
   <div class="route-section">
+    @if (!compact) {
     <!-- Origin airport image -->
     <div class="airport-image origin"
       [style.background-image]="'url(https://flights-media.pohl.rocks/media/airport/image/' + flight.from + ')'">
     </div>
-
+    }
     <!-- Flight info -->
     <div class="flight-info">
       <div class="endpoint origin">
@@ -44,11 +45,12 @@
         <span class="time">{{ flight.arrivalTime | date:'HH:mm' }}</span>
       </div>
     </div>
-
+    @if (!compact) {
     <!-- Destination airport image -->
     <div class="airport-image destination"
       [style.background-image]="'url(https://flights-media.pohl.rocks/media/airport/image/' + flight.to + ')'">
     </div>
+    }
   </div>
 
   <!-- Footer: Additional info -->
