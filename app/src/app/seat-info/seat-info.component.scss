@@ -19,4 +19,13 @@
   .mdc-evolution-chip-set__chips {
     display: inline-flex !important;
   }
+
+  .mat-mdc-chip {
+    min-width: 18px !important;
+    min-height: 20px !important;
+    padding: 0 2px !important;
+    color: #6e6e73 !important;
+    font-size: 0.6rem !important;
+    line-height: 20px !important;
+  }
 }
