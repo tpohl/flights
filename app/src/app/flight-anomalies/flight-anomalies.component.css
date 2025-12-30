@@ -38,8 +38,6 @@
   align-items: center;
   gap: 1.5rem;
   padding: 1.5rem;
-  background: linear-gradient(135deg, rgba(33, 150, 243, 0.1) 0%, rgba(156, 39, 176, 0.1) 100%);
-  border: 1px solid rgba(33, 150, 243, 0.2);
 
   mat-card-content {
     display: flex;

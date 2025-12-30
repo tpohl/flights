@@ -110,7 +110,7 @@
         <section class="flights-grid">
           @for (flight of validatedAnomalies(); track flight._id) {
           <a [routerLink]="['/flight', flight._id]" class="flight-card-link">
-            <mat-card class="flight-card glass-card anomaly-card validated" matRipple>
+            <mat-card class="flight-card glass-card anomaly-card" matRipple>
               <mat-card-content>
                 <div class="anomaly-badge validated">
                   <mat-icon>verified</mat-icon>
