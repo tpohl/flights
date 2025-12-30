@@ -45,6 +45,27 @@ export class FlightsService {
     { initialValue: [] }
   );
 
+  tooSlowFlights: Signal<Flight[]> = toSignal(
+    this.flightSubject.pipe(
+      map(flights => this.filterSlowFlights(flights))
+    ),
+    { initialValue: [] }
+  );
+
+  tooFastFlights: Signal<Flight[]> = toSignal(
+    this.flightSubject.pipe(
+      map(flights => this.filterFastFlights(flights))
+    ),
+    { initialValue: [] }
+  );
+
+  validatedAnomalies: Signal<Flight[]> = toSignal(
+    this.flightSubject.pipe(
+      map(flights => this.filterValidatedAnomalies(flights))
+    ),
+    { initialValue: [] }
+  );
+
   private selectedFlight$ = new BehaviorSubject<Flight | null>(null);
 
   private auth = inject(Auth);
@@ -292,7 +313,7 @@ export class FlightsService {
       const flightRef = ref(this.db, objectRef);
       return objectVal<Flight>(flightRef).pipe(
         map(flight => {
-          const f = flight ? ({ ...flight, _objectReference: objectRef }) : null;
+          const f = flight ? ({ ...flight, _id: flightId, _objectReference: objectRef }) : null;
           this.activeFlight.set(f);
           return f;
         })
@@ -347,6 +368,92 @@ export class FlightsService {
       }
     })
       ;
+  }
+
+  /**
+   * Calculates the average speed of a flight in km/h
+   */
+  getAverageSpeed(flight: Flight): number {
+    if (!flight.distance || !flight.durationMilliseconds || flight.durationMilliseconds === 0) {
+      return 0;
+    }
+    return flight.distance / (flight.durationMilliseconds / 3600000);
+  }
+
+  /**
+   * Filters flights that are anomalously slow (< 300 km/h average speed)
+   * This likely indicates data entry errors like wrong arrival time
+   * Excludes flights that have been validated by the user
+   */
+  private filterSlowFlights(flights: Flight[]): Flight[] {
+    const MIN_REASONABLE_SPEED = 300; // km/h
+    return flights
+      .filter(f => f.distance && f.durationMilliseconds && f.durationMilliseconds > 0)
+      .filter(f => this.getAverageSpeed(f) < MIN_REASONABLE_SPEED)
+      .filter(f => !f.validatedAnomaly)
+      .sort((a, b) => this.getAverageSpeed(a) - this.getAverageSpeed(b));
+  }
+
+  /**
+   * Filters flights that are anomalously fast (> 950 km/h average speed)
+   * This likely indicates data entry errors or wrong calculation
+   * Excludes flights that have been validated by the user
+   */
+  private filterFastFlights(flights: Flight[]): Flight[] {
+    const MAX_REASONABLE_SPEED = 950; // km/h (faster than commercial aircraft cruise speed)
+    return flights
+      .filter(f => f.distance && f.durationMilliseconds && f.durationMilliseconds > 0)
+      .filter(f => this.getAverageSpeed(f) > MAX_REASONABLE_SPEED)
+      .filter(f => !f.validatedAnomaly)
+      .sort((a, b) => this.getAverageSpeed(b) - this.getAverageSpeed(a));
+  }
+
+  /**
+   * Filters flights that are anomalies but have been validated by the user
+   */
+  private filterValidatedAnomalies(flights: Flight[]): Flight[] {
+    const MIN_REASONABLE_SPEED = 300;
+    const MAX_REASONABLE_SPEED = 950;
+    return flights
+      .filter(f => f.validatedAnomaly && f.distance && f.durationMilliseconds && f.durationMilliseconds > 0)
+      .filter(f => {
+        const speed = this.getAverageSpeed(f);
+        return speed < MIN_REASONABLE_SPEED || speed > MAX_REASONABLE_SPEED;
+      })
+      .sort((a, b) => this.getAverageSpeed(b) - this.getAverageSpeed(a));
+  }
+
+  /**
+   * Check if a flight is an anomaly (slow or fast)
+   */
+  isAnomalies(flight: Flight): boolean {
+    if (!flight.distance || !flight.durationMilliseconds || flight.durationMilliseconds === 0) {
+      return false;
+    }
+    const speed = this.getAverageSpeed(flight);
+    const MIN_REASONABLE_SPEED = 300;
+    const MAX_REASONABLE_SPEED = 950;
+    return speed < MIN_REASONABLE_SPEED || speed > MAX_REASONABLE_SPEED;
+  }
+
+  /**
+   * Check if a flight is anomalously slow
+   */
+  isSlowAnomaly(flight: Flight): boolean {
+    if (!flight.distance || !flight.durationMilliseconds || flight.durationMilliseconds === 0) {
+      return false;
+    }
+    return this.getAverageSpeed(flight) < 300;
+  }
+
+  /**
+   * Check if a flight is anomalously fast
+   */
+  isFastAnomaly(flight: Flight): boolean {
+    if (!flight.distance || !flight.durationMilliseconds || flight.durationMilliseconds === 0) {
+      return false;
+    }
+    return this.getAverageSpeed(flight) > 950;
   }
 
 }

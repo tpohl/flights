@@ -4,13 +4,13 @@
   <div class="edit-header">
     <div class="header-content">
       <h1 class="page-title">
-        @if (flight._id) {
+        @if (!!flight._id) {
         Edit Flight
         } @else {
         New Flight
         }
       </h1>
-      @if (flight._id) {
+      @if (!!flight._id) {
       <p class="flight-summary">{{ flight.from }} → {{ flight.to }} · {{ flight.departureTime | amTimeAgo }}</p>
       }
     </div>
@@ -23,6 +23,40 @@
     <!-- Flight Preview Card -->
     <mat-card class="preview-card glass-card">
       <mat-card-content>
+        <!-- Anomaly Badge -->
+        @if (isFlightAnomaly() && !flight.validatedAnomaly) {
+        <div class="anomaly-alert">
+          <mat-icon class="alert-icon">warning</mat-icon>
+          <div class="alert-text">
+            <strong>
+              @if (isSlowAnomaly()) {
+              This flight is very slow
+              } @else if (isFastAnomaly()) {
+              This flight is very fast
+              }
+            </strong>
+            <p>Average speed: {{ flightsService.getAverageSpeed(flight) | number: '1.0-0' }} km/h</p>
+            <p class="alert-description">
+              This may indicate a data entry error. Please verify the departure/arrival times or distance.
+            </p>
+            <button mat-raised-button color="accent" (click)="validateAnomaly()" class="validate-btn">
+              <mat-icon>check_circle</mat-icon>
+              Validate - This is correct
+            </button>
+          </div>
+        </div>
+        }
+
+        @if (isFlightAnomaly() && flight.validatedAnomaly) {
+        <div class="validated-anomaly-badge">
+          <mat-icon>verified</mat-icon>
+          <span>Validated Anomaly</span>
+          <button mat-icon-button (click)="validateAnomaly()" matTooltip="Remove validation">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+        }
+
         <app-flight-tile [flight]="flight!"></app-flight-tile>
       </mat-card-content>
     </mat-card>

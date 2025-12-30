@@ -7,6 +7,10 @@
         <mat-icon matListItemIcon>flight</mat-icon>
         <span matListItemTitle>Flights</span>
       </a>
+      <a mat-list-item routerLink="/anomalies" routerLinkActive="active" (click)="closeSidenav()">
+        <mat-icon matListItemIcon>warning</mat-icon>
+        <span matListItemTitle>Anomalies</span>
+      </a>
       <a mat-list-item routerLink="/stats" routerLinkActive="active" (click)="closeSidenav()">
         <mat-icon matListItemIcon>bar_chart</mat-icon>
         <span matListItemTitle>Statistics</span>
@@ -48,6 +52,10 @@
         <a mat-button routerLink="/flights" routerLinkActive="active-link">
           <mat-icon>list</mat-icon>
           Flights
+        </a>
+        <a mat-button routerLink="/anomalies" routerLinkActive="active-link">
+          <mat-icon>warning</mat-icon>
+          Anomalies
         </a>
         <a mat-button routerLink="/stats" routerLinkActive="active-link">
           <mat-icon>bar_chart</mat-icon>

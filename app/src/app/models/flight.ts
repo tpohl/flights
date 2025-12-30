@@ -41,6 +41,8 @@ export class Flight {
   needsAutocomplete!: boolean;
   errorMessage!: string;
 
+  validatedAnomaly!: boolean;
+
   _objectReference!: string;
   _deleted!: boolean;
 }

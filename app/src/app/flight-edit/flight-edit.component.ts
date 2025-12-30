@@ -40,6 +40,7 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
+import { MatChipsModule } from '@angular/material/chips';
 
 @Component({
   standalone: true,
@@ -62,7 +63,8 @@ import { MatNativeDateModule } from '@angular/material/core';
     MatDividerModule,
     MatTooltipModule,
     MatDatepickerModule,
-    MatNativeDateModule
+    MatNativeDateModule,
+    MatChipsModule
   ],
   selector: 'app-flight-edit',
   providers: [Location, { provide: LocationStrategy, useClass: PathLocationStrategy }],
@@ -72,12 +74,14 @@ import { MatNativeDateModule } from '@angular/material/core';
 export class FlightEditComponent implements OnInit, OnDestroy {
 
   private authService = inject(AuthService);
+  protected flightsService = inject(FlightsService);
 
   constructor(private route: ActivatedRoute,
     private router: Router, private db: AngularFireDatabase,
     private airportService: AirportService,
-    private flightsService: FlightsService,
+    flightsService: FlightsService,
     private location: Location) {
+    this.flightsService = flightsService;
     effect(() => {
       const flight = this.flightsService.activeFlight();
       if (flight) {
@@ -280,6 +284,38 @@ export class FlightEditComponent implements OnInit, OnDestroy {
       this.router.navigateByUrl('/flights');
     }
   }
+
+  /**
+   * Check if the flight is anomalously slow or fast
+   */
+  isFlightAnomaly(): boolean {
+    return this.flight ? this.flightsService.isAnomalies(this.flight) : false;
+  }
+
+  /**
+   * Check if flight is slow anomaly
+   */
+  isSlowAnomaly(): boolean {
+    return this.flight ? this.flightsService.isSlowAnomaly(this.flight) : false;
+  }
+
+  /**
+   * Check if flight is fast anomaly
+   */
+  isFastAnomaly(): boolean {
+    return this.flight ? this.flightsService.isFastAnomaly(this.flight) : false;
+  }
+
+  /**
+   * Toggle the validated anomaly flag and save
+   */
+  validateAnomaly(): void {
+    if (this.flight) {
+      this.flight.validatedAnomaly = !this.flight.validatedAnomaly;
+      this.save();
+    }
+  }
+
   ngOnDestroy() {
     this.subs.unsubscribe();
   }

@@ -4,6 +4,7 @@ import { FlightEditComponent } from './flight-edit/flight-edit.component';
 import { PohlRocksImporterComponent } from './pohl-rocks-importer/pohl-rocks-importer.component';
 import { FlightsExportComponent } from './flights-export/flights-export.component';
 import { OverallStatsComponent } from './overall-stats/overall-stats.component';
+import { FlightAnomaliesComponent } from './flight-anomalies/flight-anomalies.component';
 import { authGuard } from './auth.guard';
 import { WelcomeComponent } from './welcome/welcome.component';
 import { publicGuard } from './public.guard';
@@ -17,6 +18,11 @@ export const routes: Routes = [
   {
     path: 'flights',
     component: FlightListComponent,
+    canActivate: [authGuard]
+  },
+  {
+    path: 'anomalies',
+    component: FlightAnomaliesComponent,
     canActivate: [authGuard]
   },
   {

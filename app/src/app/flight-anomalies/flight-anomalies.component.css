@@ -1,0 +1,278 @@
+.flight-anomalies-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.page-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.page-title {
+  font-size: 2rem;
+  font-weight: 500;
+  margin: 0;
+  color: var(--primary-text);
+}
+
+.subtitle {
+  font-size: 0.95rem;
+  color: var(--secondary-text);
+  opacity: 0.8;
+}
+
+.main-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.info-card {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, rgba(33, 150, 243, 0.1) 0%, rgba(156, 39, 176, 0.1) 100%);
+  border: 1px solid rgba(33, 150, 243, 0.2);
+
+  mat-card-content {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin: 0;
+  }
+}
+
+.info-icon {
+  font-size: 3rem;
+  width: 3rem;
+  height: 3rem;
+  color: #2196F3;
+  flex-shrink: 0;
+}
+
+.info-text {
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: var(--primary-text);
+
+  strong {
+    color: #2196F3;
+  }
+}
+
+.info-description {
+  font-size: 0.9rem;
+  color: var(--secondary-text);
+  margin-top: 0.5rem;
+  opacity: 0.8;
+}
+
+::ng-deep .anomalies-tabs {
+  .mat-mdc-tab-labels {
+    margin-bottom: 2rem;
+    background: transparent;
+  }
+
+  .mat-mdc-tab-label {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-width: auto;
+    padding: 0 1.5rem;
+
+    mat-icon {
+      font-size: 1.2rem;
+    }
+
+    mat-chip {
+      font-size: 0.75rem;
+      height: auto;
+      padding: 0.25rem 0.5rem;
+      margin-left: 0.5rem;
+    }
+  }
+}
+
+.flights-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.flight-card-link {
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-4px);
+
+    .flight-card {
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    }
+  }
+}
+
+.flight-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.2s ease;
+  position: relative;
+
+  &.validated {
+    border-color: rgba(76, 175, 80, 0.2);
+    background: linear-gradient(135deg, rgba(76, 175, 80, 0.05) 0%, rgba(56, 142, 60, 0.05) 100%);
+  }
+}
+
+.anomaly-card {
+  mat-card-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+}
+
+.anomaly-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 0.25rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  width: fit-content;
+
+  mat-icon {
+    font-size: 1rem;
+    width: 1rem;
+    height: 1rem;
+  }
+
+  &.slow {
+    background: rgba(255, 152, 0, 0.2);
+    color: #FF9800;
+  }
+
+  &.fast {
+    background: rgba(244, 67, 54, 0.2);
+    color: #F44336;
+  }
+
+  &.validated {
+    background: rgba(76, 175, 80, 0.2);
+    color: #4CAF50;
+  }
+}
+
+.speed-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 0.25rem;
+  font-size: 0.9rem;
+
+  .label {
+    color: var(--secondary-text);
+    opacity: 0.8;
+  }
+
+  .value {
+    font-weight: 600;
+    color: var(--primary-text);
+  }
+
+  .type-badge {
+    margin-left: 0.5rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+
+    &.slow {
+      background: rgba(255, 152, 0, 0.2);
+      color: #FF9800;
+    }
+
+    &.fast {
+      background: rgba(244, 67, 54, 0.2);
+      color: #F44336;
+    }
+  }
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 3rem 2rem;
+  color: var(--secondary-text);
+  text-align: center;
+
+  mat-icon {
+    font-size: 3rem;
+    width: 3rem;
+    height: 3rem;
+    color: #4CAF50;
+  }
+
+  p {
+    margin: 0;
+    font-size: 1.1rem;
+  }
+}
+
+.action-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 2rem;
+
+  button {
+    min-width: 180px;
+  }
+}
+
+@media (max-width: 768px) {
+  .flight-anomalies-container {
+    padding: 1rem;
+    gap: 1.5rem;
+  }
+
+  .info-card {
+    flex-direction: column;
+    text-align: center;
+
+    mat-card-content {
+      flex-direction: column;
+    }
+  }
+
+  .page-title {
+    font-size: 1.5rem;
+  }
+
+  .flights-grid {
+    grid-template-columns: 1fr;
+  }
+
+  ::ng-deep .anomalies-tabs .mat-mdc-tab-label {
+    padding: 0 1rem;
+    font-size: 0.9rem;
+  }
+}
