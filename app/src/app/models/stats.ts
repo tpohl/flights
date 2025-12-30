@@ -1,3 +1,4 @@
+import { Airport } from './airport';
 import { Flight } from './flight';
 
 export class FlightStats {
@@ -14,6 +15,28 @@ export class OverallStats {
   distance = 0;
   totalTimeMilliseconds = 0;
   airportsVisited: CountMap = new CountMap();
+
+  longestFlight: Flight | null = null;
+  shortestFlight: Flight | null = null;
+  fastestFlight: Flight | null = null;
+  slowestFlight: Flight | null = null;
+
+  topAirlines: CountedItem[] = [];
+  topAircraftTypes: CountedItem[] = [];
+  topRegistrations: CountedItem[] = [];
+  topAirports: CountedItem[] = [];
+  topCountries: CountedItem[] = [];
+  topRoutes: CountedItem[] = [];
+
+  distanceByClass: Record<string, number> = {};
+  timeByClass: Record<string, number> = {};
+
+  extremeAirports: {
+    north: Airport | null;
+    south: Airport | null;
+    east: Airport | null;
+    west: Airport | null;
+  } = { north: null, south: null, east: null, west: null };
 }
 
 export class CountMap {
@@ -31,7 +54,13 @@ export class CountMap {
 
   getItems(): CountedItem[] {
     return Array.from(this.items.values());
-  } 
+  }
+
+  getTop(n: number): CountedItem[] {
+    return this.getItems()
+      .sort((a, b) => b.count - a.count)
+      .slice(0, n);
+  }
 
   size(): number {
     return this.items.size;

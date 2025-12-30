@@ -27,18 +27,6 @@
                     <span matListItemMeta class="stat-value">{{ stats().totalTimeMilliseconds | amDurationExact
                         }}</span>
                 </mat-list-item>
-            </mat-list>
-        </mat-card-content>
-    </mat-card>
-
-    <!-- Airports Card -->
-    <mat-card class="stats-card glass-card">
-        <mat-card-header>
-            <mat-icon mat-card-avatar>location_on</mat-icon>
-            <mat-card-title>Airports</mat-card-title>
-        </mat-card-header>
-        <mat-card-content>
-            <mat-list>
                 <mat-list-item>
                     <mat-icon matListItemIcon>place</mat-icon>
                     <span matListItemTitle>Airports Visited</span>
@@ -47,4 +35,278 @@
             </mat-list>
         </mat-card-content>
     </mat-card>
+
+    <!-- Records Card -->
+    <mat-card class="stats-card glass-card">
+        <mat-card-header>
+            <mat-icon mat-card-avatar>workspace_premium</mat-icon>
+            <mat-card-title>Records</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+            <mat-list>
+                <mat-list-item *ngIf="stats().longestFlight" [routerLink]="['/flight', stats().longestFlight?._id]"
+                    class="clickable-item">
+                    <mat-icon matListItemIcon>straighten</mat-icon>
+                    <span matListItemTitle>Longest Flight</span>
+                    <span matListItemLine>{{ stats().longestFlight?.from }} → {{ stats().longestFlight?.to }} · {{
+                        stats().longestFlight?.date }}</span>
+                    <span matListItemMeta class="stat-value">{{ stats().longestFlight?.distance | number : '1.0-0' }}
+                        km</span>
+                </mat-list-item>
+                <mat-divider></mat-divider>
+                <mat-list-item *ngIf="stats().shortestFlight" [routerLink]="['/flight', stats().shortestFlight?._id]"
+                    class="clickable-item">
+                    <mat-icon matListItemIcon>compress</mat-icon>
+                    <span matListItemTitle>Shortest Flight</span>
+                    <span matListItemLine>{{ stats().shortestFlight?.from }} → {{ stats().shortestFlight?.to }} · {{
+                        stats().shortestFlight?.date }}</span>
+                    <span matListItemMeta class="stat-value">{{ stats().shortestFlight?.distance | number : '1.0-0' }}
+                        km</span>
+                </mat-list-item>
+                <mat-divider></mat-divider>
+                <mat-list-item *ngIf="stats().fastestFlight" [routerLink]="['/flight', stats().fastestFlight?._id]"
+                    class="clickable-item">
+                    <mat-icon matListItemIcon>speed</mat-icon>
+                    <span matListItemTitle>Fastest Flight</span>
+                    <span matListItemLine>{{ stats().fastestFlight?.from }} → {{ stats().fastestFlight?.to }} · {{
+                        stats().fastestFlight?.date }}</span>
+                    <span matListItemMeta class="stat-value">{{ getSpeed(stats().fastestFlight) | number : '1.0-0' }}
+                        km/h</span>
+                </mat-list-item>
+                <mat-divider></mat-divider>
+                <mat-list-item *ngIf="stats().slowestFlight" [routerLink]="['/flight', stats().slowestFlight?._id]"
+                    class="clickable-item">
+                    <mat-icon matListItemIcon>slower</mat-icon>
+                    <span matListItemTitle>Slowest Flight</span>
+                    <span matListItemLine>{{ stats().slowestFlight?.from }} → {{ stats().slowestFlight?.to }} · {{
+                        stats().slowestFlight?.date }}</span>
+                    <span matListItemMeta class="stat-value">{{ getSpeed(stats().slowestFlight) | number : '1.0-0' }}
+                        km/h</span>
+                </mat-list-item>
+            </mat-list>
+        </mat-card-content>
+    </mat-card>
+
+    <!-- Extreme Locations Card -->
+    <mat-card class="stats-card glass-card">
+        <mat-card-header>
+            <mat-icon mat-card-avatar>explore</mat-icon>
+            <mat-card-title>Extremes</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+            <mat-list>
+                <mat-list-item *ngIf="stats().extremeAirports.north">
+                    <mat-icon matListItemIcon>north</mat-icon>
+                    <span matListItemTitle>Most Northern</span>
+                    <span matListItemLine>{{ stats().extremeAirports.north?.name }} ({{
+                        stats().extremeAirports.north?.code }})</span>
+                    <span matListItemMeta class="stat-value">{{ stats().extremeAirports.north?.latitude | number :
+                        '1.2-2' }}°N</span>
+                </mat-list-item>
+                <mat-divider></mat-divider>
+                <mat-list-item *ngIf="stats().extremeAirports.south">
+                    <mat-icon matListItemIcon>south</mat-icon>
+                    <span matListItemTitle>Most Southern</span>
+                    <span matListItemLine>{{ stats().extremeAirports.south?.name }} ({{
+                        stats().extremeAirports.south?.code }})</span>
+                    <span matListItemMeta class="stat-value">{{ stats().extremeAirports.south?.latitude | number :
+                        '1.2-2' }}°S</span>
+                </mat-list-item>
+                <mat-divider></mat-divider>
+                <mat-list-item *ngIf="stats().extremeAirports.east">
+                    <mat-icon matListItemIcon>east</mat-icon>
+                    <span matListItemTitle>Most Eastern</span>
+                    <span matListItemLine>{{ stats().extremeAirports.east?.name }} ({{
+                        stats().extremeAirports.east?.code }})</span>
+                    <span matListItemMeta class="stat-value">{{ stats().extremeAirports.east?.longitude | number :
+                        '1.2-2' }}°E</span>
+                </mat-list-item>
+                <mat-divider></mat-divider>
+                <mat-list-item *ngIf="stats().extremeAirports.west">
+                    <mat-icon matListItemIcon>west</mat-icon>
+                    <span matListItemTitle>Most Western</span>
+                    <span matListItemLine>{{ stats().extremeAirports.west?.name }} ({{
+                        stats().extremeAirports.west?.code }})</span>
+                    <span matListItemMeta class="stat-value">{{ stats().extremeAirports.west?.longitude | number :
+                        '1.2-2' }}°W</span>
+                </mat-list-item>
+            </mat-list>
+        </mat-card-content>
+    </mat-card>
+
+    <!-- Rankings Section -->
+    <div class="rankings-grid">
+        <!-- Top Airlines -->
+        <mat-card class="stats-card glass-card">
+            <mat-card-header>
+                <mat-icon mat-card-avatar>lan</mat-icon>
+                <mat-card-title>Top Airlines</mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+                <div class="chart-container">
+                    <div *ngFor="let item of stats().topAirlines" class="chart-row">
+                        <div class="chart-label">{{ item.name }}</div>
+                        <div class="chart-bar-container">
+                            <div class="chart-bar"
+                                [style.width.%]="getPercentage(item.count, stats().topAirlines[0]?.count || 1)"></div>
+                        </div>
+                        <div class="chart-value">{{ item.count }}</div>
+                    </div>
+                </div>
+            </mat-card-content>
+        </mat-card>
+
+        <!-- Top Aircraft Types -->
+        <mat-card class="stats-card glass-card">
+            <mat-card-header>
+                <mat-icon mat-card-avatar>flight_takeoff</mat-icon>
+                <mat-card-title>Top Aircraft</mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+                <div class="chart-container">
+                    <div *ngFor="let item of stats().topAircraftTypes" class="chart-row">
+                        <div class="chart-label">{{ item.name }}</div>
+                        <div class="chart-bar-container">
+                            <div class="chart-bar"
+                                [style.width.%]="getPercentage(item.count, stats().topAircraftTypes[0]?.count || 1)">
+                            </div>
+                        </div>
+                        <div class="chart-value">{{ item.count }}</div>
+                    </div>
+                </div>
+            </mat-card-content>
+        </mat-card>
+
+        <!-- Top Planes (Registrations) -->
+        <mat-card class="stats-card glass-card">
+            <mat-card-header>
+                <mat-icon mat-card-avatar>pin</mat-icon>
+                <mat-card-title>Top Planes</mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+                <div class="chart-container">
+                    <div *ngFor="let item of stats().topRegistrations" class="chart-row">
+                        <div class="chart-label">{{ item.name }}</div>
+                        <div class="chart-bar-container">
+                            <div class="chart-bar"
+                                [style.width.%]="getPercentage(item.count, stats().topRegistrations[0]?.count || 1)">
+                            </div>
+                        </div>
+                        <div class="chart-value">{{ item.count }}</div>
+                    </div>
+                </div>
+            </mat-card-content>
+        </mat-card>
+
+        <!-- Top Routes -->
+        <mat-card class="stats-card glass-card">
+            <mat-card-header>
+                <mat-icon mat-card-avatar>multiple_stop</mat-icon>
+                <mat-card-title>Top Routes</mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+                <div class="chart-container">
+                    <div *ngFor="let item of stats().topRoutes" class="chart-row">
+                        <div class="chart-label">{{ getRouteLabel(item.name) }}</div>
+                        <div class="chart-bar-container">
+                            <div class="chart-bar"
+                                [style.width.%]="getPercentage(item.count, stats().topRoutes[0]?.count || 1)"></div>
+                        </div>
+                        <div class="chart-value">{{ item.count }}</div>
+                    </div>
+                </div>
+            </mat-card-content>
+        </mat-card>
+
+        <!-- Top Airports -->
+        <mat-card class="stats-card glass-card">
+            <mat-card-header>
+                <mat-icon mat-card-avatar>place</mat-icon>
+                <mat-card-title>Top Airports</mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+                <div class="chart-container">
+                    <div *ngFor="let item of stats().topAirports" class="chart-row">
+                        <div class="chart-label">{{ item.name }}</div>
+                        <div class="chart-bar-container">
+                            <div class="chart-bar"
+                                [style.width.%]="getPercentage(item.count, stats().topAirports[0]?.count || 1)"></div>
+                        </div>
+                        <div class="chart-value">{{ item.count }}</div>
+                    </div>
+                </div>
+            </mat-card-content>
+        </mat-card>
+
+        <!-- Top Countries -->
+        <mat-card class="stats-card glass-card">
+            <mat-card-header>
+                <mat-icon mat-card-avatar>public</mat-icon>
+                <mat-card-title>Top Countries</mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+                <div class="chart-container">
+                    <div *ngFor="let item of stats().topCountries" class="chart-row">
+                        <div class="chart-label">{{ item.name }}</div>
+                        <div class="chart-bar-container">
+                            <div class="chart-bar highlight"
+                                [style.width.%]="getPercentage(item.count, stats().topCountries[0]?.count || 1)"></div>
+                        </div>
+                        <div class="chart-value">{{ item.count }}</div>
+                    </div>
+                </div>
+            </mat-card-content>
+        </mat-card>
+    </div>
+
+    <!-- Seat Class Breakdown -->
+    <mat-card class="stats-card glass-card">
+        <mat-card-header>
+            <mat-icon mat-card-avatar>airline_seat_recline_extra</mat-icon>
+            <mat-card-title>Seat Class Breakdown</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+            <div class="class-stats-grid">
+                <div class="class-stat-column">
+                    <h3>By Distance</h3>
+                    <div class="chart-container">
+                        <div *ngFor="let class of stats().distanceByClass | keyvalue" class="chart-row">
+                            <div class="chart-label">
+                                <mat-chip-set>
+                                    <mat-chip class="class-chip" [class]="getClassCss(class.key)">
+                                        {{ getClassLabel(class.key) }}
+                                    </mat-chip>
+                                </mat-chip-set>
+                            </div>
+                            <div class="chart-bar-container">
+                                <div class="chart-bar" [style.width.%]="getPercentage(class.value, stats().distance)">
+                                </div>
+                            </div>
+                            <div class="chart-value">{{ class.value | number : '1.0-0' }} km</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="class-stat-column">
+                    <h3>By Time</h3>
+                    <div class="chart-container">
+                        <div *ngFor="let class of stats().timeByClass | keyvalue" class="chart-row">
+                            <div class="chart-label">
+                                <mat-chip-set>
+                                    <mat-chip class="class-chip" [class]="getClassCss(class.key)">
+                                        {{ getClassLabel(class.key) }}
+                                    </mat-chip>
+                                </mat-chip-set>
+                            </div>
+                            <div class="chart-bar-container">
+                                <div class="chart-bar highlight"
+                                    [style.width.%]="getPercentage(class.value, stats().totalTimeMilliseconds)"></div>
+                            </div>
+                            <div class="chart-value">{{ class.value | amDurationExact }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </mat-card-content>
+    </mat-card>
+
 </div>

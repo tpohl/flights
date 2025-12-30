@@ -8,27 +8,46 @@ import DayJS from 'dayjs';
 import DayJSDuration from 'dayjs/plugin/duration';
 
 DayJS.extend(DayJSDuration);
-import { from } from "rxjs";
+import { from, of } from "rxjs";
 import * as functions from 'firebase-functions';
 import loadFlight from '../util/loadFlight';
 
 
 
 const computeDuration = function (snapshot: functions.database.DataSnapshot, context: functions.EventContext) {
-  console.log('Computing Duration of Flight.');
+  const flightId = context.params.flightId;
+  const userId = context.params.userId;
+  console.log(`Computing Duration for Flight ${flightId} (User: ${userId})`);
+
   const flightRef = snapshot.ref.parent;
   return loadFlight(flightRef)
     .pipe(
       map((flight: Flight) => {
         if (flight.departureTime && flight.arrivalTime) {
-          flight.durationMilliseconds = DayJS.duration(DayJS(flight.arrivalTime).diff(DayJS(flight.departureTime))).asMilliseconds();
+          const dep = DayJS(flight.departureTime);
+          const arr = DayJS(flight.arrivalTime);
+
+          if (dep.isValid() && arr.isValid()) {
+            const durationMs = arr.diff(dep);
+            if (durationMs > 0) {
+              flight.durationMilliseconds = durationMs;
+              console.log(`Calculated duration for ${flightId}: ${durationMs}ms`);
+            } else {
+              console.warn(`Calculated duration for ${flightId} is non-positive: ${durationMs}ms. Times: ${flight.departureTime} -> ${flight.arrivalTime}`);
+            }
+          } else {
+            console.error(`Invalid times for flight ${flightId}: dep=${flight.departureTime}, arr=${flight.arrivalTime}`);
+          }
         }
         return flight;
-      }
-      ),
-      tap(flight => console.log('Computed Duration of Flight', flight)),
-      mergeMap(newFlight => from(snapshot.ref.parent.child('durationMilliseconds').set(newFlight.durationMilliseconds)))
-      ).toPromise();
+      }),
+      mergeMap(flight => {
+        if (flight.durationMilliseconds > 0) {
+          return from(flightRef.child('durationMilliseconds').set(flight.durationMilliseconds));
+        }
+        return of(null);
+      })
+    ).toPromise();
 };
 
 export default {

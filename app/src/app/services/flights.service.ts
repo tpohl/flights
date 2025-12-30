@@ -3,8 +3,12 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { BehaviorSubject, from, Observable, of } from 'rxjs';
 
 import { filter, map, reduce, switchMap, take, tap } from 'rxjs/operators';
+import { forkJoin } from 'rxjs';
+import dayjs from 'dayjs';
 import { Flight } from '../models/flight';
-import { FlightStats, OverallStats } from '../models/stats';
+import { Airport } from '../models/airport';
+import { FlightStats, OverallStats, CountMap } from '../models/stats';
+import { AirportService } from './airport.service';
 import { flightDistance } from '../pipes/flightDistancePipe';
 import { AeroAPITrackResponse, UpdateType } from '../models/aeroapi';
 
@@ -108,31 +112,158 @@ export class FlightsService {
   }
 
   private initStats() {
-
     this.flightSubject.pipe(
-      switchMap(flightsArray => from(flightsArray)
-        .pipe(
-          reduce<Flight, OverallStats>(
-            (stats, flight) => {
-              stats.count += 1;
-              if (!!flight.distance && !isNaN(+flight.distance)) {
-                stats.distance = stats.distance + flightDistance(flight);
+      switchMap(flightsArray => {
+        const airlines = new CountMap();
+        const aircraftTypes = new CountMap();
+        const aircraftRegistrations = new CountMap();
+        const routes = new CountMap();
+        const airports = new Set<string>();
+
+        const getSpeed = (f: Flight) => {
+          if (!f || !f.durationMilliseconds || f.durationMilliseconds === 0) return 0;
+          return flightDistance(f) / (f.durationMilliseconds / 3600000);
+        };
+
+        const stats = flightsArray.reduce((acc, flight) => {
+          acc.count += 1;
+          const dist = flightDistance(flight);
+          const seatClass = flight.class || 'Other';
+          if (!!dist && !isNaN(dist)) {
+            acc.distance += dist;
+          }
+
+          // Calculate effective duration for this flight
+          let duration = flight.durationMilliseconds;
+          if ((!duration || isNaN(duration) || duration <= 0) && flight.departureTime && flight.arrivalTime) {
+            const dep = dayjs(flight.departureTime);
+            const arr = dayjs(flight.arrivalTime);
+            if (dep.isValid() && arr.isValid()) {
+              duration = arr.diff(dep);
+              // Store it back on the flight object so components can use it
+              flight.durationMilliseconds = duration;
+            }
+          }
+
+          if (duration && !isNaN(duration) && duration > 0) {
+            acc.totalTimeMilliseconds += duration;
+
+            // Speed Records
+            const speed = dist / (duration / 3600000);
+            const currentFastestSpeed = acc.fastestFlight ? getSpeed(acc.fastestFlight) : 0;
+            const currentSlowestSpeed = acc.slowestFlight ? getSpeed(acc.slowestFlight) : Infinity;
+
+            if (!acc.fastestFlight || speed > currentFastestSpeed) {
+              acc.fastestFlight = flight;
+            }
+            if (!acc.slowestFlight || speed < currentSlowestSpeed) {
+              acc.slowestFlight = flight;
+            }
+
+            acc.timeByClass[seatClass] = (acc.timeByClass[seatClass] || 0) + duration;
+          }
+
+          // Distance Records
+          if (!acc.longestFlight || dist > flightDistance(acc.longestFlight)) {
+            acc.longestFlight = flight;
+          }
+          if (!acc.shortestFlight || dist < flightDistance(acc.shortestFlight)) {
+            acc.shortestFlight = flight;
+          }
+
+          // Top Lists
+          if (flight.carrier) airlines.add(flight.carrier);
+          if (flight.aircraftType) aircraftTypes.add(flight.aircraftType);
+          if (flight.aircraftRegistration) aircraftRegistrations.add(flight.aircraftRegistration);
+          if (flight.from && flight.to) {
+            const route = [flight.from, flight.to].sort().join('-');
+            routes.add(route);
+          }
+
+          // Class Stats Distance
+          acc.distanceByClass[seatClass] = (acc.distanceByClass[seatClass] || 0) + dist;
+
+          acc.airportsVisited.add(flight.from);
+          acc.airportsVisited.add(flight.to);
+          airports.add(flight.from);
+          airports.add(flight.to);
+
+          return acc;
+        }, new OverallStats());
+
+        stats.distance = Math.round(stats.distance);
+        stats.topAirlines = airlines.getTop(5);
+        stats.topAircraftTypes = aircraftTypes.getTop(5);
+        stats.topRegistrations = aircraftRegistrations.getTop(5);
+        stats.topRoutes = routes.getTop(5);
+
+        // Fetch Airport details for extreme locations
+        if (airports.size === 0) {
+          return of(stats);
+        }
+
+        const airportService = this.injector.get(AirportService);
+        const airportRequests = Array.from(airports).map(code => airportService.loadAirport(code).pipe(take(1)));
+
+        return forkJoin(airportRequests).pipe(
+          map(airportDetails => {
+            const airportMap = new Map<string, Airport>();
+            const countries = new CountMap();
+
+            airportDetails.filter((a): a is Airport => !!a).forEach(airport => {
+              airportMap.set(airport.code, airport);
+
+              // Handle Extremes
+              if (!stats.extremeAirports.north || airport.latitude > stats.extremeAirports.north.latitude) {
+                stats.extremeAirports.north = airport;
               }
-              if (!!flight.durationMilliseconds && !isNaN(+flight.durationMilliseconds)) {
-                stats.totalTimeMilliseconds = stats.totalTimeMilliseconds + flight.durationMilliseconds;
+              if (!stats.extremeAirports.south || airport.latitude < stats.extremeAirports.south.latitude) {
+                stats.extremeAirports.south = airport;
               }
-              stats.airportsVisited.add(flight.from);
-              stats.airportsVisited.add(flight.to);
-              return stats;
-            },
-            new OverallStats()),
-          map(stats => {
-            stats.distance = Math.round(stats.distance);
+              if (!stats.extremeAirports.east || airport.longitude > stats.extremeAirports.east.longitude) {
+                stats.extremeAirports.east = airport;
+              }
+              if (!stats.extremeAirports.west || airport.longitude < stats.extremeAirports.west.longitude) {
+                stats.extremeAirports.west = airport;
+              }
+            });
+
+            // Calculate Top Airports (with names)
+            stats.topAirports = stats.airportsVisited.getTop(5).map(item => {
+              const ap = airportMap.get(item.name);
+              return {
+                name: ap ? `${ap.name} (${ap.code})` : item.name,
+                count: item.count
+              };
+            });
+
+            // Calculate Top Countries
+            stats.airportsVisited.getItems().forEach(item => {
+              const ap = airportMap.get(item.name);
+              const countryName = ap?.country?.country || 'Unknown';
+              // We need a helper for summing counts in countries, but CountMap.add only increments by 1.
+              // Let's use a simple object for countries first, or extend CountMap.
+              // Actually, simpler to just use a local map here.
+            });
+
+            const countryCounts = new Map<string, number>();
+            stats.airportsVisited.getItems().forEach(item => {
+              const ap = airportMap.get(item.name);
+              if (ap?.country?.country) {
+                const current = countryCounts.get(ap.country.country) || 0;
+                countryCounts.set(ap.country.country, current + item.count);
+              }
+            });
+
+            stats.topCountries = Array.from(countryCounts.entries())
+              .map(([name, count]) => ({ name, count }))
+              .sort((a, b) => b.count - a.count)
+              .slice(0, 5);
+
             return stats;
           })
-
-        )
-      )
+        );
+      })
     ).subscribe(stats => this.statsSubject.next(stats));
   }
 

@@ -10,7 +10,7 @@ import { RelativeTimePipe } from '../pipes/relativeTimePipe';
 import { FlightDistancePipe } from '../pipes/flightDistancePipe';
 import { CesiumDirective } from '../cesium.directive';
 
-import { Flight } from '../models/flight';
+import { Flight, TRAVEL_CLASSES } from '../models/flight';
 import { AngularFireDatabase } from '@angular/fire/compat/database';
 import { Airport } from '../models/airport';
 import DayJS from 'dayjs';
@@ -22,7 +22,6 @@ DayJS.extend(DayJSTimezone);
 
 import { User } from 'firebase/auth';
 import { FlightsService, SaveResultType } from '../services/flights.service';
-import { TRAVEL_CLASSES } from '../seat-info/seat-info.component';
 import { ExactDurationPipe } from '../pipes/exactDurationPipe';
 import { FlightTileComponent } from '../flight-tile/flight-tile.component';
 
