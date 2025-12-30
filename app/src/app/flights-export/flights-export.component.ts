@@ -13,7 +13,7 @@ import { MatIconModule } from '@angular/material/icon';
   imports: [CommonModule, MatCardModule, MatButtonModule, MatIconModule],
   selector: 'app-flights-export',
   templateUrl: './flights-export.component.html',
-  styleUrls: ['./flights-export.component.css']
+  styleUrls: ['./flights-export.component.scss']
 })
 export class FlightsExportComponent implements OnInit {
 

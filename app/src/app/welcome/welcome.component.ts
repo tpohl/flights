@@ -13,7 +13,7 @@ import { MatCardModule } from '@angular/material/card';
     standalone: true,
     imports: [CommonModule, MatButtonModule, MatIconModule, MatCardModule],
     templateUrl: './welcome.component.html',
-    styleUrls: ['./welcome.component.css']
+    styleUrls: ['./welcome.component.scss']
 })
 export class WelcomeComponent {
     private authService = inject(AuthService);

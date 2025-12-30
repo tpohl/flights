@@ -30,7 +30,7 @@ import { MatRippleModule } from '@angular/material/core';
   ],
   selector: 'app-flight-anomalies',
   templateUrl: './flight-anomalies.component.html',
-  styleUrls: ['./flight-anomalies.component.css']
+  styleUrls: ['./flight-anomalies.component.scss']
 })
 export class FlightAnomaliesComponent implements OnInit {
   private flightsService = inject(FlightsService);

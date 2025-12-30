@@ -1,0 +1,113 @@
+@use './variables' as *;
+@use './mixins' as *;
+
+/* App Container */
+.app-container {
+  height: 100vh;
+}
+
+/* Glass Toolbar */
+.glass-toolbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: $z-toolbar;
+  @include glass-effect($bg-lighter, $glass-blur-strong, rgba(255, 255, 255, 0.3), 0 2px 20px rgba(0, 0, 0, 0.08));
+  padding: 0 $spacing-lg;
+}
+
+/* Brand */
+.brand {
+  @include flex-center;
+  gap: $spacing-sm;
+  text-decoration: none;
+  color: $text-primary;
+  font-weight: $font-weight-semibold;
+  font-size: 1.1rem;
+
+  mat-icon {
+    color: $primary-color;
+  }
+}
+
+.brand-text {
+  display: none;
+
+  @include respond-up-from('sm') {
+    display: inline;
+  }
+}
+
+/* Spacer */
+.spacer {
+  flex: 1;
+}
+
+/* Desktop Navigation */
+.desktop-nav {
+  display: none;
+
+  @include respond-up-from('lg') {
+    display: flex;
+    gap: $spacing-sm;
+  }
+
+  a {
+    color: $text-primary;
+    border-radius: $radius-lg;
+
+    mat-icon {
+      margin-right: $spacing-sm;
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+    }
+
+    &.active-link {
+      background: rgba(102, 126, 234, 0.1);
+      color: $primary-color;
+    }
+  }
+}
+
+.menu-button {
+  @include respond-up-from('lg') {
+    display: none !important;
+  }
+}
+
+/* Mobile Sidenav */
+.mobile-sidenav {
+  width: 280px;
+  @include glass-effect($bg-lighter, $glass-blur-strong, transparent);
+
+  mat-nav-list {
+    padding-top: $spacing-lg;
+  }
+
+  a.active {
+    background: rgba(102, 126, 234, 0.1);
+    color: $primary-color;
+  }
+
+  mat-divider {
+    margin: $spacing-lg 0;
+  }
+}
+
+/* Page Content */
+.page-content {
+  padding-top: 64px;
+  min-height: calc(100vh - 64px);
+}
+
+/* Menu button color */
+.menu-button mat-icon {
+  color: $text-primary;
+}
+
+/* Logout button */
+.glass-toolbar button[mat-icon-button]:last-child mat-icon {
+  color: $primary-color;
+}

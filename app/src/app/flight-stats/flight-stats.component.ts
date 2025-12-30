@@ -29,7 +29,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
   ],
   selector: 'app-flight-stats',
   templateUrl: './flight-stats.component.html',
-  styleUrls: ['./flight-stats.component.css']
+  styleUrls: ['./flight-stats.component.scss']
 })
 export class FlightStatsComponent implements OnInit {
   private _flight!: Flight;

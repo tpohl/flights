@@ -1,0 +1,131 @@
+@use '../variables' as *;
+@use '../mixins' as *;
+
+.stats-glass-card {
+  padding: 0 !important;
+  overflow: hidden;
+  background: $bg-lighter !important;
+  backdrop-filter: blur($glass-blur-strong) saturate(180%);
+  -webkit-backdrop-filter: blur($glass-blur-strong) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.5) !important;
+}
+
+.stats-header {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+  padding: $spacing-lg 20px;
+
+  mat-icon {
+    color: $primary-color;
+  }
+}
+
+.header-title {
+  font-weight: $font-weight-semibold;
+  font-size: 1.1rem;
+  color: #1a1a1a;
+}
+
+.stats-content {
+  padding: 0;
+}
+
+.stats-section {
+  padding: $spacing-xl;
+}
+
+.section-label {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-bold;
+  text-transform: uppercase;
+  color: #888;
+  margin-bottom: $spacing-lg;
+  letter-spacing: 0.05em;
+}
+
+/* Accuracy Grid */
+.status-grid {
+  @include grid-col(3, $spacing-lg);
+}
+
+.status-item {
+  @include flex-col-center;
+  gap: $spacing-sm;
+  text-align: center;
+}
+
+.status-label {
+  font-size: $font-size-sm;
+  color: $text-secondary;
+}
+
+.status-item mat-icon {
+  font-size: 24px;
+  width: 24px;
+  height: 24px;
+
+  &.success {
+    color: $color-success;
+  }
+
+  &.warning {
+    color: $color-warning;
+  }
+
+  &.error {
+    color: $color-error;
+  }
+}
+
+/* Count Grid */
+.count-grid {
+  @include grid-col(3, $spacing-lg);
+}
+
+.count-item {
+  @include flex-col-center;
+  text-align: center;
+}
+
+.count-value {
+  font-size: $font-size-2xl;
+  font-weight: $font-weight-bold;
+  color: #1a1a1a;
+}
+
+.count-label {
+  font-size: $font-size-xs;
+  color: #888;
+  text-transform: lowercase;
+}
+
+/* Expansion Panel */
+.aircraft-panel {
+  background: transparent !important;
+  box-shadow: none !important;
+  border: none !important;
+
+  ::ng-deep .mat-expansion-panel-body {
+    padding: 0 0 $spacing-lg 0 !important;
+  }
+}
+
+.aircraft-flights-grid {
+  @include grid-auto-fill(200px, $spacing-md);
+  margin-top: $spacing-lg;
+}
+
+.preview-tile {
+  background: rgba(255, 255, 255, 0.5);
+  padding: $spacing-sm;
+  border-radius: $radius-lg;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+@include respond-to('sm') {
+  .status-grid,
+  .count-grid {
+    gap: $spacing-sm;
+  }
+}

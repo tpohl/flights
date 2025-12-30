@@ -1,0 +1,253 @@
+@use '../variables' as *;
+@use '../mixins' as *;
+
+.edit-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: $spacing-xl;
+}
+
+/* Header */
+.edit-header {
+  @include flex-between;
+  align-items: flex-start;
+  margin-bottom: $spacing-xl;
+}
+
+.header-content {
+  flex: 1;
+}
+
+.page-title {
+  @include heading($font-size-3xl, $font-weight-bold, white);
+  margin: 0 0 $spacing-sm 0;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.flight-summary {
+  font-size: $font-size-base;
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0;
+}
+
+.close-button {
+  color: white !important;
+  background: rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Preview Card */
+.preview-card {
+  margin-bottom: $spacing-xl;
+}
+
+.anomaly-alert {
+  @include alert-box($gradient-warning, $color-warning-orange, $color-warning-orange, $text-primary);
+  margin-bottom: 1.5rem;
+
+  .alert-icon {
+    font-size: 2rem;
+    width: 2rem;
+    height: 2rem;
+    color: $color-warning-orange;
+    flex-shrink: 0;
+    margin-top: 0.25rem;
+  }
+}
+
+.alert-text {
+  flex: 1;
+
+  strong {
+    display: block;
+    font-size: 1.1rem;
+    color: #FF6F00;
+    margin-bottom: $spacing-sm;
+  }
+
+  p {
+    margin: $spacing-sm 0;
+    font-size: $font-size-base;
+    color: $text-primary;
+
+    &.alert-description {
+      opacity: 0.8;
+      margin-bottom: $spacing-lg;
+    }
+  }
+}
+
+.validate-btn {
+  margin-top: $spacing-sm;
+}
+
+.validated-anomaly-badge {
+  @include flex-center;
+  gap: $spacing-sm;
+  padding: 0.75rem $spacing-lg;
+  margin-bottom: 1.5rem;
+  background: $gradient-success;
+  border: 2px solid $color-success;
+  border-radius: $radius-lg;
+  font-weight: $font-weight-medium;
+  color: $color-success-dark;
+}
+
+/* Map Container */
+.map-container {
+  margin-bottom: $spacing-xl;
+  border-radius: $radius-lg;
+  overflow: hidden;
+}
+
+/* Stats Container */
+.stats-container {
+  margin-bottom: $spacing-xl;
+}
+
+/* Form Card */
+.form-card {
+  overflow: hidden;
+
+  mat-card-header {
+    padding: $spacing-lg $spacing-xl 0;
+  }
+
+  mat-card-title {
+    font-size: 1.25rem;
+    font-weight: $font-weight-semibold;
+  }
+
+  mat-card-content {
+    padding: $spacing-xl !important;
+  }
+}
+
+/* Form Grid */
+.form-grid {
+  @include flex-col;
+  gap: $spacing-lg;
+}
+
+.full-width {
+  width: 100%;
+}
+
+/* Input with action button */
+.input-with-action {
+  display: flex;
+  gap: $spacing-sm;
+  align-items: flex-start;
+
+  button {
+    margin-top: 4px;
+    color: $primary-color;
+
+    &.loading mat-icon {
+      @include spin;
+    }
+  }
+}
+
+.flex-grow {
+  flex: 1;
+}
+
+/* Dividers */
+mat-divider {
+  margin: $spacing-sm 0 !important;
+}
+
+/* Radio Groups */
+.radio-group-container {
+  @include flex-col;
+  gap: $spacing-sm;
+}
+
+.radio-label {
+  font-size: $font-size-base;
+  color: $text-lighter;
+  font-weight: $font-weight-medium;
+}
+
+.radio-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-lg;
+
+  mat-radio-button {
+    font-size: $font-size-base;
+  }
+}
+
+/* Error Message */
+.error-message {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  padding: $spacing-md $spacing-lg;
+  background: $color-error-light;
+  border-radius: $radius-lg;
+  color: #d32f2f;
+
+  mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+}
+
+/* Form Actions */
+.form-actions {
+  display: flex;
+  gap: $spacing-md;
+  padding: $spacing-lg $spacing-xl $spacing-xl !important;
+  margin: 0 !important;
+}
+
+.save-button {
+  flex: 1;
+  @include btn-primary;
+}
+
+.delete-button {
+  @include btn-base;
+}
+
+/* Responsive */
+@include respond-to('sm') {
+  .edit-container {
+    padding: $spacing-lg;
+  }
+
+  .page-title {
+    font-size: 1.5rem;
+  }
+
+  .form-actions {
+    flex-direction: column;
+  }
+
+  .delete-button {
+    width: 100%;
+  }
+}
+
+/* Scroll Restoration Freeze */
+.top-elements-container.is-restoring-scroll {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  visibility: hidden;
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Disabled state for new flights */
+.is-disabled {
+  opacity: 0.4;
+  filter: grayscale(0.8) blur(2px);
+  pointer-events: none;
+  transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+  user-select: none;
+}

@@ -35,7 +35,7 @@ import { MatRippleModule } from '@angular/material/core';
   ],
   selector: 'app-flight-list',
   templateUrl: './flight-list.component.html',
-  styleUrls: ['./flight-list.component.css']
+  styleUrls: ['./flight-list.component.scss']
 })
 export class FlightListComponent implements OnInit {
   private flightsService = inject(FlightsService);

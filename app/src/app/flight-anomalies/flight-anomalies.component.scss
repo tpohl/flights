@@ -1,6 +1,8 @@
+@use '../variables' as *;
+@use '../mixins' as *;
+
 .flight-anomalies-container {
-  display: flex;
-  flex-direction: column;
+  @include flex-col;
   gap: 2rem;
   padding: 2rem;
   max-width: 1400px;
@@ -8,28 +10,25 @@
 }
 
 .page-header {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
+  @include flex-col;
+  gap: $spacing-sm;
+  margin-bottom: $spacing-lg;
 }
 
 .page-title {
-  font-size: 2rem;
-  font-weight: 500;
+  @include heading($font-size-2xl, $font-weight-medium);
   margin: 0;
   color: var(--primary-text);
 }
 
 .subtitle {
-  font-size: 0.95rem;
+  font-size: $font-size-base;
   color: var(--secondary-text);
   opacity: 0.8;
 }
 
 .main-content {
-  display: flex;
-  flex-direction: column;
+  @include flex-col;
   gap: 2rem;
 }
 
@@ -48,27 +47,27 @@
 }
 
 .info-icon {
-  font-size: 3rem;
-  width: 3rem;
-  height: 3rem;
-  color: #2196F3;
+  font-size: $font-size-5xl;
+  width: $font-size-5xl;
+  height: $font-size-5xl;
+  color: $color-info;
   flex-shrink: 0;
 }
 
 .info-text {
   font-size: 1.1rem;
-  font-weight: 500;
+  font-weight: $font-weight-medium;
   color: var(--primary-text);
 
   strong {
-    color: #2196F3;
+    color: $color-info;
   }
 }
 
 .info-description {
-  font-size: 0.9rem;
+  font-size: $font-size-base;
   color: var(--secondary-text);
-  margin-top: 0.5rem;
+  margin-top: $spacing-sm;
   opacity: 0.8;
 }
 
@@ -90,26 +89,23 @@
     }
 
     mat-chip {
-      font-size: 0.75rem;
+      font-size: $font-size-sm;
       height: auto;
-      padding: 0.25rem 0.5rem;
-      margin-left: 0.5rem;
+      padding: $spacing-xs $spacing-sm;
+      margin-left: $spacing-sm;
     }
   }
 }
 
 .flights-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 2rem;
+  @include grid-auto-fill(350px, 1.5rem);
 }
 
 .flight-card-link {
   text-decoration: none;
   color: inherit;
   cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: transform $transition-base, box-shadow $transition-base;
 
   &:hover {
     transform: translateY(-4px);
@@ -122,22 +118,20 @@
 
 .flight-card {
   height: 100%;
-  display: flex;
-  flex-direction: column;
+  @include flex-col;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  transition: all 0.2s ease;
+  transition: all $transition-base;
   position: relative;
 
   &.validated {
     border-color: rgba(76, 175, 80, 0.2);
-    background: linear-gradient(135deg, rgba(76, 175, 80, 0.05) 0%, rgba(56, 142, 60, 0.05) 100%);
+    background: $gradient-success-alt;
   }
 }
 
 .anomaly-card {
   mat-card-content {
-    display: flex;
-    flex-direction: column;
+    @include flex-col;
     gap: 1rem;
   }
 }
@@ -145,11 +139,11 @@
 .anomaly-badge {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1rem;
-  border-radius: 0.25rem;
+  gap: $spacing-sm;
+  padding: $spacing-sm $spacing-lg;
+  border-radius: $radius-sm;
   font-size: 0.85rem;
-  font-weight: 500;
+  font-weight: $font-weight-medium;
   width: fit-content;
 
   mat-icon {
@@ -159,18 +153,18 @@
   }
 
   &.slow {
-    background: rgba(255, 152, 0, 0.2);
-    color: #FF9800;
+    background: $color-warning-lighter;
+    color: $color-warning-orange;
   }
 
   &.fast {
-    background: rgba(244, 67, 54, 0.2);
-    color: #F44336;
+    background: $color-error-lighter;
+    color: $color-error-red;
   }
 
   &.validated {
-    background: rgba(76, 175, 80, 0.2);
-    color: #4CAF50;
+    background: $color-success-lighter;
+    color: $color-success;
   }
 }
 
@@ -180,8 +174,8 @@
   align-items: center;
   padding: 0.75rem;
   background: rgba(0, 0, 0, 0.05);
-  border-radius: 0.25rem;
-  font-size: 0.9rem;
+  border-radius: $radius-sm;
+  font-size: $font-size-base;
 
   .label {
     color: var(--secondary-text);
@@ -189,44 +183,42 @@
   }
 
   .value {
-    font-weight: 600;
+    font-weight: $font-weight-semibold;
     color: var(--primary-text);
   }
 
   .type-badge {
-    margin-left: 0.5rem;
-    padding: 0.25rem 0.75rem;
-    border-radius: 0.25rem;
-    font-size: 0.75rem;
-    font-weight: 600;
+    margin-left: $spacing-sm;
+    padding: $spacing-xs 0.75rem;
+    border-radius: $radius-sm;
+    font-size: $font-size-xs;
+    font-weight: $font-weight-bold;
     text-transform: uppercase;
 
     &.slow {
-      background: rgba(255, 152, 0, 0.2);
-      color: #FF9800;
+      background: $color-warning-lighter;
+      color: $color-warning-orange;
     }
 
     &.fast {
-      background: rgba(244, 67, 54, 0.2);
-      color: #F44336;
+      background: $color-error-lighter;
+      color: $color-error-red;
     }
   }
 }
 
 .empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1rem;
+  @include flex-col-center;
+  gap: $spacing-lg;
   padding: 3rem 2rem;
   color: var(--secondary-text);
   text-align: center;
 
   mat-icon {
-    font-size: 3rem;
-    width: 3rem;
-    height: 3rem;
-    color: #4CAF50;
+    font-size: $font-size-5xl;
+    width: $font-size-5xl;
+    height: $font-size-5xl;
+    color: $color-success;
   }
 
   p {
@@ -238,7 +230,7 @@
 .action-buttons {
   display: flex;
   justify-content: center;
-  gap: 1rem;
+  gap: $spacing-lg;
   margin-top: 2rem;
 
   button {
@@ -246,9 +238,9 @@
   }
 }
 
-@media (max-width: 768px) {
+@include respond-to('md') {
   .flight-anomalies-container {
-    padding: 1rem;
+    padding: $spacing-lg;
     gap: 1.5rem;
   }
 
@@ -270,7 +262,7 @@
   }
 
   ::ng-deep .anomalies-tabs .mat-mdc-tab-label {
-    padding: 0 1rem;
-    font-size: 0.9rem;
+    padding: 0 $spacing-lg;
+    font-size: $font-size-base;
   }
 }

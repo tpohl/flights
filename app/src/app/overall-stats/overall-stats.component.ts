@@ -21,7 +21,7 @@ import { flightDistance } from '../pipes/flightDistancePipe';
   selector: 'app-overall-stats',
   imports: [CommonModule, ExactDurationPipe, RouterLink, MatCardModule, MatIconModule, MatListModule, MatDividerModule, MatChipsModule, MatButtonModule],
   templateUrl: './overall-stats.component.html',
-  styleUrl: './overall-stats.component.css'
+  styleUrl: './overall-stats.component.scss'
 })
 export class OverallStatsComponent implements OnInit {
 

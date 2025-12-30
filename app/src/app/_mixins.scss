@@ -1,0 +1,314 @@
+// ============================================================
+// SCSS Mixins - Reusable styling patterns
+// ============================================================
+
+@use 'variables' as *;
+
+// GLASS MORPHISM EFFECTS
+@mixin glass-effect($bg: $glass-bg, $blur: $glass-blur, $border: $glass-border, $shadow: $glass-shadow, $inner-shadow: none) {
+  background: $bg;
+  backdrop-filter: blur($blur) saturate(180%);
+  -webkit-backdrop-filter: blur($blur) saturate(180%);
+  border: 1px solid $border;
+  box-shadow: $shadow;
+  @if $inner-shadow != none {
+    box-shadow: $shadow, $inner-shadow;
+  }
+}
+
+@mixin glass-card($bg: $glass-bg, $blur: $glass-blur, $border: $glass-border) {
+  background: $bg;
+  backdrop-filter: blur($blur) saturate(180%);
+  -webkit-backdrop-filter: blur($blur) saturate(180%);
+  border: 1px solid $border;
+  border-radius: $radius-lg;
+  box-shadow: $glass-shadow;
+  transition: transform $transition-base, box-shadow $transition-base;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+  }
+}
+
+@mixin glass-panel($bg: $glass-bg, $blur: $glass-blur, $border: $glass-border) {
+  background: $bg;
+  backdrop-filter: blur($blur) saturate(180%);
+  -webkit-backdrop-filter: blur($blur) saturate(180%);
+  border: 1px solid $border;
+  border-radius: $radius-lg;
+  box-shadow: $glass-shadow;
+  padding: $spacing-lg;
+}
+
+// FLEX UTILITIES
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+@mixin flex-col {
+  display: flex;
+  flex-direction: column;
+}
+
+@mixin flex-col-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+// GRID UTILITIES
+@mixin grid-col($columns: 1, $gap: $spacing-lg) {
+  display: grid;
+  grid-template-columns: repeat($columns, 1fr);
+  gap: $gap;
+}
+
+@mixin grid-auto-fill($min-width: 300px, $gap: $spacing-lg) {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax($min-width, 1fr));
+  gap: $gap;
+}
+
+@mixin grid-auto-fit($min-width: 300px, $gap: $spacing-lg) {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax($min-width, 1fr));
+  gap: $gap;
+}
+
+// TEXT UTILITIES
+@mixin text-truncate {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@mixin text-clamp($lines: 2) {
+  display: -webkit-box;
+  -webkit-line-clamp: $lines;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+@mixin heading($size: $font-size-xl, $weight: $font-weight-bold, $color: $text-primary) {
+  font-size: $size;
+  font-weight: $weight;
+  color: $color;
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+@mixin badge($bg: $primary-color-light, $color: $primary-color-dark, $border: rgba(102, 126, 234, 0.3)) {
+  display: inline-flex;
+  align-items: center;
+  gap: $spacing-sm;
+  padding: $spacing-sm $spacing-md;
+  background: $bg;
+  color: $color;
+  border: 1px solid $border;
+  border-radius: $radius-md;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  transition: all $transition-fast;
+}
+
+// COLOR UTILITIES FOR CLASS CHIPS
+@mixin class-chip($class-name, $bg, $color, $border) {
+  &.#{$class-name} {
+    background-color: $bg !important;
+    color: $color !important;
+    border: 1px solid $border !important;
+  }
+}
+
+// CHIP STYLES
+@mixin chip-base {
+  min-height: 24px !important;
+  padding: 0 $spacing-md !important;
+  font-size: $font-size-sm !important;
+  font-weight: $font-weight-semibold !important;
+  border-radius: $radius-md !important;
+}
+
+// BUTTON STYLES
+@mixin btn-base($height: 48px, $radius: $radius-lg) {
+  height: $height !important;
+  border-radius: $radius !important;
+  font-weight: $font-weight-semibold !important;
+  transition: all $transition-base;
+}
+
+@mixin btn-primary {
+  @include btn-base;
+  background: $gradient-primary !important;
+  color: white !important;
+  box-shadow: 0 4px 16px rgba(102, 126, 234, 0.4) !important;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(102, 126, 234, 0.5) !important;
+  }
+}
+
+// CARD STYLES
+@mixin card-glass($hover-transform: translateY(-6px) scale(1.01)) {
+  background: $bg-lightest !important;
+  backdrop-filter: blur($glass-blur-strong) saturate(180%);
+  -webkit-backdrop-filter: blur($glass-blur-strong) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.5) !important;
+  border-radius: $radius-2xl !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), $shadow-inner !important;
+  overflow: visible !important;
+  transition: transform $transition-base cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow $transition-base !important;
+
+  &:hover {
+    transform: $hover-transform;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2),
+      0 8px 24px rgba(102, 126, 234, 0.15),
+      $shadow-inner !important;
+  }
+}
+
+// RESPONSIVE UTILITIES
+@mixin respond-to($breakpoint) {
+  @if $breakpoint == 'xs' {
+    @media (max-width: $breakpoint-xs) {
+      @content;
+    }
+  } @else if $breakpoint == 'sm' {
+    @media (max-width: $breakpoint-sm) {
+      @content;
+    }
+  } @else if $breakpoint == 'md' {
+    @media (max-width: $breakpoint-md) {
+      @content;
+    }
+  } @else if $breakpoint == 'lg' {
+    @media (max-width: $breakpoint-lg) {
+      @content;
+    }
+  } @else if $breakpoint == 'xl' {
+    @media (max-width: $breakpoint-xl) {
+      @content;
+    }
+  } @else {
+    @media (max-width: $breakpoint) {
+      @content;
+    }
+  }
+}
+
+@mixin respond-up-from($breakpoint) {
+  @if $breakpoint == 'xs' {
+    @media (min-width: $breakpoint-xs) {
+      @content;
+    }
+  } @else if $breakpoint == 'sm' {
+    @media (min-width: $breakpoint-sm) {
+      @content;
+    }
+  } @else if $breakpoint == 'md' {
+    @media (min-width: $breakpoint-md) {
+      @content;
+    }
+  } @else if $breakpoint == 'lg' {
+    @media (min-width: $breakpoint-lg) {
+      @content;
+    }
+  } @else if $breakpoint == 'xl' {
+    @media (min-width: $breakpoint-xl) {
+      @content;
+    }
+  } @else {
+    @media (min-width: $breakpoint) {
+      @content;
+    }
+  }
+}
+
+// ANIMATIONS
+@mixin fade-in-up($duration: 0.6s) {
+  animation: fadeInUp $duration cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+@mixin spin($duration: 1s) {
+  animation: spin $duration linear infinite;
+
+  @keyframes spin {
+    from {
+      transform: rotate(0deg);
+    }
+
+    to {
+      transform: rotate(360deg);
+    }
+  }
+}
+
+// ALERT/STATUS STYLES
+@mixin alert-box($bg, $border-color, $icon-color, $text-color) {
+  display: flex;
+  gap: $spacing-lg;
+  padding: 1.5rem;
+  background: $bg;
+  border: 2px solid $border-color;
+  border-radius: $radius-lg;
+  align-items: flex-start;
+
+  .alert-icon {
+    font-size: 2rem;
+    width: 2rem;
+    height: 2rem;
+    color: $icon-color;
+    flex-shrink: 0;
+    margin-top: 0.25rem;
+  }
+}
+
+// OVERLAY/GRADIENT
+@mixin overlay($opacity: 0.1) {
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-color: rgba(0, 0, 0, $opacity);
+    pointer-events: none;
+  }
+}
+
+// FOCUS STATE
+@mixin focus-ring($color: $primary-color, $width: 2px, $offset: 2px) {
+  outline: $width solid $color;
+  outline-offset: $offset;
+}
+
+// TRUNCATE PATH
+@mixin truncate-text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

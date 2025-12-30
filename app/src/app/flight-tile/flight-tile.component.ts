@@ -13,7 +13,7 @@ import { MatIconModule } from '@angular/material/icon';
   imports: [CommonModule, FlightDistancePipe, SeatInfoComponent, MatChipsModule, MatIconModule],
   selector: 'app-flight-tile',
   templateUrl: './flight-tile.component.html',
-  styleUrls: ['./flight-tile.component.css'],
+  styleUrls: ['./flight-tile.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class FlightTileComponent implements OnInit {

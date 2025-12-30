@@ -1,6 +1,9 @@
 // Custom Theming for Angular Material
 // For more information: https://material.angular.io/guide/theming
 @use '@angular/material' as mat;
+@use 'app/variables' as *;
+@use 'app/mixins' as *;
+
 // Plus imports for other components in your app.
 
 // Include the common styles for Angular Material. We include this here so that you only
@@ -23,14 +26,14 @@ $flights-theme: mat.define-theme((color: (theme-type: light,
   @include mat.all-component-themes($flights-theme);
 
   // Apple-inspired color palette
-  --glass-bg: rgba(255, 255, 255, 0.72);
-  --glass-bg-dark: rgba(30, 30, 30, 0.72);
-  --glass-border: rgba(255, 255, 255, 0.18);
-  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
-  --glass-blur: 20px;
+  --glass-bg: #{$glass-bg};
+  --glass-bg-dark: #{$glass-bg-dark};
+  --glass-border: #{$glass-border};
+  --glass-shadow: #{$glass-shadow};
+  --glass-blur: #{$glass-blur};
 
   // Material Design Card Container - match glass background
-  --mdc-elevated-card-container-color: rgba(255, 255, 255, 0.72);
+  --mdc-elevated-card-container-color: #{$glass-bg};
 
   // Semantic colors (preserved from original)
   --color-business: #3273dc; // Blue for business class
@@ -40,35 +43,18 @@ $flights-theme: mat.define-theme((color: (theme-type: light,
   --color-accent: #5856d6; // Apple purple
 
   // Spacing
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
+  --radius-sm: #{$radius-md};
+  --radius-md: #{$radius-lg};
+  --radius-lg: #{$radius-xl};
 }
 
 // Liquid Glass Utilities
 .glass-card {
-  background: var(--glass-bg);
-  backdrop-filter: blur(var(--glass-blur));
-  -webkit-backdrop-filter: blur(var(--glass-blur));
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius-md);
-  box-shadow: var(--glass-shadow);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
-  }
+  @include glass-card;
 }
 
 .glass-panel {
-  background: var(--glass-bg);
-  backdrop-filter: blur(var(--glass-blur));
-  -webkit-backdrop-filter: blur(var(--glass-blur));
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--glass-shadow);
-  padding: 16px;
+  @include glass-panel;
 }
 
 // Comment out the line below if you want to use the pre-defined typography utility classes.
@@ -77,13 +63,14 @@ $flights-theme: mat.define-theme((color: (theme-type: light,
 
 // Comment out the line below if you want to use the deprecated `color` inputs.
 // @include mat.color-variants-backwards-compatibility($flights-theme);
+
 /* Global styles */
 html {
   font-size: 10pt;
 }
 
 div.cesium-viewer {
-  border-radius: 0.5rem;
+  border-radius: $radius-lg;
 }
 
 @media (max-width: 768px) {
@@ -130,9 +117,9 @@ body {
 
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+  font-family: $font-family-system;
   /* Global gradient background */
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+  background: $gradient-bg;
   background-attachment: fixed;
   min-height: 100vh;
 }
@@ -144,50 +131,18 @@ body {
 .mat-sidenav-content {
   background-color: transparent !important;
 }
+
 /* Centralized Travel Class Chips (Liquid Glass Aesthetic) */
 .class-chip {
-  &.class-y {
-    background-color: rgba(76, 175, 80, 0.15) !important;
-    color: #2e7d32 !important;
-    border: 1px solid rgba(76, 175, 80, 0.3) !important;
-  }
-
-  &.class-m {
-    background-color: rgba(139, 195, 74, 0.15) !important;
-    color: #558b2f !important;
-    border: 1px solid rgba(139, 195, 74, 0.3) !important;
-  }
-
-  &.class-c {
-    background-color: rgba(33, 150, 243, 0.15) !important;
-    color: #1565c0 !important;
-    border: 1px solid rgba(33, 150, 243, 0.3) !important;
-  }
-
-  &.class-f {
-    background-color: rgba(244, 67, 54, 0.15) !important;
-    color: #c62828 !important;
-    border: 1px solid rgba(244, 67, 54, 0.3) !important;
-  }
-
-  &.class-j {
-    background-color: rgba(255, 235, 59, 0.2) !important;
-    color: #f9a825 !important;
-    border: 1px solid rgba(255, 235, 59, 0.4) !important;
-  }
-
-  &.class-p {
-    background-color: rgba(255, 193, 7, 0.2) !important;
-    color: #ff8f00 !important;
-    border: 1px solid rgba(255, 193, 7, 0.4) !important;
-  }
+  @include class-chip('class-y', $class-economy-light, $class-economy, rgba(76, 175, 80, 0.3));
+  @include class-chip('class-m', $class-premium-economy-light, $class-premium-economy, rgba(139, 195, 74, 0.3));
+  @include class-chip('class-c', $class-business-light, $class-business, rgba(33, 150, 243, 0.3));
+  @include class-chip('class-f', $class-first-light, $class-first, rgba(244, 67, 54, 0.3));
+  @include class-chip('class-j', $class-premium-first-light, $class-premium-first, rgba(255, 235, 59, 0.4));
+  @include class-chip('class-p', $class-premium-deluxe-light, $class-premium-deluxe, rgba(255, 193, 7, 0.4));
 }
 
 /* Global mat-chip refinements */
 .mat-mdc-chip {
-  min-height: 24px !important;
-  padding: 0 8px !important;
-  font-size: 0.75rem !important;
-  font-weight: 600 !important;
-  border-radius: 6px !important;
+  @include chip-base;
 }

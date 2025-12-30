@@ -69,7 +69,7 @@ import { MatChipsModule } from '@angular/material/chips';
   selector: 'app-flight-edit',
   providers: [Location, { provide: LocationStrategy, useClass: PathLocationStrategy }],
   templateUrl: './flight-edit.component.html',
-  styleUrls: ['./flight-edit.component.css']
+  styleUrls: ['./flight-edit.component.scss']
 })
 export class FlightEditComponent implements OnInit, OnDestroy {
 

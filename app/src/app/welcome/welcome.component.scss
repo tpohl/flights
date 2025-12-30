@@ -1,0 +1,67 @@
+@use '../variables' as *;
+@use '../mixins' as *;
+
+.welcome-container {
+  min-height: 100vh;
+  @include flex-center;
+  padding: $spacing-xl;
+}
+
+.welcome-card {
+  max-width: 420px;
+  width: 100%;
+  padding: $spacing-3xl 40px;
+  text-align: center;
+  background: $bg-lighter;
+  backdrop-filter: blur($glass-blur-strong) saturate(180%);
+  -webkit-backdrop-filter: blur($glass-blur-strong) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: $radius-3xl;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15), $shadow-inner;
+  @include fade-in-up;
+}
+
+.icon-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: $spacing-xl;
+}
+
+.hero-icon {
+  font-size: 64px !important;
+  width: 64px !important;
+  height: 64px !important;
+  color: $primary-color;
+  background: linear-gradient(135deg, $primary-color-lighter 0%, rgba(118, 75, 162, 0.1) 100%);
+  padding: 20px;
+  border-radius: $radius-3xl;
+}
+
+.welcome-title {
+  @include heading($font-size-3xl, $font-weight-bold);
+  margin: 0 0 $spacing-md 0;
+  letter-spacing: -0.02em;
+}
+
+.welcome-subtitle {
+  font-size: $font-size-lg;
+  color: $text-secondary;
+  margin: 0 0 $spacing-2xl 0;
+  line-height: 1.5;
+}
+
+.login-button {
+  width: 100%;
+  @include btn-primary;
+  background: $gradient-primary !important;
+
+  mat-icon {
+    margin-right: $spacing-sm;
+  }
+}
+
+.footer-text {
+  margin-top: $spacing-2xl;
+  font-size: $font-size-base;
+  color: $text-muted;
+}

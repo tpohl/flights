@@ -33,7 +33,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
   ],
   selector: 'app-pohl-rocks-importer',
   templateUrl: './pohl-rocks-importer.component.html',
-  styleUrls: ['./pohl-rocks-importer.component.css']
+  styleUrls: ['./pohl-rocks-importer.component.scss']
 })
 export class PohlRocksImporterComponent implements OnInit {
 

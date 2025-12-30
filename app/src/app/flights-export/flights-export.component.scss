@@ -1,0 +1,81 @@
+@use '../variables' as *;
+@use '../mixins' as *;
+
+.export-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: $spacing-xl;
+}
+
+.page-title {
+  @include heading($font-size-2xl, $font-weight-bold, white);
+  margin: 0 0 $spacing-xl 0;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.export-card {
+  margin-bottom: 20px;
+  background: $bg-lighter !important;
+  backdrop-filter: blur($glass-blur-strong) saturate(180%);
+  -webkit-backdrop-filter: blur($glass-blur-strong) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.5) !important;
+  border-radius: $radius-2xl !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1) !important;
+
+  mat-card-header {
+    padding: $spacing-lg 20px;
+  }
+
+  mat-icon[mat-card-avatar] {
+    background: $gradient-primary;
+    color: white;
+    padding: $spacing-sm;
+    border-radius: $radius-lg;
+    font-size: 24px;
+    width: 24px;
+    height: 24px;
+  }
+
+  mat-card-title {
+    font-size: 1.1rem;
+    font-weight: $font-weight-semibold;
+  }
+
+  mat-card-content {
+    padding: 0 20px !important;
+  }
+
+  mat-card-actions {
+    padding: $spacing-lg 20px !important;
+
+    button {
+      border-radius: $radius-lg !important;
+    }
+  }
+}
+
+.hint {
+  font-size: $font-size-base;
+  color: $text-secondary;
+  margin-bottom: $spacing-md;
+
+  code {
+    background: $primary-color-light;
+    color: $primary-color;
+    padding: 2px 6px;
+    border-radius: $radius-sm;
+    font-family: $font-family-mono;
+  }
+}
+
+.code-block {
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  max-height: 200px;
+  overflow: auto;
+  font-size: $font-size-xs;
+  font-family: $font-family-mono;
+  line-height: 1.5;
+  margin: 0;
+}
