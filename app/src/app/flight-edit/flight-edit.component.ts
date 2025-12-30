@@ -1,6 +1,6 @@
 import { Location, LocationStrategy, PathLocationStrategy, CommonModule } from '@angular/common';
 import { AirportService } from '../services/airport.service';
-import { BehaviorSubject, filter, Observable, of, ReplaySubject, Subject, Subscription } from 'rxjs';
+import { BehaviorSubject, filter, Observable, of, ReplaySubject, Subject, Subscription, combineLatest } from 'rxjs';
 
 import { Component, Input, OnDestroy, OnInit, inject, effect, ViewChild, ElementRef, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -154,11 +154,18 @@ export class FlightEditComponent implements OnInit, OnDestroy {
     // Existing logic used: this.afAuth.user.subscribe(...)
     // Let's maintain that pattern by piping the signal.
 
-    this.subs.add(this.user$.subscribe(user => {
+    // Combine route params and user authentication to handle both together
+    this.subs.add(combineLatest([
+      this.route.params,
+      this.user$
+    ]).subscribe(([params, user]) => {
       this.user = user;
-      this.initializeFlight();
+      if (params['flightId']) {
+        this.flightId = params['flightId'];
+      } else {
+        this.flightId = undefined;
+      }
     }));
-
 
     this.subs.add(this.fromAirport$.subscribe(fromAirport => {
       if (fromAirport && this.flight && this.flight.departureTime && fromAirport.timezoneId) {

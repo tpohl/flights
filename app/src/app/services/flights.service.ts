@@ -305,20 +305,22 @@ export class FlightsService {
   }
 
   loadFlight(flightId: string): Observable<Flight | null> {
-    const user = this.user;
-    if (!user) {
-      return of(null);
-    } else {
-      const objectRef = `users/${user.uid}/flights/${flightId}`;
-      const flightRef = ref(this.db, objectRef);
-      return objectVal<Flight>(flightRef).pipe(
-        map(flight => {
-          const f = flight ? ({ ...flight, _id: flightId, _objectReference: objectRef }) : null;
-          this.activeFlight.set(f);
-          return f;
-        })
-      );
-    }
+    // Wait for user to be available, then load the flight
+    return authState(this.auth).pipe(
+      filter((user): user is User => user !== null),
+      take(1),
+      switchMap(user => {
+        const objectRef = `users/${user.uid}/flights/${flightId}`;
+        const flightRef = ref(this.db, objectRef);
+        return objectVal<Flight>(flightRef).pipe(
+          map(flight => {
+            const f = flight ? ({ ...flight, _id: flightId, _objectReference: objectRef }) : null;
+            this.activeFlight.set(f);
+            return f;
+          })
+        );
+      })
+    );
   }
 
   loadFlightTrack(flight: Flight, removeProjectedIfActualsAreAvailable = true): Observable<AeroAPITrackResponse | null> {
