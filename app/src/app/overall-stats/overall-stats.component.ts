@@ -13,12 +13,13 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatListModule } from '@angular/material/list';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatChipsModule } from '@angular/material/chips';
+import { MatButtonModule } from '@angular/material/button';
 import { flightDistance } from '../pipes/flightDistancePipe';
 
 @Component({
   standalone: true,
   selector: 'app-overall-stats',
-  imports: [CommonModule, ExactDurationPipe, RouterLink, MatCardModule, MatIconModule, MatListModule, MatDividerModule, MatChipsModule],
+  imports: [CommonModule, ExactDurationPipe, RouterLink, MatCardModule, MatIconModule, MatListModule, MatDividerModule, MatChipsModule, MatButtonModule],
   templateUrl: './overall-stats.component.html',
   styleUrl: './overall-stats.component.css'
 })
@@ -30,10 +31,17 @@ export class OverallStatsComponent implements OnInit {
 
   stats: Signal<OverallStats> = this.flightsService.stats;
 
+  availableYears: Signal<number[]> = this.flightsService.availableYears;
+  selectedYear: Signal<number | null> = this.flightsService.selectedYear;
+
   constructor() {
   }
 
   ngOnInit() {
+  }
+
+  setYear(year: number | null) {
+    this.flightsService.selectedYear.set(year);
   }
 
   getSpeed(flight: Flight | null): number {
@@ -56,5 +64,12 @@ export class OverallStatsComponent implements OnInit {
   getPercentage(value: number, total: number): number {
     if (!total || total === 0) return 0;
     return (value / total) * 100;
+  }
+
+  // Collapse control for the year selector (default to single-row collapsed)
+  yearSelectorExpanded: boolean = false;
+
+  toggleYearSelector() {
+    this.yearSelectorExpanded = !this.yearSelectorExpanded;
   }
 }

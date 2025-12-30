@@ -1,9 +1,8 @@
 import { Injectable, inject, Injector, runInInjectionContext, Signal, signal } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
-import { BehaviorSubject, from, Observable, of } from 'rxjs';
+import { toSignal, toObservable } from '@angular/core/rxjs-interop';
+import { BehaviorSubject, from, Observable, of, combineLatest, forkJoin } from 'rxjs';
 
 import { filter, map, reduce, switchMap, take, tap } from 'rxjs/operators';
-import { forkJoin } from 'rxjs';
 import dayjs from 'dayjs';
 import { Flight } from '../models/flight';
 import { Airport } from '../models/airport';
@@ -31,6 +30,20 @@ export class FlightsService {
 
   statsSubject = new BehaviorSubject<OverallStats>(new OverallStats());
   stats: Signal<OverallStats> = toSignal(this.statsSubject, { initialValue: new OverallStats() });
+
+  selectedYear = signal<number | null>(null);
+
+  availableYears: Signal<number[]> = toSignal(
+    this.flightSubject.pipe(
+      map(flights => {
+        const years = flights
+          .map(f => f.departureTime ? dayjs(f.departureTime).year() : null)
+          .filter((y): y is number => y !== null);
+        return Array.from(new Set(years)).sort((a, b) => b - a);
+      })
+    ),
+    { initialValue: [] }
+  );
 
   private selectedFlight$ = new BehaviorSubject<Flight | null>(null);
 
@@ -112,8 +125,19 @@ export class FlightsService {
   }
 
   private initStats() {
-    this.flightSubject.pipe(
-      switchMap(flightsArray => {
+    combineLatest([
+      this.flightSubject,
+      toObservable(this.selectedYear, { injector: this.injector })
+    ]).pipe(
+      switchMap(([flightsArray, year]) => {
+        const filteredFlights = year
+          ? flightsArray.filter(f => f.departureTime && dayjs(f.departureTime).year() === year)
+          : flightsArray;
+
+        if (filteredFlights.length === 0) {
+          return of(new OverallStats());
+        }
+
         const airlines = new CountMap();
         const aircraftTypes = new CountMap();
         const aircraftRegistrations = new CountMap();
@@ -125,7 +149,7 @@ export class FlightsService {
           return flightDistance(f) / (f.durationMilliseconds / 3600000);
         };
 
-        const stats = flightsArray.reduce((acc, flight) => {
+        const stats = filteredFlights.reduce((acc, flight) => {
           acc.count += 1;
           const dist = flightDistance(flight);
           const seatClass = flight.class || 'Other';
@@ -238,14 +262,6 @@ export class FlightsService {
             });
 
             // Calculate Top Countries
-            stats.airportsVisited.getItems().forEach(item => {
-              const ap = airportMap.get(item.name);
-              const countryName = ap?.country?.country || 'Unknown';
-              // We need a helper for summing counts in countries, but CountMap.add only increments by 1.
-              // Let's use a simple object for countries first, or extend CountMap.
-              // Actually, simpler to just use a local map here.
-            });
-
             const countryCounts = new Map<string, number>();
             stats.airportsVisited.getItems().forEach(item => {
               const ap = airportMap.get(item.name);
@@ -268,23 +284,19 @@ export class FlightsService {
   }
 
   loadFlight(flightId: string): Observable<Flight | null> {
-    var flight$: Observable<Flight | null> = of(null);
     const user = this.user;
     if (!user) {
       return of(null);
     } else {
-      runInInjectionContext(this.injector, () => {
-        const objectRef = `users/${user.uid}/flights/${flightId}`;
-        const flightRef = ref(this.db, objectRef);
-        flight$ = objectVal<Flight>(flightRef).pipe(
-          map(flight => {
-            const f = flight ? ({ ...flight, _objectReference: objectRef }) : null;
-            this.activeFlight.set(f);
-            return f;
-          })
-        );
-      });
-      return flight$;
+      const objectRef = `users/${user.uid}/flights/${flightId}`;
+      const flightRef = ref(this.db, objectRef);
+      return objectVal<Flight>(flightRef).pipe(
+        map(flight => {
+          const f = flight ? ({ ...flight, _objectReference: objectRef }) : null;
+          this.activeFlight.set(f);
+          return f;
+        })
+      );
     }
   }
 
