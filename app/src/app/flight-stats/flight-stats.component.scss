@@ -2,9 +2,7 @@
 @use '../mixins' as *;
 
 .stats-glass-card {
-  @include glass-effect($bg-lighter, $glass-blur-strong, rgba(255, 255, 255, 0.5), 
-    0 8px 32px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.8));
-  border-radius: $radius-3xl !important;
+  @include light-glass-card;
   padding: 0 !important;
   overflow: hidden;
 }
@@ -123,6 +121,7 @@
 }
 
 @include respond-to('sm') {
+
   .status-grid,
   .count-grid {
     gap: $spacing-sm;

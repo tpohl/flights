@@ -11,8 +11,78 @@
   -webkit-backdrop-filter: blur($blur) saturate(180%);
   border: 1px solid $border;
   box-shadow: $shadow;
-  @if $inner-shadow != none {
+
+  @if $inner-shadow !=none {
     box-shadow: $shadow, $inner-shadow;
+  }
+}
+
+// PAGE LAYOUT - Unified container for all pages
+@mixin page-container($max-width: $breakpoint-2xl) {
+  max-width: $max-width;
+  margin: 0 auto;
+  padding: $spacing-xl;
+  min-height: 100vh;
+
+  // iPhone 17 Pro and mobile: reduce padding for full-screen feel
+  @include respond-to('sm') {
+    padding: $spacing-md;
+  }
+}
+
+// PAGE TITLE - Unified title styling
+@mixin page-title($size: $font-size-3xl) {
+  font-size: $size;
+  font-weight: $font-weight-semibold;
+  color: white;
+  margin: 0;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  letter-spacing: -0.02em;
+}
+
+// LIGHT GLASS CARD - Unified card styling for all pages
+@mixin light-glass-card {
+  background: $bg-lightest !important;
+  backdrop-filter: blur($glass-blur-strong) saturate(180%);
+  -webkit-backdrop-filter: blur($glass-blur-strong) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.5) !important;
+  border-radius: $radius-2xl !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), $shadow-inner !important;
+}
+
+// GLASS SEGMENTED CONTROL - For tabs and selectors
+@mixin glass-segmented-control {
+  padding: 4px;
+  background: rgba(0, 0, 0, 0.04);
+  backdrop-filter: blur(10px);
+  border-radius: $radius-full;
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  display: inline-flex;
+  gap: 4px;
+}
+
+@mixin segmented-control-item {
+  color: $text-secondary;
+  font-weight: $font-weight-medium;
+  padding: 6px 16px;
+  border-radius: $radius-full !important;
+  transition: all $transition-base;
+  text-decoration: none;
+  border: none;
+  background: transparent;
+
+  &:hover {
+    color: $text-primary;
+    background: rgba(255, 255, 255, 0.4);
+  }
+
+  &.active,
+  &.mat-mdc-tab-label-active,
+  &.selected {
+    background: white !important;
+    color: $primary-color !important;
+    font-weight: $font-weight-bold !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   }
 }
 
@@ -181,27 +251,37 @@
 
 // RESPONSIVE UTILITIES
 @mixin respond-to($breakpoint) {
-  @if $breakpoint == 'xs' {
+  @if $breakpoint =='xs' {
     @media (max-width: $breakpoint-xs) {
       @content;
     }
-  } @else if $breakpoint == 'sm' {
+  }
+
+  @else if $breakpoint =='sm' {
     @media (max-width: $breakpoint-sm) {
       @content;
     }
-  } @else if $breakpoint == 'md' {
+  }
+
+  @else if $breakpoint =='md' {
     @media (max-width: $breakpoint-md) {
       @content;
     }
-  } @else if $breakpoint == 'lg' {
+  }
+
+  @else if $breakpoint =='lg' {
     @media (max-width: $breakpoint-lg) {
       @content;
     }
-  } @else if $breakpoint == 'xl' {
+  }
+
+  @else if $breakpoint =='xl' {
     @media (max-width: $breakpoint-xl) {
       @content;
     }
-  } @else {
+  }
+
+  @else {
     @media (max-width: $breakpoint) {
       @content;
     }
@@ -209,27 +289,37 @@
 }
 
 @mixin respond-up-from($breakpoint) {
-  @if $breakpoint == 'xs' {
+  @if $breakpoint =='xs' {
     @media (min-width: $breakpoint-xs) {
       @content;
     }
-  } @else if $breakpoint == 'sm' {
+  }
+
+  @else if $breakpoint =='sm' {
     @media (min-width: $breakpoint-sm) {
       @content;
     }
-  } @else if $breakpoint == 'md' {
+  }
+
+  @else if $breakpoint =='md' {
     @media (min-width: $breakpoint-md) {
       @content;
     }
-  } @else if $breakpoint == 'lg' {
+  }
+
+  @else if $breakpoint =='lg' {
     @media (min-width: $breakpoint-lg) {
       @content;
     }
-  } @else if $breakpoint == 'xl' {
+  }
+
+  @else if $breakpoint =='xl' {
     @media (min-width: $breakpoint-xl) {
       @content;
     }
-  } @else {
+  }
+
+  @else {
     @media (min-width: $breakpoint) {
       @content;
     }

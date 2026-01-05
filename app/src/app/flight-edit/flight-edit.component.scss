@@ -2,9 +2,7 @@
 @use '../mixins' as *;
 
 .edit-container {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: $spacing-xl;
+  @include page-container(800px);
 }
 
 /* Header */
@@ -19,9 +17,8 @@
 }
 
 .page-title {
-  @include heading($font-size-3xl, $font-weight-bold, white);
-  margin: 0 0 $spacing-sm 0;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  @include page-title;
+  margin-bottom: $spacing-sm;
 }
 
 .flight-summary {

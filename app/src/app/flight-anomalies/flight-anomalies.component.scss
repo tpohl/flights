@@ -2,12 +2,9 @@
 @use '../mixins' as *;
 
 .flight-anomalies-container {
+  @include page-container;
   @include flex-col;
   gap: $spacing-2xl;
-  padding: $spacing-xl;
-  max-width: $breakpoint-2xl;
-  margin: 0 auto;
-  min-height: 100vh;
 }
 
 .page-header {
@@ -17,9 +14,7 @@
 }
 
 .page-title {
-  @include heading($font-size-3xl, $font-weight-semibold, white);
-  margin: 0;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  @include page-title;
 }
 
 .subtitle {
@@ -78,24 +73,70 @@
   .mat-mdc-tab-labels {
     margin-bottom: $spacing-2xl;
     background: transparent;
+    border-bottom: none;
   }
 
-  .mat-mdc-tab-label {
-    display: flex;
-    align-items: center;
-    gap: $spacing-md;
-    min-width: auto;
-    padding: 0 $spacing-lg;
+  /* Hide the ink bar (underline) */
+  .mat-mdc-tab-header-pagination-chevron,
+  .mat-mdc-tab-header-pagination-header,
+  .mat-mdc-focus-indicator,
+  .mat-mdc-tab-group-ink-bar,
+  .mdc-tab-indicator__content,
+  .mdc-tab-indicator,
+  .mdc-tab__ripple {
+    display: none !important;
+  }
 
-    mat-icon {
-      font-size: 1.2rem;
+  /* Segmented Control Container style applied to tab list */
+  .mat-mdc-tab-list {
+    @include glass-segmented-control;
+  }
+
+  .mat-mdc-tab-label-container {
+    overflow: visible;
+  }
+
+  /* Tab Item (Segment) Style */
+  .mat-mdc-tab-label {
+    @include segmented-control-item;
+    opacity: 1;
+    min-width: auto;
+    height: 40px;
+
+    /* Icons and Text alignment */
+    .mdc-tab__content {
+      display: flex;
+      align-items: center;
+      gap: $spacing-sm;
+      padding: 0;
     }
 
-    mat-chip {
+    mat-icon {
+      margin: 0;
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+    }
+
+    .mdc-tab__text-label {
       font-size: $font-size-sm;
-      height: auto;
-      padding: $spacing-xs $spacing-sm;
-      margin-left: $spacing-sm;
+      font-weight: inherit;
+      color: inherit;
+    }
+  }
+
+  mat-chip {
+    font-size: 0.7rem;
+    height: 20px;
+    min-height: 20px;
+    padding: 0 8px;
+    margin-left: 6px;
+    background: rgba(0, 0, 0, 0.1);
+    color: inherit;
+    border: none;
+
+    .mdc-evolution-chip__text-label {
+      padding: 0;
     }
   }
 }

@@ -2,29 +2,16 @@
     <div class="header-section">
         <h1 class="page-title">Statistics</h1>
 
-        <mat-card class="stats-card year-selector-card glass-card">
-            <mat-card-header>
-                <mat-card-title>Filter by Year</mat-card-title>
-            </mat-card-header>
-            <mat-card-content>
-                <div class="year-selector" [class.collapsed]="!yearSelectorExpanded">
-                    <mat-chip-set>
-                        <mat-chip class="year-chip" [class.selected]="selectedYear() === null" (click)="setYear(null)">
-                            All Years
-                        </mat-chip>
-                        <mat-chip class="year-chip" *ngFor="let year of availableYears()"
-                            [class.selected]="selectedYear() === year" (click)="setYear(year)">
-                            {{ year }}
-                        </mat-chip>
-                    </mat-chip-set>
-                </div>
-                <div class="year-actions">
-                    <button mat-stroked-button class="year-more" *ngIf="!yearSelectorExpanded" (click)="toggleYearSelector()">
-                        Show more
-                    </button>
-                </div>
-            </mat-card-content>
-        </mat-card>
+        <button mat-button [matMenuTriggerFor]="yearMenu" class="year-trigger glass-button">
+            {{ selectedYear() || 'All Years' }} <mat-icon>arrow_drop_down</mat-icon>
+        </button>
+        <mat-menu #yearMenu="matMenu" class="glass-menu">
+            <button mat-menu-item (click)="setYear(null)" [class.selected]="selectedYear() === null">All Years</button>
+            <button mat-menu-item *ngFor="let year of availableYears()" (click)="setYear(year)"
+                [class.selected]="selectedYear() === year">
+                {{ year }}
+            </button>
+        </mat-menu>
     </div>
 
     <!-- Main Stats Card -->

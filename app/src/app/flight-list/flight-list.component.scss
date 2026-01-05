@@ -2,10 +2,7 @@
 @use '../mixins' as *;
 
 .flight-list-container {
-  padding: $spacing-xl;
-  max-width: $breakpoint-2xl;
-  margin: 0 auto;
-  min-height: 100vh;
+  @include page-container;
 }
 
 .page-header {
@@ -14,9 +11,7 @@
 }
 
 .page-title {
-  @include heading($font-size-3xl, $font-weight-semibold, white);
-  margin: 0;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  @include page-title;
 }
 
 .main-content {
@@ -46,7 +41,7 @@
 .stats-panel {
   @include flex-col;
   gap: $spacing-lg;
-  @include glass-effect($bg-lighter, $glass-blur-strong, rgba(255, 255, 255, 0.5), 
+  @include glass-effect($bg-lighter, $glass-blur-strong, rgba(255, 255, 255, 0.5),
     0 8px 32px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.8));
   border-radius: $radius-3xl !important;
   padding: $spacing-lg;
