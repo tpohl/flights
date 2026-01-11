@@ -10,7 +10,6 @@ import { MatCardModule } from '@angular/material/card';
 
 @Component({
     selector: 'app-welcome',
-    standalone: true,
     imports: [CommonModule, MatButtonModule, MatIconModule, MatCardModule],
     templateUrl: './welcome.component.html',
     styleUrls: ['./welcome.component.scss']

@@ -16,20 +16,19 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
-  standalone: true,
-  imports: [
-    CommonModule,
-    FlightTileComponent,
-    MatCardModule,
-    MatIconModule,
-    MatButtonModule,
-    MatExpansionModule,
-    MatDividerModule,
-    MatTooltipModule
-  ],
-  selector: 'app-flight-stats',
-  templateUrl: './flight-stats.component.html',
-  styleUrls: ['./flight-stats.component.scss']
+    imports: [
+        CommonModule,
+        FlightTileComponent,
+        MatCardModule,
+        MatIconModule,
+        MatButtonModule,
+        MatExpansionModule,
+        MatDividerModule,
+        MatTooltipModule
+    ],
+    selector: 'app-flight-stats',
+    templateUrl: './flight-stats.component.html',
+    styleUrls: ['./flight-stats.component.scss']
 })
 export class FlightStatsComponent implements OnInit {
   private _flight!: Flight;

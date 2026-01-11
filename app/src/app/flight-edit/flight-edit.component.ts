@@ -43,33 +43,32 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { MatChipsModule } from '@angular/material/chips';
 
 @Component({
-  standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    FlightTileComponent,
-    FlightStatsComponent,
-    RelativeTimePipe,
-    FlightDistancePipe,
-    CesiumDirective,
-    ExactDurationPipe,
-    RouterLink,
-    MatFormFieldModule,
-    MatInputModule,
-    MatButtonModule,
-    MatIconModule,
-    MatCardModule,
-    MatRadioModule,
-    MatDividerModule,
-    MatTooltipModule,
-    MatDatepickerModule,
-    MatNativeDateModule,
-    MatChipsModule
-  ],
-  selector: 'app-flight-edit',
-  providers: [Location, { provide: LocationStrategy, useClass: PathLocationStrategy }],
-  templateUrl: './flight-edit.component.html',
-  styleUrls: ['./flight-edit.component.scss']
+    imports: [
+        CommonModule,
+        FormsModule,
+        FlightTileComponent,
+        FlightStatsComponent,
+        RelativeTimePipe,
+        FlightDistancePipe,
+        CesiumDirective,
+        ExactDurationPipe,
+        RouterLink,
+        MatFormFieldModule,
+        MatInputModule,
+        MatButtonModule,
+        MatIconModule,
+        MatCardModule,
+        MatRadioModule,
+        MatDividerModule,
+        MatTooltipModule,
+        MatDatepickerModule,
+        MatNativeDateModule,
+        MatChipsModule
+    ],
+    selector: 'app-flight-edit',
+    providers: [Location, { provide: LocationStrategy, useClass: PathLocationStrategy }],
+    templateUrl: './flight-edit.component.html',
+    styleUrls: ['./flight-edit.component.scss']
 })
 export class FlightEditComponent implements OnInit, OnDestroy {
 

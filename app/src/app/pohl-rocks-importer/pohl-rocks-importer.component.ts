@@ -19,21 +19,20 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
-  standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    MatCardModule,
-    MatButtonModule,
-    MatIconModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatDividerModule,
-    MatTooltipModule
-  ],
-  selector: 'app-pohl-rocks-importer',
-  templateUrl: './pohl-rocks-importer.component.html',
-  styleUrls: ['./pohl-rocks-importer.component.scss']
+    imports: [
+        CommonModule,
+        FormsModule,
+        MatCardModule,
+        MatButtonModule,
+        MatIconModule,
+        MatFormFieldModule,
+        MatInputModule,
+        MatDividerModule,
+        MatTooltipModule
+    ],
+    selector: 'app-pohl-rocks-importer',
+    templateUrl: './pohl-rocks-importer.component.html',
+    styleUrls: ['./pohl-rocks-importer.component.scss']
 })
 export class PohlRocksImporterComponent implements OnInit {
 

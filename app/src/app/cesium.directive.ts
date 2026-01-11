@@ -45,11 +45,10 @@ const createPositions = function (route) {
 */
 
 @Component({
-  selector: 'app-cesium',
-  template: '<div></div>',
-  standalone: true,
-  imports: [CommonModule],
-  changeDetection: ChangeDetectionStrategy.OnPush
+    selector: 'app-cesium',
+    template: '<div></div>',
+    imports: [CommonModule],
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class CesiumDirective implements OnInit, OnDestroy {
   private flights$ = new BehaviorSubject<Flight[]>([]);

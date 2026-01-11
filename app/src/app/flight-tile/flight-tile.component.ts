@@ -9,12 +9,11 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatIconModule } from '@angular/material/icon';
 
 @Component({
-  standalone: true,
-  imports: [CommonModule, FlightDistancePipe, SeatInfoComponent, MatChipsModule, MatIconModule],
-  selector: 'app-flight-tile',
-  templateUrl: './flight-tile.component.html',
-  styleUrls: ['./flight-tile.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+    imports: [CommonModule, FlightDistancePipe, SeatInfoComponent, MatChipsModule, MatIconModule],
+    selector: 'app-flight-tile',
+    templateUrl: './flight-tile.component.html',
+    styleUrls: ['./flight-tile.component.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class FlightTileComponent implements OnInit {
 

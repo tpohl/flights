@@ -9,11 +9,10 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 
 @Component({
-  standalone: true,
-  imports: [CommonModule, MatCardModule, MatButtonModule, MatIconModule],
-  selector: 'app-flights-export',
-  templateUrl: './flights-export.component.html',
-  styleUrls: ['./flights-export.component.scss']
+    imports: [CommonModule, MatCardModule, MatButtonModule, MatIconModule],
+    selector: 'app-flights-export',
+    templateUrl: './flights-export.component.html',
+    styleUrls: ['./flights-export.component.scss']
 })
 export class FlightsExportComponent implements OnInit {
 

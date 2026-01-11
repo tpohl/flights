@@ -19,11 +19,10 @@ import { flightDistance } from '../pipes/flightDistancePipe';
 import { FlightSummaryCardComponent } from '../flight-summary-card/flight-summary-card.component';
 
 @Component({
-  standalone: true,
-  selector: 'app-overall-stats',
-  imports: [CommonModule, ExactDurationPipe, RouterLink, MatCardModule, MatIconModule, MatListModule, MatDividerModule, MatChipsModule, MatButtonModule, MatMenuModule, FlightSummaryCardComponent],
-  templateUrl: './overall-stats.component.html',
-  styleUrl: './overall-stats.component.scss'
+    selector: 'app-overall-stats',
+    imports: [CommonModule, ExactDurationPipe, RouterLink, MatCardModule, MatIconModule, MatListModule, MatDividerModule, MatChipsModule, MatButtonModule, MatMenuModule, FlightSummaryCardComponent],
+    templateUrl: './overall-stats.component.html',
+    styleUrl: './overall-stats.component.scss'
 })
 export class OverallStatsComponent implements OnInit {
 

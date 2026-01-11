@@ -11,19 +11,18 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatListModule } from '@angular/material/list';
 
 @Component({
-  selector: 'app-root',
-  templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss'],
-  standalone: true,
-  imports: [
-    CommonModule,
-    RouterModule,
-    MatToolbarModule,
-    MatSidenavModule,
-    MatButtonModule,
-    MatIconModule,
-    MatListModule
-  ]
+    selector: 'app-root',
+    templateUrl: './app.component.html',
+    styleUrls: ['./app.component.scss'],
+    imports: [
+        CommonModule,
+        RouterModule,
+        MatToolbarModule,
+        MatSidenavModule,
+        MatButtonModule,
+        MatIconModule,
+        MatListModule
+    ]
 })
 export class AppComponent {
   private authService = inject(AuthService);

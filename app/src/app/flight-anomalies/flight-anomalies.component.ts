@@ -16,23 +16,22 @@ import { MatRippleModule } from '@angular/material/core';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 
 @Component({
-  standalone: true,
-  imports: [
-    CommonModule,
-    RouterModule,
-    FormsModule,
-    FlightTileComponent,
-    ExactDurationPipe,
-    MatCardModule,
-    MatButtonModule,
-    MatIconModule,
-    MatChipsModule,
-    MatRippleModule,
-    MatCheckboxModule
-  ],
-  selector: 'app-flight-anomalies',
-  templateUrl: './flight-anomalies.component.html',
-  styleUrls: ['./flight-anomalies.component.scss']
+    imports: [
+        CommonModule,
+        RouterModule,
+        FormsModule,
+        FlightTileComponent,
+        ExactDurationPipe,
+        MatCardModule,
+        MatButtonModule,
+        MatIconModule,
+        MatChipsModule,
+        MatRippleModule,
+        MatCheckboxModule
+    ],
+    selector: 'app-flight-anomalies',
+    templateUrl: './flight-anomalies.component.html',
+    styleUrls: ['./flight-anomalies.component.scss']
 })
 export class FlightAnomaliesComponent {
   private flightsService = inject(FlightsService);

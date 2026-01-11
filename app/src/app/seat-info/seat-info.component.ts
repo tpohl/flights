@@ -4,11 +4,10 @@ import { Flight, TRAVEL_CLASSES } from '../models/flight';
 import { MatChipsModule } from '@angular/material/chips';
 
 @Component({
-  standalone: true,
-  imports: [CommonModule, MatChipsModule],
-  selector: 'app-seat-info',
-  templateUrl: './seat-info.component.html',
-  styleUrls: ['./seat-info.component.scss']
+    imports: [CommonModule, MatChipsModule],
+    selector: 'app-seat-info',
+    templateUrl: './seat-info.component.html',
+    styleUrls: ['./seat-info.component.scss']
 })
 export class SeatInfoComponent implements OnInit {
 

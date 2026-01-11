@@ -9,7 +9,6 @@ import { MatDividerModule } from '@angular/material/divider';
 
 @Component({
     selector: 'app-flight-summary-card',
-    standalone: true,
     imports: [
         CommonModule,
         MatCardModule,

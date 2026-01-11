@@ -20,25 +20,24 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatRippleModule } from '@angular/material/core';
 
 @Component({
-  standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    RouterModule,
-    ExactDurationPipe,
-    FlightTileComponent,
-    CesiumDirective,
-    MatCardModule,
-    MatButtonModule,
-    MatIconModule,
-    MatSlideToggleModule,
-    MatSlideToggleModule,
-    MatRippleModule,
-    FlightSummaryCardComponent
-  ],
-  selector: 'app-flight-list',
-  templateUrl: './flight-list.component.html',
-  styleUrls: ['./flight-list.component.scss']
+    imports: [
+        CommonModule,
+        FormsModule,
+        RouterModule,
+        ExactDurationPipe,
+        FlightTileComponent,
+        CesiumDirective,
+        MatCardModule,
+        MatButtonModule,
+        MatIconModule,
+        MatSlideToggleModule,
+        MatSlideToggleModule,
+        MatRippleModule,
+        FlightSummaryCardComponent
+    ],
+    selector: 'app-flight-list',
+    templateUrl: './flight-list.component.html',
+    styleUrls: ['./flight-list.component.scss']
 })
 export class FlightListComponent implements OnInit {
   private flightsService = inject(FlightsService);
