@@ -14,7 +14,6 @@ import { provideAnimationsAsync } from '@angular/platform-browser/animations/asy
 export const appConfig: ApplicationConfig = {
   providers: [
     importProvidersFrom(
-      FormsModule,
       ServiceWorkerModule.register('ngsw-worker.js', {
         enabled: Environment.production,
         registrationStrategy: 'registerWhenStable:30000'
@@ -24,8 +23,6 @@ export const appConfig: ApplicationConfig = {
     provideFirebaseApp(() => initializeApp(Environment.firebase)),
     provideAuth(() => getAuth()),
     provideDatabase(() => getDatabase()),
-    AirportService,
-    FlightsService,
     provideAnimationsAsync()
   ]
 };

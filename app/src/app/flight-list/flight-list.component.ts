@@ -1,10 +1,8 @@
 import { Flight } from './../models/flight';
-import { Component, OnInit, Signal, inject } from '@angular/core';
-
+import { Component, Signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import { Observable } from 'rxjs';
 import { FlightsService } from '../services/flights.service';
 import { ExactDurationPipe } from '../pipes/exactDurationPipe';
 import { FlightTileComponent } from '../flight-tile/flight-tile.component';
@@ -39,33 +37,24 @@ import { MatRippleModule } from '@angular/material/core';
   templateUrl: './flight-list.component.html',
   styleUrls: ['./flight-list.component.scss']
 })
-export class FlightListComponent implements OnInit {
+export class FlightListComponent {
   private flightsService = inject(FlightsService);
 
-  // https://angularfirebase.com/lessons/infinite-scroll-with-firebase-data-and-angular-animation/
   flights: Signal<Flight[]> = this.flightsService.flights;
-
   stats: Signal<OverallStats> = this.flightsService.stats;
+
   mapOptions: MapOptions = {
     flights: true,
     countries: true
   };
 
-  constructor() {
-  }
-
   selectFlight(flight: Flight) {
     this.flightsService.selectFlight(flight);
   }
-
-  ngOnInit() {
-
-
-  }
 }
 
-class MapOptions {
-  flights: boolean = false;
-  countries: boolean = false;
+interface MapOptions {
+  flights: boolean;
+  countries: boolean;
 }
 

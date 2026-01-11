@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal, model } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -12,7 +12,6 @@ import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatChipsModule } from '@angular/material/chips';
-import { MatRippleModule } from '@angular/material/core';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 
 @Component({
@@ -39,7 +38,14 @@ export class FlightAnomaliesComponent {
   tooFastFlights = this.flightsService.tooFastFlights;
   validatedAnomalies = this.flightsService.validatedAnomalies;
 
-  // Filter states
+  // Filter states - using model for 2-way binding support if needed, 
+  // though model() is typically for component inputs.
+  // For local state with 2-way binding, standard signals with separate bindings 
+  // or model() if we want to expose them as inputs.
+  // Let's use standard signals and fix the template if needed, 
+  // or just use model() if we want to allow parent components to control them.
+  // Since these are internal filters, signal() is fine but we need to call it in template.
+
   showTooSlow = signal(true);
   showTooFast = signal(true);
   showValidated = signal(false);
@@ -63,13 +69,8 @@ export class FlightAnomaliesComponent {
     return flights.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   });
 
-  get totalAnomalies(): number {
-    return this.tooSlowFlights().length + this.tooFastFlights().length;
-  }
-
-  get totalValidated(): number {
-    return this.validatedAnomalies().length;
-  }
+  totalAnomalies = computed(() => this.tooSlowFlights().length + this.tooFastFlights().length);
+  totalValidated = computed(() => this.validatedAnomalies().length);
 
   calculateAverageSpeed(flight: Flight): number {
     return this.flightsService.getAverageSpeed(flight);
@@ -80,20 +81,10 @@ export class FlightAnomaliesComponent {
   }
 
   isFastAnomaly(flight: Flight): boolean {
-    // A flight is a fast anomaly if it is in the tooFastFlights list
-    // However, simpler check for display purposes: if not slow, assume fast if it's an anomaly.
-    // But wait, validated anomalies could be either.
-    // Let's rely on the service check if we had one, but strict check:
     return !this.isSlowAnomaly(flight);
   }
 
   getAnomalyType(flight: Flight): 'slow' | 'fast' | 'validated' {
-    // Check if it's in validated list first? Or checked against lists.
-    // The current UI shows 'Very Slow', 'Very Fast', 'Validated'.
-    // If a flight is validated, it is in `validatedAnomalies`.
-    // If it is pending, it is in `tooSlow` or `tooFast`.
-    // A flight should not be in both pending and validated lists (assumed).
-
     if (this.validatedAnomalies().some(f => f._id === flight._id)) {
       return 'validated';
     }

@@ -1,5 +1,6 @@
 <!-- App Shell with Material Toolbar and Sidenav -->
-<mat-sidenav-container class="app-container" *ngIf="isLoggedIn(); else welcomeContent">
+@if (isLoggedIn()) {
+<mat-sidenav-container class="app-container">
   <!-- Sidenav for mobile -->
   <mat-sidenav #sidenav mode="over" [opened]="sidenavOpen()" (closed)="closeSidenav()" class="mobile-sidenav">
     <mat-nav-list>
@@ -82,8 +83,7 @@
     </main>
   </mat-sidenav-content>
 </mat-sidenav-container>
-
+} @else {
 <!-- Welcome page for non-logged in users -->
-<ng-template #welcomeContent>
-  <router-outlet></router-outlet>
-</ng-template>
+<router-outlet></router-outlet>
+}

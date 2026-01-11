@@ -22,7 +22,9 @@ export class SaveResult {
   type!: SaveResultType;
 }
 
-@Injectable()
+@Injectable({
+  providedIn: 'root'
+})
 export class FlightsService {
   private flightSubject = new BehaviorSubject<Flight[]>([]);
   flights: Signal<Flight[]> = toSignal(this.flightSubject, { initialValue: [] });

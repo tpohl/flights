@@ -34,19 +34,17 @@ export class FlightStatsComponent {
 
   flight = input.required<Flight>();
 
-  stats$ = toSignal(
+  stats = toSignal(
     toObservable(this.flight).pipe(
       switchMap(f => this.flightsService.computeStats(f))
     )
   );
 
-  aeroApiTrack$ = toSignal(
+  track = toSignal(
     toObservable(this.flight).pipe(
       switchMap(f => this.flightsService.loadFlightTrack(f))
     )
   );
 
   flightsHidden = true;
-
-  constructor() { }
 }

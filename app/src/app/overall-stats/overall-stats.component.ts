@@ -1,5 +1,4 @@
-import { Component, OnInit, Signal, inject } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Component, Signal, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Flight, TRAVEL_CLASSES } from '../models/flight';
 import { OverallStats } from '../models/stats';
@@ -19,27 +18,31 @@ import { flightDistance } from '../pipes/flightDistancePipe';
 import { FlightSummaryCardComponent } from '../flight-summary-card/flight-summary-card.component';
 
 @Component({
-    selector: 'app-overall-stats',
-    imports: [CommonModule, ExactDurationPipe, RouterLink, MatCardModule, MatIconModule, MatListModule, MatDividerModule, MatChipsModule, MatButtonModule, MatMenuModule, FlightSummaryCardComponent],
-    templateUrl: './overall-stats.component.html',
-    styleUrl: './overall-stats.component.scss'
+  selector: 'app-overall-stats',
+  imports: [
+    CommonModule,
+    ExactDurationPipe,
+    RouterLink,
+    MatCardModule,
+    MatIconModule,
+    MatListModule,
+    MatDividerModule,
+    MatChipsModule,
+    MatButtonModule,
+    MatMenuModule,
+    FlightSummaryCardComponent
+  ],
+  templateUrl: './overall-stats.component.html',
+  styleUrl: './overall-stats.component.scss'
 })
-export class OverallStatsComponent implements OnInit {
+export class OverallStatsComponent {
 
   private flightsService = inject(FlightsService);
 
   flights: Signal<Flight[]> = this.flightsService.flights;
-
   stats: Signal<OverallStats> = this.flightsService.stats;
-
   availableYears: Signal<number[]> = this.flightsService.availableYears;
   selectedYear: Signal<number | null> = this.flightsService.selectedYear;
-
-  constructor() {
-  }
-
-  ngOnInit() {
-  }
 
   setYear(year: number | null) {
     this.flightsService.selectedYear.set(year);

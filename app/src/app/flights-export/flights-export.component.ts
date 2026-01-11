@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Flight } from '../models/flight';
 import { FlightsService } from '../services/flights.service';
@@ -9,21 +9,15 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 
 @Component({
-    imports: [CommonModule, MatCardModule, MatButtonModule, MatIconModule],
-    selector: 'app-flights-export',
-    templateUrl: './flights-export.component.html',
-    styleUrls: ['./flights-export.component.scss']
+  imports: [CommonModule, MatCardModule, MatButtonModule, MatIconModule],
+  selector: 'app-flights-export',
+  templateUrl: './flights-export.component.html',
+  styleUrls: ['./flights-export.component.scss']
 })
-export class FlightsExportComponent implements OnInit {
+export class FlightsExportComponent {
 
   private flightsService = inject(FlightsService);
   flights = this.flightsService.flights;
-
-  constructor() {
-  }
-
-  ngOnInit() {
-  }
 
   flightsToClipbord() {
     this.copyToClipboard(JSON.stringify(this.flightsService.flights()));
@@ -34,7 +28,6 @@ export class FlightsExportComponent implements OnInit {
   }
 
   flightsForFlightSearch(flightsArray: Flight[]): string {
-    console.log('Flights');
     let script = '';
 
     flightsArray.forEach(flight => {
@@ -56,20 +49,23 @@ export class FlightsExportComponent implements OnInit {
       }
     });
     return script;
-
   }
 
   private copyToClipboard(val: string) {
-    const selBox = document.createElement('textarea');
-    selBox.style.position = 'fixed';
-    selBox.style.left = '0';
-    selBox.style.top = '0';
-    selBox.style.opacity = '0';
-    selBox.value = val;
-    document.body.appendChild(selBox);
-    selBox.focus();
-    selBox.select();
-    document.execCommand('copy');
-    document.body.removeChild(selBox);
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(val);
+    } else {
+      const selBox = document.createElement('textarea');
+      selBox.style.position = 'fixed';
+      selBox.style.left = '0';
+      selBox.style.top = '0';
+      selBox.style.opacity = '0';
+      selBox.value = val;
+      document.body.appendChild(selBox);
+      selBox.focus();
+      selBox.select();
+      document.execCommand('copy');
+      document.body.removeChild(selBox);
+    }
   }
 }

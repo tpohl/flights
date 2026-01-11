@@ -6,13 +6,14 @@ import { objectVal } from 'rxfire/database';
 import { Airport } from '../models/airport';
 import { shareReplay } from 'rxjs/operators';
 
-@Injectable()
+@Injectable({
+  providedIn: 'root'
+})
 export class AirportService {
 
   private airports = new Map<String, Observable<Airport | null>>();
   private db = inject(Database);
 
-  constructor() { }
 
   public loadAirport(airportCode: String): Observable<Airport | null> {
     let airport$ = this.airports.get(airportCode);

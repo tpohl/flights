@@ -1,4 +1,4 @@
-@if (stats$(); as stats) {
+@if (stats(); as statsVal) {
 <div class="stats-glass-card glass-card">
   <div class="stats-header">
     <mat-icon>analytics</mat-icon>
@@ -26,10 +26,9 @@
         </div>
         <div class="status-item">
           <span class="status-label">Aero API Track</span>
-          @if (aeroApiTrack$(); as aeroApiTrack) {
-          <mat-icon [class.success]="aeroApiTrack.actual_distance > 0"
-            [class.warning]="aeroApiTrack.actual_distance <= 0">
-            {{ aeroApiTrack.actual_distance > 0 ? 'check_circle' : 'star_half' }}
+          @if (track(); as trackVal) {
+          <mat-icon [class.success]="trackVal.actual_distance > 0" [class.warning]="trackVal.actual_distance <= 0">
+            {{ trackVal.actual_distance > 0 ? 'check_circle' : 'star_half' }}
           </mat-icon>
           } @else {
           <mat-icon class="error">cancel</mat-icon>
@@ -45,21 +44,21 @@
       <h3 class="section-label">Frequency</h3>
       <div class="count-grid">
         <div class="count-item">
-          <span class="count-value">{{ stats.flightsOnRoute }}</span>
+          <span class="count-value">{{ statsVal.flightsOnRoute }}</span>
           <span class="count-label">same route</span>
         </div>
         <div class="count-item">
-          <span class="count-value">{{ stats.flightsWithAircraft.length }}</span>
+          <span class="count-value">{{ statsVal.flightsWithAircraft.length }}</span>
           <span class="count-label">same A/C</span>
         </div>
         <div class="count-item">
-          <span class="count-value">{{ stats.flightsWithType }}</span>
+          <span class="count-value">{{ statsVal.flightsWithType }}</span>
           <span class="count-label">same Type</span>
         </div>
       </div>
     </section>
 
-    @if (stats.flightsWithAircraft.length > 1) {
+    @if (statsVal.flightsWithAircraft.length > 1) {
     <mat-divider></mat-divider>
 
     <!-- Same Aircraft Flights Section -->
@@ -73,7 +72,7 @@
           </mat-expansion-panel-header>
 
           <div class="aircraft-flights-grid">
-            @for (f of stats.flightsWithAircraft; track f._id) {
+            @for (f of statsVal.flightsWithAircraft; track f._id) {
             <div class="preview-tile">
               <app-flight-tile [flight]="f" [compact]="true"></app-flight-tile>
             </div>

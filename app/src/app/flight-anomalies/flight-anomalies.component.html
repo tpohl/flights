@@ -10,7 +10,7 @@
       <mat-card-content>
         <mat-icon class="info-icon">info</mat-icon>
         <div class="info-text">
-          <strong>{{ totalAnomalies }}</strong> flight(s) detected with unusual speeds
+          <strong>{{ totalAnomalies() }}</strong> flight(s) detected with unusual speeds
         </div>
         <div class="info-description">
           These flights are either exceptionally slow or fast, indicating potential data entry errors.
@@ -29,7 +29,7 @@
           Too Fast ({{ tooFastFlights().length }})
         </mat-checkbox>
         <mat-checkbox [(ngModel)]="showValidated" color="primary">
-          Validated ({{ totalValidated }})
+          Validated ({{ totalValidated() }})
         </mat-checkbox>
       </div>
     </section>

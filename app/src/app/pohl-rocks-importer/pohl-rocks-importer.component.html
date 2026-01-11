@@ -15,17 +15,17 @@
       </mat-form-field>
     </mat-card-content>
     <mat-card-actions align="end">
-      <button mat-flat-button color="primary" (click)="parseFlights()" [disabled]="!importJson">
+      <button mat-flat-button color="primary" (click)="parseFlights()" [disabled]="!importJson()">
         <mat-icon>code</mat-icon>
         Parse Flights
       </button>
     </mat-card-actions>
   </mat-card>
 
-  @if (flights && flights.length > 0) {
+  @if (flights() && flights().length > 0) {
   <section class="preview-section">
     <div class="section-header">
-      <h2 class="section-title">Flights to Import ({{ flights.length }})</h2>
+      <h2 class="section-title">Flights to Import ({{ flights().length }})</h2>
       <div class="action-buttons">
         <button mat-flat-button color="accent" (click)="importFlights()">
           <mat-icon>cloud_upload</mat-icon>
@@ -44,7 +44,7 @@
     </div>
 
     <div class="flights-grid">
-      @for (flight of flights; track $index) {
+      @for (flight of flights(); track $index) {
       <mat-card class="flight-preview-card glass-card">
         <mat-card-content>
           <div class="flight-main">
