@@ -69,74 +69,28 @@
   opacity: 0.9;
 }
 
-::ng-deep .anomalies-tabs {
-  .mat-mdc-tab-labels {
-    margin-bottom: $spacing-2xl;
-    background: transparent;
-    border-bottom: none;
-  }
+/* Filters */
+.filters-container {
+  border-radius: $radius-2xl !important;
+  padding: $spacing-md $spacing-xl;
+  width: fit-content;
 
-  /* Hide the ink bar (underline) */
-  .mat-mdc-tab-header-pagination-chevron,
-  .mat-mdc-tab-header-pagination-header,
-  .mat-mdc-focus-indicator,
-  .mat-mdc-tab-group-ink-bar,
-  .mdc-tab-indicator__content,
-  .mdc-tab-indicator,
-  .mdc-tab__ripple {
-    display: none !important;
-  }
+  // To ensure it doesn't stretch too wide on larger screens if we don't want it to
+  max-width: 100%;
+}
 
-  /* Segmented Control Container style applied to tab list */
-  .mat-mdc-tab-list {
-    @include glass-segmented-control;
-  }
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: $spacing-xl;
+  flex-wrap: wrap;
 
-  .mat-mdc-tab-label-container {
-    overflow: visible;
-  }
+  mat-checkbox {
+    // Customizing spacing or styling if needed
+    margin-right: $spacing-lg;
 
-  /* Tab Item (Segment) Style */
-  .mat-mdc-tab-label {
-    @include segmented-control-item;
-    opacity: 1;
-    min-width: auto;
-    height: 40px;
-
-    /* Icons and Text alignment */
-    .mdc-tab__content {
-      display: flex;
-      align-items: center;
-      gap: $spacing-sm;
-      padding: 0;
-    }
-
-    mat-icon {
-      margin: 0;
-      font-size: 18px;
-      width: 18px;
-      height: 18px;
-    }
-
-    .mdc-tab__text-label {
-      font-size: $font-size-sm;
-      font-weight: inherit;
-      color: inherit;
-    }
-  }
-
-  mat-chip {
-    font-size: 0.7rem;
-    height: 20px;
-    min-height: 20px;
-    padding: 0 8px;
-    margin-left: 6px;
-    background: rgba(0, 0, 0, 0.1);
-    color: inherit;
-    border: none;
-
-    .mdc-evolution-chip__text-label {
-      padding: 0;
+    &:last-child {
+      margin-right: 0;
     }
   }
 }

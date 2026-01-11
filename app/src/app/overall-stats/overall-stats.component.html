@@ -15,39 +15,10 @@
     </div>
 
     <!-- Main Stats Card -->
-    <mat-card class="stats-card glass-card">
-        <mat-card-header>
-            <mat-icon mat-card-avatar>analytics</mat-icon>
-            <mat-card-title>Flight Summary</mat-card-title>
-        </mat-card-header>
-        <mat-card-content>
-            <mat-list>
-                <mat-list-item>
-                    <mat-icon matListItemIcon>flight</mat-icon>
-                    <span matListItemTitle>Total Flights</span>
-                    <span matListItemMeta class="stat-value">{{ stats().count }}</span>
-                </mat-list-item>
-                <mat-divider></mat-divider>
-                <mat-list-item>
-                    <mat-icon matListItemIcon>route</mat-icon>
-                    <span matListItemTitle>Total Distance</span>
-                    <span matListItemMeta class="stat-value">{{ stats().distance | number : '1.0-0' }} km</span>
-                </mat-list-item>
-                <mat-divider></mat-divider>
-                <mat-list-item>
-                    <mat-icon matListItemIcon>schedule</mat-icon>
-                    <span matListItemTitle>Total Duration</span>
-                    <span matListItemMeta class="stat-value">{{ stats().totalTimeMilliseconds | amDurationExact
-                        }}</span>
-                </mat-list-item>
-                <mat-list-item>
-                    <mat-icon matListItemIcon>place</mat-icon>
-                    <span matListItemTitle>Airports Visited</span>
-                    <span matListItemMeta class="stat-value">{{ stats().airportsVisited.size() }}</span>
-                </mat-list-item>
-            </mat-list>
-        </mat-card-content>
-    </mat-card>
+
+    <!-- Main Stats Card -->
+    <app-flight-summary-card [stats]="stats()"></app-flight-summary-card>
+
 
     <!-- Records Card -->
     <mat-card class="stats-card glass-card">

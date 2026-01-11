@@ -10,6 +10,7 @@ import { ExactDurationPipe } from '../pipes/exactDurationPipe';
 import { FlightTileComponent } from '../flight-tile/flight-tile.component';
 import { OverallStats } from '../models/stats';
 import { CesiumDirective } from '../cesium.directive';
+import { FlightSummaryCardComponent } from '../flight-summary-card/flight-summary-card.component';
 
 // Angular Material
 import { MatCardModule } from '@angular/material/card';
@@ -31,7 +32,9 @@ import { MatRippleModule } from '@angular/material/core';
     MatButtonModule,
     MatIconModule,
     MatSlideToggleModule,
-    MatRippleModule
+    MatSlideToggleModule,
+    MatRippleModule,
+    FlightSummaryCardComponent
   ],
   selector: 'app-flight-list',
   templateUrl: './flight-list.component.html',

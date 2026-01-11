@@ -1,0 +1,71 @@
+@use '../variables' as *;
+@use '../mixins' as *;
+
+.stats-card {
+    @include light-glass-card;
+    margin-bottom: $spacing-xl;
+
+    mat-card-header {
+        padding: $spacing-xl;
+    }
+
+    mat-icon[mat-card-avatar] {
+        background: $gradient-primary-alt;
+        color: white;
+        padding: 12px;
+        border-radius: $radius-xl;
+        font-size: 28px;
+        width: 28px;
+        height: 28px;
+        box-shadow: 0 8px 16px rgba(99, 102, 241, 0.4);
+    }
+
+    mat-card-title {
+        font-size: 1.5rem;
+        font-weight: $font-weight-bold;
+        color: $text-primary;
+    }
+
+    mat-card-content {
+        padding: 12px $spacing-xl $spacing-xl $spacing-xl !important;
+    }
+
+    mat-list {
+        padding-top: 0 !important;
+    }
+
+    mat-list-item {
+        height: auto !important;
+        padding: $spacing-lg 0 !important;
+    }
+
+    &.compact {
+        mat-list-item {
+            padding: $spacing-md 0 !important;
+        }
+    }
+}
+
+.stat-value {
+    font-weight: $font-weight-bold;
+    color: $primary-color !important;
+    font-size: 1.25rem;
+}
+
+mat-divider {
+    border-top-color: rgba(0, 0, 0, 0.08) !important;
+}
+
+[matListItemTitle] {
+    color: $text-primary !important;
+    font-weight: $font-weight-bold !important;
+    font-size: 1.1rem !important;
+}
+
+mat-icon[matListItemIcon] {
+    color: $primary-color !important;
+    font-size: 28px !important;
+    width: 28px !important;
+    height: 28px !important;
+    margin-right: $spacing-lg !important;
+}

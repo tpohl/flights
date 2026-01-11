@@ -16,11 +16,12 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatButtonModule } from '@angular/material/button';
 import { MatMenuModule } from '@angular/material/menu';
 import { flightDistance } from '../pipes/flightDistancePipe';
+import { FlightSummaryCardComponent } from '../flight-summary-card/flight-summary-card.component';
 
 @Component({
   standalone: true,
   selector: 'app-overall-stats',
-  imports: [CommonModule, ExactDurationPipe, RouterLink, MatCardModule, MatIconModule, MatListModule, MatDividerModule, MatChipsModule, MatButtonModule, MatMenuModule],
+  imports: [CommonModule, ExactDurationPipe, RouterLink, MatCardModule, MatIconModule, MatListModule, MatDividerModule, MatChipsModule, MatButtonModule, MatMenuModule, FlightSummaryCardComponent],
   templateUrl: './overall-stats.component.html',
   styleUrl: './overall-stats.component.scss'
 })

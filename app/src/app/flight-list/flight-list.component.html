@@ -14,40 +14,25 @@
     </div>
 
     <!-- Stats Panel -->
-    <aside class="stats-panel glass-panel">
-      <h3 class="panel-title">Map Options</h3>
-      <div class="option-row">
-        <mat-slide-toggle [(ngModel)]="mapOptions.countries" color="primary">
-          Show visited Countries
-        </mat-slide-toggle>
-      </div>
+    <!-- Stats Panel -->
+    <aside class="stats-panel">
+      <!-- Map Options Card -->
+      <mat-card class="map-options-card glass-card">
+        <mat-card-header>
+          <mat-icon mat-card-avatar>tune</mat-icon>
+          <mat-card-title>Map Options</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="option-row">
+            <mat-slide-toggle [(ngModel)]="mapOptions.countries" color="primary">
+              Show visited Countries
+            </mat-slide-toggle>
+          </div>
+        </mat-card-content>
+      </mat-card>
 
-      <h3 class="panel-title">Statistics</h3>
-      <div class="stat-item">
-        <mat-icon>flight</mat-icon>
-        <span class="stat-label">Flights</span>
-        <span class="stat-value">{{ stats().count }}</span>
-      </div>
-      <div class="stat-item">
-        <mat-icon>map</mat-icon>
-        <span class="stat-label">Distance</span>
-        <span class="stat-value">{{ stats().distance | number : '1.0-0' }} km</span>
-      </div>
-      <div class="stat-item">
-        <mat-icon>schedule</mat-icon>
-        <span class="stat-label">Duration</span>
-        <span class="stat-value">{{ stats().totalTimeMilliseconds | amDurationExact }}</span>
-      </div>
-      <div class="stat-item">
-        <mat-icon>place</mat-icon>
-        <span class="stat-label">Airports</span>
-        <span class="stat-value">{{ stats().airportsVisited.size() }}</span>
-      </div>
-
-      <button mat-flat-button color="primary" class="add-flight-btn" [routerLink]="['/flight', 'new']">
-        <mat-icon>add</mat-icon>
-        Add Flight
-      </button>
+      <!-- Flight Summary Component -->
+      <app-flight-summary-card [stats]="stats()" [compact]="true"></app-flight-summary-card>
     </aside>
   </div>
 

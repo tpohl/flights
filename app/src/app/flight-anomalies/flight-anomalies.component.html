@@ -19,123 +19,69 @@
       </mat-card-content>
     </mat-card>
 
-    <!-- Tabs for categorization -->
-    <mat-tab-group class="anomalies-tabs">
-      <!-- Too Slow Flights -->
-      <mat-tab>
-        <ng-template mat-tab-label>
-          <mat-icon>speed</mat-icon>
-          <span>Too Slow</span>
-          <mat-chip>{{ tooSlowFlights().length }}</mat-chip>
-        </ng-template>
+    <!-- Filters -->
+    <section class="filters-container glass-card">
+      <div class="filter-group">
+        <mat-checkbox [(ngModel)]="showTooSlow" color="warn">
+          Too Slow ({{ tooSlowFlights().length }})
+        </mat-checkbox>
+        <mat-checkbox [(ngModel)]="showTooFast" color="warn">
+          Too Fast ({{ tooFastFlights().length }})
+        </mat-checkbox>
+        <mat-checkbox [(ngModel)]="showValidated" color="primary">
+          Validated ({{ totalValidated }})
+        </mat-checkbox>
+      </div>
+    </section>
 
-        @if (tooSlowFlights().length === 0) {
-        <div class="empty-state">
-          <mat-icon>thumb_up</mat-icon>
-          <p>No anomalously slow flights found!</p>
-        </div>
-        } @else {
-        <section class="flights-grid">
-          @for (flight of tooSlowFlights(); track flight._id) {
-          <a [routerLink]="['/flight', flight._id]" class="flight-card-link">
-            <mat-card class="flight-card glass-card anomaly-card" matRipple>
-              <mat-card-content>
-                <div class="anomaly-badge slow">
-                  <mat-icon>warning</mat-icon>
-                  <span>Very Slow</span>
-                </div>
-                <app-flight-tile [flight]="flight"></app-flight-tile>
-                <div class="speed-info">
-                  <span class="label">Average Speed:</span>
-                  <span class="value">{{ calculateAverageSpeed(flight) | number: '1.0-0' }} km/h</span>
-                </div>
-              </mat-card-content>
-            </mat-card>
-          </a>
-          }
-        </section>
-        }
-      </mat-tab>
+    <!-- Content -->
+    @if (displayedFlights().length === 0) {
+    <div class="empty-state">
+      <mat-icon>thumb_up</mat-icon>
+      <p>No flights match your selection!</p>
+    </div>
+    } @else {
+    <section class="flights-grid">
+      @for (flight of displayedFlights(); track flight._id) {
+      <a [routerLink]="['/flight', flight._id]" class="flight-card-link">
+        <mat-card class="flight-card glass-card anomaly-card" matRipple>
+          <mat-card-content>
+            <!-- Badge logic -->
+            @if (getAnomalyType(flight) === 'validated') {
+            <div class="anomaly-badge validated">
+              <mat-icon>verified</mat-icon>
+              <span>Validated</span>
+            </div>
+            } @else if (getAnomalyType(flight) === 'slow') {
+            <div class="anomaly-badge slow">
+              <mat-icon>warning</mat-icon>
+              <span>Very Slow</span>
+            </div>
+            } @else {
+            <div class="anomaly-badge fast">
+              <mat-icon>warning</mat-icon>
+              <span>Very Fast</span>
+            </div>
+            }
 
-      <!-- Too Fast Flights -->
-      <mat-tab>
-        <ng-template mat-tab-label>
-          <mat-icon>speed</mat-icon>
-          <span>Too Fast</span>
-          <mat-chip>{{ tooFastFlights().length }}</mat-chip>
-        </ng-template>
+            <app-flight-tile [flight]="flight"></app-flight-tile>
 
-        @if (tooFastFlights().length === 0) {
-        <div class="empty-state">
-          <mat-icon>thumb_up</mat-icon>
-          <p>No anomalously fast flights found!</p>
-        </div>
-        } @else {
-        <section class="flights-grid">
-          @for (flight of tooFastFlights(); track flight._id) {
-          <a [routerLink]="['/flight', flight._id]" class="flight-card-link">
-            <mat-card class="flight-card glass-card anomaly-card" matRipple>
-              <mat-card-content>
-                <div class="anomaly-badge fast">
-                  <mat-icon>warning</mat-icon>
-                  <span>Very Fast</span>
-                </div>
-                <app-flight-tile [flight]="flight"></app-flight-tile>
-                <div class="speed-info">
-                  <span class="label">Average Speed:</span>
-                  <span class="value">{{ calculateAverageSpeed(flight) | number: '1.0-0' }} km/h</span>
-                </div>
-              </mat-card-content>
-            </mat-card>
-          </a>
-          }
-        </section>
-        }
-      </mat-tab>
+            <div class="speed-info">
+              <span class="label">Average Speed:</span>
+              <span class="value">{{ calculateAverageSpeed(flight) | number: '1.0-0' }} km/h</span>
 
-      <!-- Validated Anomalies -->
-      <mat-tab>
-        <ng-template mat-tab-label>
-          <mat-icon>verified</mat-icon>
-          <span>Validated</span>
-          <mat-chip>{{ totalValidated }}</mat-chip>
-        </ng-template>
-
-        @if (validatedAnomalies().length === 0) {
-        <div class="empty-state">
-          <mat-icon>info</mat-icon>
-          <p>No validated anomalies yet.</p>
-        </div>
-        } @else {
-        <section class="flights-grid">
-          @for (flight of validatedAnomalies(); track flight._id) {
-          <a [routerLink]="['/flight', flight._id]" class="flight-card-link">
-            <mat-card class="flight-card glass-card anomaly-card" matRipple>
-              <mat-card-content>
-                <div class="anomaly-badge validated">
-                  <mat-icon>verified</mat-icon>
-                  <span>Validated</span>
-                </div>
-                <app-flight-tile [flight]="flight"></app-flight-tile>
-                <div class="speed-info">
-                  <span class="label">Average Speed:</span>
-                  <span class="value">{{ calculateAverageSpeed(flight) | number: '1.0-0' }} km/h</span>
-                  <span class="type-badge" [class.slow]="isSlowAnomaly(flight)" [class.fast]="!isSlowAnomaly(flight)">
-                    @if (isSlowAnomaly(flight)) {
-                    Slow
-                    } @else {
-                    Fast
-                    }
-                  </span>
-                </div>
-              </mat-card-content>
-            </mat-card>
-          </a>
-          }
-        </section>
-        }
-      </mat-tab>
-    </mat-tab-group>
+              @if (getAnomalyType(flight) === 'validated') {
+              <span class="type-badge" [class.slow]="isSlowAnomaly(flight)" [class.fast]="!isSlowAnomaly(flight)">
+                @if (isSlowAnomaly(flight)) { Slow } @else { Fast }
+              </span>
+              }
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </a>
+      }
+    </section>
+    }
 
     <!-- Back to Flights button -->
     <div class="action-buttons">
