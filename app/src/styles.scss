@@ -34,7 +34,7 @@ $flights-theme: mat.define-theme((color: (theme-type: light,
   --glass-blur: #{$glass-blur};
 
   // Material Design Card Container - match glass background
-  --mdc-elevated-card-container-color: #{$glass-bg};
+  --mat-card-elevated-container-color: #{$glass-bg};
 
   // Semantic colors (preserved from original)
   --color-business: #3273dc; // Blue for business class

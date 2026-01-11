@@ -30,8 +30,8 @@
 
 /* Clean chip styling - no visible borders */
 ::ng-deep .mat-mdc-chip {
-  --mdc-chip-container-shape-radius: $radius-md !important;
-  --mdc-chip-outline-width: 0 !important;
+  --mat-chip-container-shape-radius: $radius-md !important;
+  --mat-chip-outline-width: 0 !important;
   border: none !important;
 }
 
