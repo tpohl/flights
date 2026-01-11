@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, Signal } from '@angular/core';
+import { Component, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { OverallStats } from '../models/stats';
 import { ExactDurationPipe } from '../pipes/exactDurationPipe';
@@ -21,6 +21,6 @@ import { MatDividerModule } from '@angular/material/divider';
     styleUrls: ['./flight-summary-card.component.scss']
 })
 export class FlightSummaryCardComponent {
-    @Input() stats: OverallStats | null = null;
-    @Input() compact: boolean = false;
+    stats = input<OverallStats | null>(null);
+    compact = input(false);
 }

@@ -96,46 +96,18 @@
 }
 
 .flights-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-  gap: $spacing-2xl;
-  padding: $spacing-2xl $spacing-md;
-  margin: 0 (-$spacing-md);
-  overflow: visible;
+  @include flights-grid;
 }
 
-.flight-card-link {
-  text-decoration: none;
-  color: inherit;
-  cursor: pointer;
-  display: block;
-  overflow: visible !important;
-}
+
 
 ::ng-deep .mat-mdc-card {
   overflow: visible !important;
 }
 
-.flight-card {
-  @include card-glass;
-  cursor: pointer;
-  background: $bg-lightest !important;
-
-  mat-card-content {
-    padding: $spacing-lg !important;
-  }
-
-  &.validated {
-    border-color: rgba(76, 175, 80, 0.3);
-    background: $gradient-success-alt !important;
-  }
-}
-
-.anomaly-card {
-  mat-card-content {
-    @include flex-col;
-    gap: $spacing-lg;
-  }
+.anomaly-content {
+  @include flex-col;
+  gap: $spacing-lg;
 }
 
 .anomaly-badge {

@@ -2,7 +2,7 @@ import { Location, LocationStrategy, PathLocationStrategy, CommonModule } from '
 import { AirportService } from '../services/airport.service';
 import { BehaviorSubject, filter, Observable, of, ReplaySubject, Subject, Subscription, combineLatest } from 'rxjs';
 
-import { Component, Input, OnDestroy, OnInit, inject, effect, ViewChild, ElementRef, signal } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit, inject, effect, ViewChild, ElementRef, signal, input } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { FlightStatsComponent } from '../flight-stats/flight-stats.component';
@@ -11,7 +11,7 @@ import { FlightDistancePipe } from '../pipes/flightDistancePipe';
 import { CesiumDirective } from '../cesium.directive';
 
 import { Flight, TRAVEL_CLASSES } from '../models/flight';
-import { AngularFireDatabase } from '@angular/fire/compat/database';
+
 import { Airport } from '../models/airport';
 import DayJS from 'dayjs';
 import DayJSUtc from 'dayjs/plugin/utc';
@@ -43,44 +43,54 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { MatChipsModule } from '@angular/material/chips';
 
 @Component({
-    imports: [
-        CommonModule,
-        FormsModule,
-        FlightTileComponent,
-        FlightStatsComponent,
-        RelativeTimePipe,
-        FlightDistancePipe,
-        CesiumDirective,
-        ExactDurationPipe,
-        RouterLink,
-        MatFormFieldModule,
-        MatInputModule,
-        MatButtonModule,
-        MatIconModule,
-        MatCardModule,
-        MatRadioModule,
-        MatDividerModule,
-        MatTooltipModule,
-        MatDatepickerModule,
-        MatNativeDateModule,
-        MatChipsModule
-    ],
-    selector: 'app-flight-edit',
-    providers: [Location, { provide: LocationStrategy, useClass: PathLocationStrategy }],
-    templateUrl: './flight-edit.component.html',
-    styleUrls: ['./flight-edit.component.scss']
+  imports: [
+    CommonModule,
+    FormsModule,
+    FlightTileComponent,
+    FlightStatsComponent,
+    RelativeTimePipe,
+    FlightDistancePipe,
+    CesiumDirective,
+    ExactDurationPipe,
+    RouterLink,
+    MatFormFieldModule,
+    MatInputModule,
+    MatButtonModule,
+    MatIconModule,
+    MatCardModule,
+    MatRadioModule,
+    MatDividerModule,
+    MatTooltipModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
+    MatChipsModule
+  ],
+  selector: 'app-flight-edit',
+  providers: [Location, { provide: LocationStrategy, useClass: PathLocationStrategy }],
+  templateUrl: './flight-edit.component.html',
+  styleUrls: ['./flight-edit.component.scss']
 })
 export class FlightEditComponent implements OnInit, OnDestroy {
 
   private authService = inject(AuthService);
   protected flightsService = inject(FlightsService);
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private airportService = inject(AirportService);
+  private location = inject(Location);
 
-  constructor(private route: ActivatedRoute,
-    private router: Router, private db: AngularFireDatabase,
-    private airportService: AirportService,
-    flightsService: FlightsService,
-    private location: Location) {
-    this.flightsService = flightsService;
+  flightId = input<string>();
+  user = this.authService.user;
+
+  constructor() {
+    effect(() => {
+      const id = this.flightId();
+      const user = this.user();
+      if (user) {
+        this.initializeFlight(id);
+      }
+    });
+
     effect(() => {
       const flight = this.flightsService.activeFlight();
       if (flight) {
@@ -93,27 +103,12 @@ export class FlightEditComponent implements OnInit, OnDestroy {
     });
   }
 
-
-
-  @Input()
-  set flightId(id: string | undefined) {
-    this._flightId = id;
-    this.initializeFlight();
-  }
-  get flightId(): string | undefined {
-    return this._flightId;
-  }
-  private _flightId: string | undefined;
-
   flight: Flight | null = null;
-  user: User | null = null;
 
   @ViewChild('formCard', { read: ElementRef }) formCard?: ElementRef;
 
-  private initializeFlight() {
-    if (!this.user) return;
-
-    if (!this._flightId || this._flightId === 'new') {
+  private initializeFlight(id: string | undefined) {
+    if (!id || id === 'new') {
       this.flightsService.activeFlight.set(null);
       this.objectRef = undefined;
       this.flight = new Flight();
@@ -127,7 +122,7 @@ export class FlightEditComponent implements OnInit, OnDestroy {
         }
       }, 100);
     } else {
-      this.loadFlight(this._flightId);
+      this.loadFlight(id);
     }
   }
 
@@ -147,25 +142,7 @@ export class FlightEditComponent implements OnInit, OnDestroy {
 
 
 
-  private user$ = toObservable(this.authService.user);
-
   ngOnInit() {
-    // Existing logic used: this.afAuth.user.subscribe(...)
-    // Let's maintain that pattern by piping the signal.
-
-    // Combine route params and user authentication to handle both together
-    this.subs.add(combineLatest([
-      this.route.params,
-      this.user$
-    ]).subscribe(([params, user]) => {
-      this.user = user;
-      if (params['flightId']) {
-        this.flightId = params['flightId'];
-      } else {
-        this.flightId = undefined;
-      }
-    }));
-
     this.subs.add(this.fromAirport$.subscribe(fromAirport => {
       if (fromAirport && this.flight && this.flight.departureTime && fromAirport.timezoneId) {
         this.departureTime = DayJS(this.flight.departureTime).tz(fromAirport.timezoneId).format('HH:mm');
@@ -264,7 +241,6 @@ export class FlightEditComponent implements OnInit, OnDestroy {
 
   save(): void {
     if (!!this.flight) {
-
       const sub = this.flightsService.saveFlight(this.flight)
         .subscribe(result => {
           if (!!result && result.type === SaveResultType.CREATED) {

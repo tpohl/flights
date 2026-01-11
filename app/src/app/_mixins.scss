@@ -402,3 +402,116 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+// ============================================================
+// NEW MIXINS - Refactoring Phase 2
+// ============================================================
+
+// FLIGHTS GRID - Used in flight-list, flight-anomalies
+@mixin flights-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: $spacing-2xl;
+  padding: $spacing-2xl $spacing-md;
+  margin: 0 (-$spacing-md);
+  overflow: visible;
+
+  @include respond-to('md') {
+    grid-template-columns: 1fr;
+  }
+}
+
+// FLIGHT CARD LINK - Used in flight-list, flight-anomalies
+@mixin flight-card-link {
+  text-decoration: none;
+  display: block;
+  overflow: visible !important;
+  color: inherit;
+  cursor: pointer;
+}
+
+// FLIGHT CARD - Base card styling for flight cards
+@mixin flight-card {
+  @include card-glass;
+  cursor: pointer;
+  background: $bg-lightest !important;
+
+  mat-card-content {
+    padding: $spacing-lg !important;
+  }
+}
+
+// MAT CARD AVATAR ICON - Used in stats-card, map-options-card
+@mixin card-avatar-icon {
+  background: $gradient-primary-alt;
+  color: white;
+  padding: 12px;
+  border-radius: $radius-xl;
+  font-size: 28px;
+  width: 28px;
+  height: 28px;
+  box-shadow: 0 8px 16px rgba(99, 102, 241, 0.4);
+}
+
+// STATS CARD HEADER - Used in overall-stats, flight-list
+@mixin stats-card-header {
+  mat-card-header {
+    padding: $spacing-xl;
+  }
+
+  mat-icon[mat-card-avatar] {
+    @include card-avatar-icon;
+  }
+
+  mat-card-title {
+    font-size: 1.5rem;
+    font-weight: $font-weight-bold;
+    color: $text-primary;
+  }
+
+  mat-card-content {
+    padding: 0 $spacing-xl $spacing-xl $spacing-xl !important;
+  }
+}
+
+// HELPER: Class Chip Variant
+@mixin class-chip-variant($class-name, $bg, $color, $text-color, $border) {
+  &.#{$class-name} {
+    background-color: $bg !important;
+    border: 1px solid $border !important;
+    color: $color !important;
+
+    .mdc-evolution-chip__text-label {
+      color: $text-color !important;
+    }
+  }
+}
+
+// CLASS CHIPS STYLING
+@mixin class-chips {
+  ::ng-deep .mat-mdc-chip-set {
+    .mat-mdc-chip {
+      min-height: 28px !important;
+      padding: 0 $spacing-md !important;
+      font-size: 0.85rem !important;
+      font-weight: $font-weight-bold !important;
+      border-radius: $radius-md !important;
+      background: rgba(0, 0, 0, 0.06) !important;
+      color: $text-primary !important;
+      border: 1px solid rgba(0, 0, 0, 0.08) !important;
+
+      .mdc-evolution-chip__text-label {
+        color: $text-primary !important;
+      }
+
+      &.class-chip {
+        @include class-chip-variant('class-y', $class-economy-light, $class-economy-dark, $class-economy-dark, rgba(76, 175, 80, 0.3));
+        @include class-chip-variant('class-m', $class-premium-economy-light, $class-premium-economy-dark, $class-premium-economy-dark, rgba(139, 195, 74, 0.3));
+        @include class-chip-variant('class-c', $class-business-light, $class-business-dark, $class-business-dark, rgba(33, 150, 243, 0.3));
+        @include class-chip-variant('class-f', $class-first-light, $class-first-dark, $class-first-dark, rgba(244, 67, 54, 0.3));
+        @include class-chip-variant('class-j', $class-premium-first-light, $class-premium-first-dark, $class-premium-first-dark, rgba(255, 235, 59, 0.4));
+        @include class-chip-variant('class-p', $class-premium-deluxe-light, $class-premium-deluxe-dark, $class-premium-deluxe-dark, rgba(255, 193, 7, 0.4));
+      }
+    }
+  }
+}

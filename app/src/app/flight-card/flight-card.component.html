@@ -1,0 +1,7 @@
+<a [routerLink]="['/flight', flight()._id]" class="flight-card-link">
+    <mat-card class="flight-card glass-card" matRipple [class.validated]="validated()">
+        <mat-card-content>
+            <ng-content></ng-content>
+        </mat-card-content>
+    </mat-card>
+</a>

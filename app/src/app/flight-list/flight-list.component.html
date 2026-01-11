@@ -39,13 +39,9 @@
   <!-- Flight Cards Grid -->
   <section class="flights-grid">
     @for (flight of flights(); track flight._id) {
-    <a [routerLink]="['/flight', flight._id]" class="flight-card-link">
-      <mat-card class="flight-card glass-card" matRipple>
-        <mat-card-content>
-          <app-flight-tile [flight]="flight"></app-flight-tile>
-        </mat-card-content>
-      </mat-card>
-    </a>
+    <app-flight-card [flight]="flight">
+      <app-flight-tile [flight]="flight"></app-flight-tile>
+    </app-flight-card>
     }
   </section>
 </div>

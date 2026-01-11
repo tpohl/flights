@@ -5,7 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { Flight } from '../models/flight';
 import { FlightsService } from '../services/flights.service';
 import { FlightTileComponent } from '../flight-tile/flight-tile.component';
-import { ExactDurationPipe } from '../pipes/exactDurationPipe';
+import { FlightCardComponent } from '../flight-card/flight-card.component';
 
 // Angular Material
 import { MatCardModule } from '@angular/material/card';
@@ -16,22 +16,21 @@ import { MatRippleModule } from '@angular/material/core';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 
 @Component({
-    imports: [
-        CommonModule,
-        RouterModule,
-        FormsModule,
-        FlightTileComponent,
-        ExactDurationPipe,
-        MatCardModule,
-        MatButtonModule,
-        MatIconModule,
-        MatChipsModule,
-        MatRippleModule,
-        MatCheckboxModule
-    ],
-    selector: 'app-flight-anomalies',
-    templateUrl: './flight-anomalies.component.html',
-    styleUrls: ['./flight-anomalies.component.scss']
+  imports: [
+    CommonModule,
+    RouterModule,
+    FormsModule,
+    FlightTileComponent,
+    FlightCardComponent,
+    MatCardModule,
+    MatButtonModule,
+    MatIconModule,
+    MatChipsModule,
+    MatCheckboxModule
+  ],
+  selector: 'app-flight-anomalies',
+  templateUrl: './flight-anomalies.component.html',
+  styleUrls: ['./flight-anomalies.component.scss']
 })
 export class FlightAnomaliesComponent {
   private flightsService = inject(FlightsService);

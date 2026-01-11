@@ -43,42 +43,40 @@
     } @else {
     <section class="flights-grid">
       @for (flight of displayedFlights(); track flight._id) {
-      <a [routerLink]="['/flight', flight._id]" class="flight-card-link">
-        <mat-card class="flight-card glass-card anomaly-card" matRipple>
-          <mat-card-content>
-            <!-- Badge logic -->
+      <app-flight-card [flight]="flight" [validated]="getAnomalyType(flight) === 'validated'">
+        <div class="anomaly-content">
+          <!-- Badge logic -->
+          @if (getAnomalyType(flight) === 'validated') {
+          <div class="anomaly-badge validated">
+            <mat-icon>verified</mat-icon>
+            <span>Validated</span>
+          </div>
+          } @else if (getAnomalyType(flight) === 'slow') {
+          <div class="anomaly-badge slow">
+            <mat-icon>warning</mat-icon>
+            <span>Very Slow</span>
+          </div>
+          } @else {
+          <div class="anomaly-badge fast">
+            <mat-icon>warning</mat-icon>
+            <span>Very Fast</span>
+          </div>
+          }
+
+          <app-flight-tile [flight]="flight"></app-flight-tile>
+
+          <div class="speed-info">
+            <span class="label">Average Speed:</span>
+            <span class="value">{{ calculateAverageSpeed(flight) | number: '1.0-0' }} km/h</span>
+
             @if (getAnomalyType(flight) === 'validated') {
-            <div class="anomaly-badge validated">
-              <mat-icon>verified</mat-icon>
-              <span>Validated</span>
-            </div>
-            } @else if (getAnomalyType(flight) === 'slow') {
-            <div class="anomaly-badge slow">
-              <mat-icon>warning</mat-icon>
-              <span>Very Slow</span>
-            </div>
-            } @else {
-            <div class="anomaly-badge fast">
-              <mat-icon>warning</mat-icon>
-              <span>Very Fast</span>
-            </div>
+            <span class="type-badge" [class.slow]="isSlowAnomaly(flight)" [class.fast]="!isSlowAnomaly(flight)">
+              @if (isSlowAnomaly(flight)) { Slow } @else { Fast }
+            </span>
             }
-
-            <app-flight-tile [flight]="flight"></app-flight-tile>
-
-            <div class="speed-info">
-              <span class="label">Average Speed:</span>
-              <span class="value">{{ calculateAverageSpeed(flight) | number: '1.0-0' }} km/h</span>
-
-              @if (getAnomalyType(flight) === 'validated') {
-              <span class="type-badge" [class.slow]="isSlowAnomaly(flight)" [class.fast]="!isSlowAnomaly(flight)">
-                @if (isSlowAnomaly(flight)) { Slow } @else { Fast }
-              </span>
-              }
-            </div>
-          </mat-card-content>
-        </mat-card>
-      </a>
+          </div>
+        </div>
+      </app-flight-card>
       }
     </section>
     }

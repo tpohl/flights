@@ -86,28 +86,8 @@
 /* Main stats cards - light glass */
 .stats-card {
   @include light-glass-card;
+  @include stats-card-header;
   margin-bottom: $spacing-xl;
-
-  mat-card-header {
-    padding: $spacing-xl;
-  }
-
-  mat-icon[mat-card-avatar] {
-    background: $gradient-primary-alt;
-    color: white;
-    padding: 12px;
-    border-radius: $radius-xl;
-    font-size: 28px;
-    width: 28px;
-    height: 28px;
-    box-shadow: 0 8px 16px rgba(99, 102, 241, 0.4);
-  }
-
-  mat-card-title {
-    font-size: 1.5rem;
-    font-weight: $font-weight-bold;
-    color: $text-primary;
-  }
 
   mat-card-content {
     padding: 12px $spacing-xl $spacing-xl $spacing-xl !important;
@@ -172,84 +152,7 @@ mat-divider {
 }
 
 /* Chip Styles for light backgrounds */
-::ng-deep .mat-mdc-chip-set {
-  .mat-mdc-chip {
-    min-height: 28px !important;
-    padding: 0 $spacing-md !important;
-    font-size: 0.85rem !important;
-    font-weight: $font-weight-bold !important;
-    border-radius: $radius-md !important;
-    background: rgba(0, 0, 0, 0.06) !important;
-    color: $text-primary !important;
-    border: 1px solid rgba(0, 0, 0, 0.08) !important;
-
-    .mdc-evolution-chip__text-label {
-      color: $text-primary !important;
-    }
-
-    &.class-chip {
-      &.class-y {
-        background-color: $class-economy-light !important;
-        border: 1px solid rgba(76, 175, 80, 0.3) !important;
-        color: $class-economy-dark !important;
-
-        .mdc-evolution-chip__text-label {
-          color: $class-economy-dark !important;
-        }
-      }
-
-      &.class-m {
-        background-color: $class-premium-economy-light !important;
-        border: 1px solid rgba(139, 195, 74, 0.3) !important;
-        color: $class-premium-economy-dark !important;
-
-        .mdc-evolution-chip__text-label {
-          color: $class-premium-economy-dark !important;
-        }
-      }
-
-      &.class-c {
-        background-color: $class-business-light !important;
-        border: 1px solid rgba(33, 150, 243, 0.3) !important;
-        color: $class-business-dark !important;
-
-        .mdc-evolution-chip__text-label {
-          color: $class-business-dark !important;
-        }
-      }
-
-      &.class-f {
-        background-color: $class-first-light !important;
-        border: 1px solid rgba(244, 67, 54, 0.3) !important;
-        color: $class-first-dark !important;
-
-        .mdc-evolution-chip__text-label {
-          color: $class-first-dark !important;
-        }
-      }
-
-      &.class-j {
-        background-color: $class-premium-first-light !important;
-        border: 1px solid rgba(255, 235, 59, 0.4) !important;
-        color: $class-premium-first-dark !important;
-
-        .mdc-evolution-chip__text-label {
-          color: $class-premium-first-dark !important;
-        }
-      }
-
-      &.class-p {
-        background-color: $class-premium-deluxe-light !important;
-        border: 1px solid rgba(255, 193, 7, 0.4) !important;
-        color: $class-premium-deluxe-dark !important;
-
-        .mdc-evolution-chip__text-label {
-          color: $class-premium-deluxe-dark !important;
-        }
-      }
-    }
-  }
-}
+@include class-chips;
 
 .chart-value {
   text-align: right;

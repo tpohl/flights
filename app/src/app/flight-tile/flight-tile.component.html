@@ -1,69 +1,69 @@
 <div class="flight-tile">
   <!-- Header: Flight number + tags -->
   <div class="tile-header">
-    <span class="flight-number">{{ flight.flightno }}</span>
+    <span class="flight-number">{{ flight().flightno }}</span>
     <div class="tags">
-      @if (compact && flight?.departureTime) {
-      <span class="date-tag">{{ flight.departureTime | date:'dd.MM.yyyy' }}</span>
+      @if (compact() && flight().departureTime) {
+      <span class="date-tag">{{ flight().departureTime | date:'dd.MM.yyyy' }}</span>
       }
-      @if (!compact && flight?.aircraftRegistration) {
-      <mat-chip class="aircraft-chip">{{ flight.aircraftRegistration }}</mat-chip>
+      @if (!compact() && flight().aircraftRegistration) {
+      <mat-chip class="aircraft-chip">{{ flight().aircraftRegistration }}</mat-chip>
       }
-      @if (!compact && flight?.aircraftTypeCode) {
-      <mat-chip class="type-chip">{{ flight.aircraftTypeCode }}</mat-chip>
+      @if (!compact() && flight().aircraftTypeCode) {
+      <mat-chip class="type-chip">{{ flight().aircraftTypeCode }}</mat-chip>
       }
     </div>
   </div>
 
   <!-- Route visualization -->
   <div class="route-section">
-    @if (!compact) {
+    @if (!compact()) {
     <!-- Origin airport image -->
     <div class="airport-image origin"
-      [style.background-image]="'url(https://flights-media.pohl.rocks/media/airport/image/' + flight.from + ')'">
+      [style.background-image]="'url(https://flights-media.pohl.rocks/media/airport/image/' + flight().from + ')'">
     </div>
     }
     <!-- Flight info -->
     <div class="flight-info">
       <div class="endpoint origin">
-        <span class="airport-code">{{ flight.from }}</span>
-        <span class="time">{{ flight.departureTime | date:'HH:mm' }}</span>
+        <span class="airport-code">{{ flight().from }}</span>
+        <span class="time">{{ flight().departureTime | date:'HH:mm' }}</span>
       </div>
 
       <div class="route-line">
         <mat-icon class="plane-icon">flight</mat-icon>
         <div class="distance-info">
-          <span class="distance">{{ flight | flightDistance | number : '1.0-0' }} km</span>
-          @if (compact) {
-          <app-seat-info [flight]="flight"></app-seat-info>
+          <span class="distance">{{ flight() | flightDistance | number : '1.0-0' }} km</span>
+          @if (compact()) {
+          <app-seat-info [flight]="flight()"></app-seat-info>
           }
         </div>
       </div>
 
       <div class="endpoint destination">
-        <span class="airport-code">{{ flight.to }}</span>
-        <span class="time">{{ flight.arrivalTime | date:'HH:mm' }}</span>
+        <span class="airport-code">{{ flight().to }}</span>
+        <span class="time">{{ flight().arrivalTime | date:'HH:mm' }}</span>
       </div>
     </div>
-    @if (!compact) {
+    @if (!compact()) {
     <!-- Destination airport image -->
     <div class="airport-image destination"
-      [style.background-image]="'url(https://flights-media.pohl.rocks/media/airport/image/' + flight.to + ')'">
+      [style.background-image]="'url(https://flights-media.pohl.rocks/media/airport/image/' + flight().to + ')'">
     </div>
     }
   </div>
 
   <!-- Footer: Additional info -->
-  @if (!compact) {
+  @if (!compact()) {
   <div class="tile-footer">
     <span class="flight-details">
-      {{ flight.departureTime | date:'dd.MM.yyyy' }}
+      {{ flight().departureTime | date:'dd.MM.yyyy' }}
       <span class="separator">•</span>
-      <app-seat-info [flight]="flight"></app-seat-info>
+      <app-seat-info [flight]="flight()"></app-seat-info>
       <span class="separator">•</span>
-      {{ flight.carrier }}
+      {{ flight().carrier }}
       <span class="separator">•</span>
-      {{ flight.aircraftType }}
+      {{ flight().aircraftType }}
     </span>
   </div>
   }

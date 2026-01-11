@@ -1,10 +1,11 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { AngularFireDatabase } from '@angular/fire/compat/database';
+import { Database, ref, push, remove } from '@angular/fire/database';
+import { listVal } from 'rxfire/database';
 import { AuthService } from '../services/auth.service';
-import dayjs from 'dayjs/esm';
-import { take, map, mergeMap } from 'rxjs/operators';
+import dayjs from 'dayjs';
+import { take, map, filter } from 'rxjs/operators';
 import { toObservable } from '@angular/core/rxjs-interop';
 
 import { Flight } from './../models/flight';
@@ -19,39 +20,40 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
-    imports: [
-        CommonModule,
-        FormsModule,
-        MatCardModule,
-        MatButtonModule,
-        MatIconModule,
-        MatFormFieldModule,
-        MatInputModule,
-        MatDividerModule,
-        MatTooltipModule
-    ],
-    selector: 'app-pohl-rocks-importer',
-    templateUrl: './pohl-rocks-importer.component.html',
-    styleUrls: ['./pohl-rocks-importer.component.scss']
+  imports: [
+    CommonModule,
+    FormsModule,
+    MatCardModule,
+    MatButtonModule,
+    MatIconModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatDividerModule,
+    MatTooltipModule
+  ],
+  selector: 'app-pohl-rocks-importer',
+  templateUrl: './pohl-rocks-importer.component.html',
+  styleUrls: ['./pohl-rocks-importer.component.scss']
 })
 export class PohlRocksImporterComponent implements OnInit {
 
   importJson!: string;
-
-  flights!: Array<Flight>;
-
-  userId!: string;
+  flights: Array<Flight> = [];
+  userId = signal<string>('');
 
   private authService = inject(AuthService);
-  private db = inject(AngularFireDatabase);
+  private db = inject(Database);
 
-  constructor() { }
+  constructor() {
+    effect(() => {
+      const user = this.authService.user();
+      if (user) {
+        this.userId.set(user.uid);
+      }
+    });
+  }
 
   ngOnInit() {
-    toObservable(this.authService.user).subscribe(user => {
-      this.userId = user?.uid || '';
-    });
-    this.flights = [];
   }
 
   parseFlights() {
@@ -62,56 +64,47 @@ export class PohlRocksImporterComponent implements OnInit {
 
   removeDuplicateImports() {
     if (confirm('Are you sure to delete all duplicate Imports')) {
-      toObservable(this.authService.user).pipe(
-        mergeMap(user => this.db.list('users/' + user!.uid + '/flights').snapshotChanges()),
-        take(1),
-        map(snapshots =>
-          snapshots.map(c => {
-            const f = c.payload.val() as Flight;
-            if (f) f._id = c.key;
-            return f;
-          }).filter(f => !!f) as Flight[])
-      ).subscribe(flightArr => {
+      const user = this.authService.user();
+      if (!user) return;
 
+      const flightsRef = ref(this.db, 'users/' + user.uid + '/flights');
+      listVal<Flight>(flightsRef, { keyField: '_id' }).pipe(
+        take(1),
+        map(flights => flights.filter(f => !!f))
+      ).subscribe(flightArr => {
         flightArr.forEach(flight => {
           const importedId = (flight as any)['importedId'];
 
           if (importedId) {
             const flightsWithImportedId = flightArr.filter(f => (importedId === (f as any)['importedId']));
             if (flightsWithImportedId.length > 1) {
-
               const idToDelete = flightsWithImportedId[1]._id;
-              const ref = 'users/' + this.userId + '/flights/' + idToDelete;
-              console.log('Deleting Dup', ref);
-              this.db.object<Flight>(ref).remove().then(value => {
+              const objectRef = ref(this.db, 'users/' + user.uid + '/flights/' + idToDelete);
+              console.log('Deleting Dup', idToDelete);
+              remove(objectRef).then(value => {
                 console.log('Deleted Object', value);
               });
             }
           }
         });
       });
-
     }
   }
 
   deleteAllMyFlights() {
-    toObservable(this.authService.user).subscribe(user => {
-      // this.db.list('users/' + user.uid + '/flights').remove();
-    });
+    // Logic currently disabled in original code
   }
 
   importFlights(): void {
     console.log('Saving Flights', this.flights);
-    toObservable(this.authService.user).subscribe(user => {
-      const flightList = this.db.list<Flight>('users/' + user!.uid + '/flights');
-      this.flights.forEach(flight => {
-        (flight as any)[`importedId`] = flight['_id'];
-        flight.date = dayjs(flight.departureTime).startOf('day').format('YYYY-MM-DD');
-        flightList.push(flight);
-      });
+    const user = this.authService.user();
+    if (!user) return;
 
-    }, error => {
-      console.log(error);
+    const flightsRef = ref(this.db, 'users/' + user.uid + '/flights');
+    this.flights.forEach(flight => {
+      (flight as any)[`importedId`] = flight['_id'];
+      flight.date = dayjs(flight.departureTime).startOf('day').format('YYYY-MM-DD');
+      push(flightsRef, flight);
     });
   }
 

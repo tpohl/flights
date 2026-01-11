@@ -1,4 +1,4 @@
-<mat-card class="stats-card glass-card" [class.compact]="compact">
+<mat-card class="stats-card glass-card" [class.compact]="compact()">
     <mat-card-header>
         <mat-icon mat-card-avatar>analytics</mat-icon>
         <mat-card-title>Flight Summary</mat-card-title>
@@ -6,27 +6,34 @@
     <mat-card-content>
         <mat-list>
             <mat-list-item>
-                <mat-icon matListItemIcon *ngIf="!compact">flight</mat-icon>
+                @if (!compact()) {
+                <mat-icon matListItemIcon>flight</mat-icon>
+                }
                 <span matListItemTitle>Flights</span>
-                <span matListItemMeta class="stat-value">{{ stats?.count }}</span>
+                <span matListItemMeta class="stat-value">{{ stats()?.count }}</span>
             </mat-list-item>
             <mat-divider></mat-divider>
             <mat-list-item>
-                <mat-icon matListItemIcon *ngIf="!compact">route</mat-icon>
+                @if (!compact()) {
+                <mat-icon matListItemIcon>route</mat-icon>
+                }
                 <span matListItemTitle>Distance</span>
-                <span matListItemMeta class="stat-value">{{ stats?.distance | number : '1.0-0' }} km</span>
+                <span matListItemMeta class="stat-value">{{ stats()?.distance | number : '1.0-0' }} km</span>
             </mat-list-item>
             <mat-divider></mat-divider>
             <mat-list-item>
-                <mat-icon matListItemIcon *ngIf="!compact">schedule</mat-icon>
+                @if (!compact()) {
+                <mat-icon matListItemIcon>schedule</mat-icon>
+                }
                 <span matListItemTitle>Duration</span>
-                <span matListItemMeta class="stat-value">{{ stats?.totalTimeMilliseconds | amDurationExact
-                    }}</span>
+                <span matListItemMeta class="stat-value">{{ stats()?.totalTimeMilliseconds | amDurationExact }}</span>
             </mat-list-item>
             <mat-list-item>
-                <mat-icon matListItemIcon *ngIf="!compact">place</mat-icon>
+                @if (!compact()) {
+                <mat-icon matListItemIcon>place</mat-icon>
+                }
                 <span matListItemTitle>Airports Visited</span>
-                <span matListItemMeta class="stat-value">{{ stats?.airportsVisited?.size() }}</span>
+                <span matListItemMeta class="stat-value">{{ stats()?.airportsVisited?.size() }}</span>
             </mat-list-item>
         </mat-list>
     </mat-card-content>

@@ -11,6 +11,7 @@ import { FlightTileComponent } from '../flight-tile/flight-tile.component';
 import { OverallStats } from '../models/stats';
 import { CesiumDirective } from '../cesium.directive';
 import { FlightSummaryCardComponent } from '../flight-summary-card/flight-summary-card.component';
+import { FlightCardComponent } from '../flight-card/flight-card.component';
 
 // Angular Material
 import { MatCardModule } from '@angular/material/card';
@@ -20,24 +21,23 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatRippleModule } from '@angular/material/core';
 
 @Component({
-    imports: [
-        CommonModule,
-        FormsModule,
-        RouterModule,
-        ExactDurationPipe,
-        FlightTileComponent,
-        CesiumDirective,
-        MatCardModule,
-        MatButtonModule,
-        MatIconModule,
-        MatSlideToggleModule,
-        MatSlideToggleModule,
-        MatRippleModule,
-        FlightSummaryCardComponent
-    ],
-    selector: 'app-flight-list',
-    templateUrl: './flight-list.component.html',
-    styleUrls: ['./flight-list.component.scss']
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    ExactDurationPipe,
+    FlightTileComponent,
+    CesiumDirective,
+    MatCardModule,
+    MatButtonModule,
+    MatIconModule,
+    MatSlideToggleModule,
+    FlightCardComponent,
+    FlightSummaryCardComponent
+  ],
+  selector: 'app-flight-list',
+  templateUrl: './flight-list.component.html',
+  styleUrls: ['./flight-list.component.scss']
 })
 export class FlightListComponent implements OnInit {
   private flightsService = inject(FlightsService);

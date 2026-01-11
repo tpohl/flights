@@ -1,0 +1,20 @@
+@use '../variables' as *;
+@use '../mixins' as *;
+
+.flight-card-link {
+    @include flight-card-link;
+}
+
+.flight-card {
+    @include flight-card;
+
+    &.validated {
+        border-color: rgba(76, 175, 80, 0.3);
+        background: $gradient-success-alt !important;
+    }
+}
+
+// Override mat-card default overflow hidden
+::ng-deep .mat-mdc-card {
+    overflow: visible !important;
+}

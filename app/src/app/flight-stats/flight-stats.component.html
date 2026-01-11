@@ -1,4 +1,5 @@
-<div class="stats-glass-card glass-card" *ngIf="(stats$ | async) as stats">
+@if (stats$(); as stats) {
+<div class="stats-glass-card glass-card">
   <div class="stats-header">
     <mat-icon>analytics</mat-icon>
     <span class="header-title">Statistics</span>
@@ -13,27 +14,26 @@
       <div class="status-grid">
         <div class="status-item">
           <span class="status-label">Lufthansa API</span>
-          <mat-icon [class.success]="!!flight.lhApiFlight" [class.error]="!flight.lhApiFlight">
-            {{ !!flight.lhApiFlight ? 'check_circle' : 'cancel' }}
+          <mat-icon [class.success]="!!flight().lhApiFlight" [class.error]="!flight().lhApiFlight">
+            {{ !!flight().lhApiFlight ? 'check_circle' : 'cancel' }}
           </mat-icon>
         </div>
         <div class="status-item">
           <span class="status-label">Aero API</span>
-          <mat-icon [class.success]="!!flight.aeroApiFlight" [class.error]="!flight.aeroApiFlight">
-            {{ !!flight.aeroApiFlight ? 'check_circle' : 'cancel' }}
+          <mat-icon [class.success]="!!flight().aeroApiFlight" [class.error]="!flight().aeroApiFlight">
+            {{ !!flight().aeroApiFlight ? 'check_circle' : 'cancel' }}
           </mat-icon>
         </div>
         <div class="status-item">
           <span class="status-label">Aero API Track</span>
-          <ng-container *ngIf="(aeroApiTrack$|async) as aeroApiTrack; else noAeroApiTrack">
-            <mat-icon [class.success]="!!aeroApiTrack && aeroApiTrack?.actual_distance > 0"
-              [class.warning]="!!aeroApiTrack && aeroApiTrack?.actual_distance <= 0" [class.error]="!aeroApiTrack">
-              {{ !!aeroApiTrack ? (aeroApiTrack?.actual_distance > 0 ? 'check_circle' : 'star_half') : 'cancel' }}
-            </mat-icon>
-          </ng-container>
-          <ng-template #noAeroApiTrack>
-            <mat-icon class="error">cancel</mat-icon>
-          </ng-template>
+          @if (aeroApiTrack$(); as aeroApiTrack) {
+          <mat-icon [class.success]="aeroApiTrack.actual_distance > 0"
+            [class.warning]="aeroApiTrack.actual_distance <= 0">
+            {{ aeroApiTrack.actual_distance > 0 ? 'check_circle' : 'star_half' }}
+          </mat-icon>
+          } @else {
+          <mat-icon class="error">cancel</mat-icon>
+          }
         </div>
       </div>
     </section>
@@ -59,8 +59,11 @@
       </div>
     </section>
 
+    @if (stats.flightsWithAircraft.length > 1) {
+    <mat-divider></mat-divider>
+
     <!-- Same Aircraft Flights Section -->
-    <section class="stats-section" *ngIf="stats.flightsWithAircraft.length > 1">
+    <section class="stats-section">
       <mat-accordion>
         <mat-expansion-panel class="aircraft-panel">
           <mat-expansion-panel-header>
@@ -70,7 +73,7 @@
           </mat-expansion-panel-header>
 
           <div class="aircraft-flights-grid">
-            @for (f of stats.flightsWithAircraft; track $index) {
+            @for (f of stats.flightsWithAircraft; track f._id) {
             <div class="preview-tile">
               <app-flight-tile [flight]="f" [compact]="true"></app-flight-tile>
             </div>
@@ -79,5 +82,7 @@
         </mat-expansion-panel>
       </mat-accordion>
     </section>
+    }
   </div>
 </div>
+}

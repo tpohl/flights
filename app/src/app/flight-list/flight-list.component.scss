@@ -52,33 +52,9 @@
 /* Map Options Card */
 .map-options-card {
   @include light-glass-card;
+  @include stats-card-header;
   margin-bottom: 0;
   /* Let flex gap handle spacing */
-
-  mat-card-header {
-    padding: $spacing-xl;
-  }
-
-  mat-card-title {
-    font-size: 1.5rem;
-    font-weight: $font-weight-bold;
-    color: $text-primary;
-  }
-
-  mat-icon[mat-card-avatar] {
-    background: $gradient-primary-alt;
-    color: white;
-    padding: 12px;
-    border-radius: $radius-xl;
-    font-size: 28px;
-    width: 28px;
-    height: 28px;
-    box-shadow: 0 8px 16px rgba(99, 102, 241, 0.4);
-  }
-
-  mat-card-content {
-    padding: 0 $spacing-xl $spacing-xl $spacing-xl !important;
-  }
 }
 
 ::ng-deep app-cesium {
@@ -101,34 +77,17 @@
 
 /* Flight Cards Grid - extra space for shadows */
 .flights-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-  gap: 28px;
-  padding: $spacing-2xl $spacing-md;
-  margin: 0 (-$spacing-md);
-  overflow: visible;
+  @include flights-grid;
 }
 
-.flight-card-link {
-  text-decoration: none;
-  display: block;
-  overflow: visible !important;
-}
+
 
 /* Override mat-card default overflow hidden */
 ::ng-deep .mat-mdc-card {
   overflow: visible !important;
 }
 
-.flight-card {
-  @include card-glass;
-  cursor: pointer;
-  background: $bg-lightest !important;
 
-  mat-card-content {
-    padding: $spacing-lg !important;
-  }
-}
 
 /* Responsive adjustments */
 @include respond-to('md') {
