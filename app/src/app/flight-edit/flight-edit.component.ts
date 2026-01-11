@@ -1,8 +1,7 @@
 import { Location, LocationStrategy, PathLocationStrategy, CommonModule } from '@angular/common';
 import { AirportService } from '../services/airport.service';
-import { BehaviorSubject, filter, Observable, of, ReplaySubject, Subject, Subscription, combineLatest } from 'rxjs';
 
-import { Component, Input, OnDestroy, OnInit, inject, effect, ViewChild, ElementRef, signal, input } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject, effect, ViewChild, ElementRef, signal, input, computed } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { FlightStatsComponent } from '../flight-stats/flight-stats.component';
@@ -12,22 +11,18 @@ import { CesiumDirective } from '../cesium.directive';
 
 import { Flight, TRAVEL_CLASSES } from '../models/flight';
 
-import { Airport } from '../models/airport';
 import DayJS from 'dayjs';
 import DayJSUtc from 'dayjs/plugin/utc';
 import DayJSTimezone from 'dayjs/plugin/timezone';
 
-DayJS.extend(DayJSUtc);
-DayJS.extend(DayJSTimezone);
-
-import { User } from 'firebase/auth';
 import { FlightsService, SaveResultType } from '../services/flights.service';
 import { ExactDurationPipe } from '../pipes/exactDurationPipe';
 import { FlightTileComponent } from '../flight-tile/flight-tile.component';
 
-
 import { AuthService } from '../services/auth.service';
-import { toObservable } from '@angular/core/rxjs-interop';
+import { toSignal, toObservable } from '@angular/core/rxjs-interop';
+import { switchMap, filter, map } from 'rxjs/operators';
+import { of } from 'rxjs';
 
 // Angular Material
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -41,6 +36,9 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatChipsModule } from '@angular/material/chips';
+
+DayJS.extend(DayJSUtc);
+DayJS.extend(DayJSTimezone);
 
 @Component({
   imports: [
@@ -70,17 +68,43 @@ import { MatChipsModule } from '@angular/material/chips';
   templateUrl: './flight-edit.component.html',
   styleUrls: ['./flight-edit.component.scss']
 })
-export class FlightEditComponent implements OnInit, OnDestroy {
+export class FlightEditComponent {
 
   private authService = inject(AuthService);
   protected flightsService = inject(FlightsService);
-  private route = inject(ActivatedRoute);
-  private router = inject(Router);
   private airportService = inject(AirportService);
   private location = inject(Location);
+  private router = inject(Router);
 
   flightId = input<string>();
   user = this.authService.user;
+
+  flight = signal<Flight | null>(null);
+  objectRef = signal<string | undefined>(undefined);
+
+  departureTime = signal('00:00');
+  arrivalTime = signal('00:00');
+
+  TRAVEL_CLASSES_LIST = Array.from(TRAVEL_CLASSES.values());
+
+  @ViewChild('formCard', { read: ElementRef }) formCard?: ElementRef;
+
+  fromAirport = toSignal(
+    toObservable(this.flight).pipe(
+      switchMap(f => (f?.from && f.from.length === 3) ? this.airportService.loadAirport(f.from) : of(null))
+    )
+  );
+
+  toAirport = toSignal(
+    toObservable(this.flight).pipe(
+      switchMap(f => (f?.to && f.to.length === 3) ? this.airportService.loadAirport(f.to) : of(null))
+    )
+  );
+
+  flightsForMap = computed(() => {
+    const f = this.flight();
+    return f ? [f] : [];
+  });
 
   constructor() {
     effect(() => {
@@ -92,28 +116,39 @@ export class FlightEditComponent implements OnInit, OnDestroy {
     });
 
     effect(() => {
-      const flight = this.flightsService.activeFlight();
-      if (flight) {
-        this.flight = flight;
-        this.objectRef = flight._objectReference;
-        if (this.flight.from) this.loadFromAirport(this.flight.from);
-        if (this.flight.to) this.loadToAirport(this.flight.to);
-        this.flightsForMap$.next([flight]);
+      const active = this.flightsService.activeFlight();
+      if (active) {
+        this.flight.set(active);
+        this.objectRef.set(active._objectReference);
+      }
+    });
+
+    // Update times when airport changes or flight times change
+    effect(() => {
+      const f = this.flight();
+      const fromAp = this.fromAirport();
+      if (f?.departureTime && fromAp?.timezoneId) {
+        this.departureTime.set(DayJS(f.departureTime).tz(fromAp.timezoneId).format('HH:mm'));
+      }
+    });
+
+    effect(() => {
+      const f = this.flight();
+      const toAp = this.toAirport();
+      if (f?.arrivalTime && toAp?.timezoneId) {
+        this.arrivalTime.set(DayJS(f.arrivalTime).tz(toAp.timezoneId).format('HH:mm'));
       }
     });
   }
 
-  flight: Flight | null = null;
-
-  @ViewChild('formCard', { read: ElementRef }) formCard?: ElementRef;
-
   private initializeFlight(id: string | undefined) {
     if (!id || id === 'new') {
       this.flightsService.activeFlight.set(null);
-      this.objectRef = undefined;
-      this.flight = new Flight();
-      this.flight._id = null;
-      this.flight.date = DayJS().format('YYYY-MM-DD');
+      this.objectRef.set(undefined);
+      const newFlight = new Flight();
+      newFlight._id = null;
+      newFlight.date = DayJS().format('YYYY-MM-DD');
+      this.flight.set(newFlight);
 
       // Focus on the form when creating a new flight
       setTimeout(() => {
@@ -126,62 +161,31 @@ export class FlightEditComponent implements OnInit, OnDestroy {
     }
   }
 
-  departureTime = '00:00';
-  arrivalTime = '00:00';
-
-  TRAVEL_CLASSES_LIST = Array.from(TRAVEL_CLASSES.values());
-
-  objectRef: string | undefined;
-
-  fromAirport$: Subject<Airport> = new ReplaySubject<Airport>(1);
-  toAirport$: Subject<Airport> = new ReplaySubject<Airport>(1);
-  flightsForMap$: Subject<Flight[]> = new ReplaySubject<Flight[]>(1);
-
-  private subs = new Subscription();
-
-
-
-
-  ngOnInit() {
-    this.subs.add(this.fromAirport$.subscribe(fromAirport => {
-      if (fromAirport && this.flight && this.flight.departureTime && fromAirport.timezoneId) {
-        this.departureTime = DayJS(this.flight.departureTime).tz(fromAirport.timezoneId).format('HH:mm');
-      }
-    }));
-
-    this.subs.add(this.toAirport$.subscribe(toAirport => {
-      if (toAirport && this.flight && this.flight.arrivalTime && toAirport.timezoneId) {
-        this.arrivalTime = DayJS(this.flight.arrivalTime).tz(toAirport.timezoneId).format('HH:mm');
-      }
-    }));
-  }
-
   selectDepartureTime() {
-    if (!!this.flight) {
-      const time = this.departureTime;
-
-      const dateWithWithTime = DayJS(this.flight.date).format('YYYY-MM-DD') + 'T' + time;
-      this.fromAirport$
-        .pipe(filter(ap => !!ap && !!ap.timezoneId))
-        .subscribe(ap => {
-          this.flight!.departureTime = DayJS.tz(dateWithWithTime, ap!!.timezoneId).clone().tz('UTC').format(); // '2013-06-01T00:00:00',
-        });
+    const f = this.flight();
+    const ap = this.fromAirport();
+    if (f && ap?.timezoneId) {
+      const time = this.departureTime();
+      const dateWithTime = DayJS(f.date).format('YYYY-MM-DD') + 'T' + time;
+      f.departureTime = DayJS.tz(dateWithTime, ap.timezoneId).tz('UTC').format();
+      this.flight.set({ ...f });
     }
   }
 
   selectArrivalTime() {
-    if (!!this.flight) {
-      const time = this.arrivalTime;
+    const f = this.flight();
+    const ap = this.toAirport();
+    if (f && ap?.timezoneId) {
+      const time = this.arrivalTime();
+      const dateWithTime = DayJS(f.date).format('YYYY-MM-DD') + 'T' + time;
+      let arrival = DayJS.tz(dateWithTime, ap.timezoneId).tz('UTC');
 
-      const dateWithWithTime = DayJS(this.flight.date).format('YYYY-MM-DD') + 'T' + time;
-      this.toAirport$
-        .pipe(filter(ap => !!ap && !!ap.timezoneId))
-        .subscribe(ap => {
-          this.flight!.arrivalTime = DayJS.tz(dateWithWithTime, ap!!.timezoneId).tz('UTC').format(); // '2013-06-01T00:00:00',
-          if (this.flight!.arrivalTime < this.flight!.departureTime) { // When the arrival is BEFORE the Departure, then we add a day.
-            this.flight!.arrivalTime = DayJS(this.flight!.arrivalTime).add(1, 'days').clone().tz('UTC').format();
-          }
-        });
+      if (arrival.format() < f.departureTime) {
+        arrival = arrival.add(1, 'days');
+      }
+
+      f.arrivalTime = arrival.format();
+      this.flight.set({ ...f });
     }
   }
 
@@ -196,110 +200,71 @@ export class FlightEditComponent implements OnInit, OnDestroy {
     );
   }
 
-  selectedDate(momentDate: DayJS.Dayjs) {
-    if (!!this.flight) {
-      this.flight.date = momentDate.format('YYYY-MM-DD');
+  onDateChange(event: any): void {
+    const f = this.flight();
+    if (f && event.value) {
+      f.date = DayJS(event.value).format('YYYY-MM-DD');
+      this.flight.set({ ...f });
     }
-  }
-
-  loadAirport(code: String): Observable<Airport | null> {
-    if (code && code.length === 3) {
-      return this.airportService.loadAirport(code);
-    } else {
-      return of(null);
-    }
-  }
-
-  loadFromAirport(code: String): Observable<Airport | null> {
-    const ap = this.loadAirport(code);
-    ap.subscribe((a) => {
-      if (a) this.fromAirport$.next(a);
-    });
-    return ap;
-  }
-
-  loadToAirport(code: String): Observable<Airport | null> {
-    const ap = this.loadAirport(code);
-    ap.subscribe((a) => {
-      if (a) this.toAirport$.next(a);
-    });
-    return ap;
   }
 
   autocomplete(): void {
-    if (!!this.flight) {
-      this.flight.needsAutocomplete = (!this.flight.needsAutocomplete);
+    const f = this.flight();
+    if (f) {
+      f.needsAutocomplete = !f.needsAutocomplete;
+      this.flight.set({ ...f });
       this.save();
     }
   }
 
-  onDateChange(event: any): void {
-    if (!!this.flight && event.value) {
-      this.flight.date = DayJS(event.value).format('YYYY-MM-DD');
-    }
-  }
-
   save(): void {
-    if (!!this.flight) {
-      const sub = this.flightsService.saveFlight(this.flight)
-        .subscribe(result => {
-          if (!!result && result.type === SaveResultType.CREATED) {
-            const flightId = result.flightId;
-            this.loadFlight(flightId);
-            this.location.replaceState('flight/' + flightId);
-          }
-          sub.unsubscribe();
-        });
+    const f = this.flight();
+    if (f) {
+      this.flightsService.saveFlight(f).subscribe(result => {
+        if (result && result.type === SaveResultType.CREATED) {
+          const flightId = result.flightId;
+          this.loadFlight(flightId);
+          this.location.replaceState('flight/' + flightId);
+        }
+      });
     }
   }
 
   delete(): void {
-    if (!!this.flight && !!this.objectRef) {
-      this.flight._deleted = true;
-
-      const sub = this.flightsService.saveFlight(this.flight)
-        .subscribe(_ => {
-          this.router.navigateByUrl('/flights');
-          sub.unsubscribe();
-        });
+    const f = this.flight();
+    const ref = this.objectRef();
+    if (f && ref) {
+      f._deleted = true;
+      this.flightsService.saveFlight(f).subscribe(() => {
+        this.router.navigateByUrl('/flights');
+      });
     } else {
       this.router.navigateByUrl('/flights');
     }
   }
 
-  /**
-   * Check if the flight is anomalously slow or fast
-   */
   isFlightAnomaly(): boolean {
-    return this.flight ? this.flightsService.isAnomalies(this.flight) : false;
+    const f = this.flight();
+    return f ? this.flightsService.isAnomalies(f) : false;
   }
 
-  /**
-   * Check if flight is slow anomaly
-   */
   isSlowAnomaly(): boolean {
-    return this.flight ? this.flightsService.isSlowAnomaly(this.flight) : false;
+    const f = this.flight();
+    return f ? this.flightsService.isSlowAnomaly(f) : false;
   }
 
-  /**
-   * Check if flight is fast anomaly
-   */
   isFastAnomaly(): boolean {
-    return this.flight ? this.flightsService.isFastAnomaly(this.flight) : false;
+    const f = this.flight();
+    return f ? this.flightsService.isFastAnomaly(f) : false;
   }
 
-  /**
-   * Toggle the validated anomaly flag and save
-   */
   validateAnomaly(): void {
-    if (this.flight) {
-      this.flight.validatedAnomaly = !this.flight.validatedAnomaly;
+    const f = this.flight();
+    if (f) {
+      f.validatedAnomaly = !f.validatedAnomaly;
+      this.flight.set({ ...f });
       this.save();
     }
-  }
-
-  ngOnDestroy() {
-    this.subs.unsubscribe();
   }
 }
 

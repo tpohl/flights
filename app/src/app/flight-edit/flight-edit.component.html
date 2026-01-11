@@ -1,17 +1,17 @@
 <div class="edit-container">
-  @if (flight) {
+  @if (flight(); as f) {
   <!-- Header -->
   <div class="edit-header">
     <div class="header-content">
       <h1 class="page-title">
-        @if (!!flight._id) {
+        @if (!!f._id) {
         Edit Flight
         } @else {
         New Flight
         }
       </h1>
-      @if (!!flight._id) {
-      <p class="flight-summary">{{ flight.from }} → {{ flight.to }} · {{ flight.departureTime | amTimeAgo }}</p>
+      @if (!!f._id) {
+      <p class="flight-summary">{{ f.from }} → {{ f.to }} · {{ f.departureTime | amTimeAgo }}</p>
       }
     </div>
     <a mat-icon-button routerLink="/flights" aria-label="Close" class="close-button">
@@ -19,12 +19,12 @@
     </a>
   </div>
 
-  <div [class.is-disabled]="!flight._id">
+  <div [class.is-disabled]="!f._id">
     <!-- Flight Preview Card -->
     <mat-card class="preview-card glass-card">
       <mat-card-content>
         <!-- Anomaly Badge -->
-        @if (isFlightAnomaly() && !flight.validatedAnomaly) {
+        @if (isFlightAnomaly() && !f.validatedAnomaly) {
         <div class="anomaly-alert">
           <mat-icon class="alert-icon">warning</mat-icon>
           <div class="alert-text">
@@ -35,7 +35,7 @@
               This flight is very fast
               }
             </strong>
-            <p>Average speed: {{ flightsService.getAverageSpeed(flight) | number: '1.0-0' }} km/h</p>
+            <p>Average speed: {{ flightsService.getAverageSpeed(f) | number: '1.0-0' }} km/h</p>
             <p class="alert-description">
               This may indicate a data entry error. Please verify the departure/arrival times or distance.
             </p>
@@ -47,7 +47,7 @@
         </div>
         }
 
-        @if (isFlightAnomaly() && flight.validatedAnomaly) {
+        @if (isFlightAnomaly() && f.validatedAnomaly) {
         <div class="validated-anomaly-badge">
           <mat-icon>verified</mat-icon>
           <span>Validated Anomaly</span>
@@ -57,18 +57,18 @@
         </div>
         }
 
-        <app-flight-tile [flight]="flight!"></app-flight-tile>
+        <app-flight-tile [flight]="f"></app-flight-tile>
       </mat-card-content>
     </mat-card>
 
     <!-- Map -->
     <div class="map-container">
-      <app-cesium [flights]="(flightsForMap$ | async)!" [timelineMode]="false"></app-cesium>
+      <app-cesium [flights]="flightsForMap()" [timelineMode]="false"></app-cesium>
     </div>
 
     <!-- Flight Stats -->
     <div class="stats-container">
-      <app-flight-stats [flight]="flight!" [aeroApiTrack]=""></app-flight-stats>
+      <app-flight-stats [flight]="f"></app-flight-stats>
     </div>
   </div>
 
@@ -83,7 +83,7 @@
         <!-- Date -->
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Date</mat-label>
-          <input matInput [matDatepicker]="picker" [value]="flight.date" (dateChange)="onDateChange($event)"
+          <input matInput [matDatepicker]="picker" [value]="f.date" (dateChange)="onDateChange($event)"
             placeholder="YYYY-MM-DD">
           <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
           <mat-datepicker #picker></mat-datepicker>
@@ -93,10 +93,10 @@
         <div class="input-with-action">
           <mat-form-field appearance="outline" class="flex-grow">
             <mat-label>Flight Number</mat-label>
-            <input matInput [(ngModel)]="flight.flightno" placeholder="e.g. LH123">
+            <input matInput [(ngModel)]="f.flightno" placeholder="e.g. LH123">
             <mat-icon matSuffix>flight</mat-icon>
           </mat-form-field>
-          <button mat-icon-button (click)="autocomplete()" [class.loading]="flight.needsAutocomplete"
+          <button mat-icon-button (click)="autocomplete()" [class.loading]="f.needsAutocomplete"
             matTooltip="Auto-complete flight info">
             <mat-icon>auto_fix_high</mat-icon>
           </button>
@@ -107,17 +107,15 @@
         <!-- From Airport -->
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>From</mat-label>
-          <input matInput [(ngModel)]="flight.from" placeholder="Origin (e.g. VIE)"
-            (change)="loadFromAirport(flight.from)">
-          <mat-hint>{{ (fromAirport$ | async)?.name }}</mat-hint>
+          <input matInput [(ngModel)]="f.from" placeholder="Origin (e.g. VIE)">
+          <mat-hint>{{ fromAirport()?.name }}</mat-hint>
         </mat-form-field>
 
         <!-- To Airport -->
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>To</mat-label>
-          <input matInput [(ngModel)]="flight.to" placeholder="Destination (e.g. HAM)"
-            (change)="loadToAirport(flight.to)">
-          <mat-hint>{{ (toAirport$ | async)?.name }}</mat-hint>
+          <input matInput [(ngModel)]="f.to" placeholder="Destination (e.g. HAM)">
+          <mat-hint>{{ toAirport()?.name }}</mat-hint>
         </mat-form-field>
 
         <mat-divider></mat-divider>
@@ -147,14 +145,14 @@
         <!-- Distance -->
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Distance</mat-label>
-          <input matInput [(ngModel)]="flight.distance" placeholder="Distance in km">
-          <mat-hint>Calculated: {{ flight | flightDistance | number : '1.0-0' }} km</mat-hint>
+          <input matInput [(ngModel)]="f.distance" placeholder="Distance in km">
+          <mat-hint>Calculated: {{ f | flightDistance | number : '1.0-0' }} km</mat-hint>
         </mat-form-field>
 
         <!-- Duration (read-only) -->
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Duration</mat-label>
-          <input matInput [value]="flight.durationMilliseconds | amDurationExact:'milliseconds'" readonly>
+          <input matInput [value]="f.durationMilliseconds | amDurationExact:'milliseconds'" readonly>
           <mat-icon matSuffix>timer</mat-icon>
         </mat-form-field>
 
@@ -163,14 +161,14 @@
         <!-- Aircraft Type -->
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Aircraft Type Code</mat-label>
-          <input matInput [(ngModel)]="flight.aircraftTypeCode" placeholder="e.g. A320">
-          <mat-hint>{{ flight.aircraftType }}</mat-hint>
+          <input matInput [(ngModel)]="f.aircraftTypeCode" placeholder="e.g. A320">
+          <mat-hint>{{ f.aircraftType }}</mat-hint>
         </mat-form-field>
 
         <!-- Aircraft Registration -->
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Aircraft Registration</mat-label>
-          <input matInput [(ngModel)]="flight.aircraftRegistration" placeholder="e.g. OE-LBL">
+          <input matInput [(ngModel)]="f.aircraftRegistration" placeholder="e.g. OE-LBL">
         </mat-form-field>
 
         <mat-divider></mat-divider>
@@ -178,14 +176,14 @@
         <!-- Seat -->
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Seat</mat-label>
-          <input matInput [(ngModel)]="flight.seat" placeholder="e.g. 12A">
+          <input matInput [(ngModel)]="f.seat" placeholder="e.g. 12A">
           <mat-icon matSuffix>airline_seat_recline_normal</mat-icon>
         </mat-form-field>
 
         <!-- Seat Type -->
         <div class="radio-group-container">
           <label class="radio-label">Seat Type</label>
-          <mat-radio-group [(ngModel)]="flight.seatType" class="radio-group">
+          <mat-radio-group [(ngModel)]="f.seatType" class="radio-group">
             <mat-radio-button value="A">Aisle</mat-radio-button>
             <mat-radio-button value="M">Middle</mat-radio-button>
             <mat-radio-button value="W">Window</mat-radio-button>
@@ -195,7 +193,7 @@
         <!-- Class -->
         <div class="radio-group-container">
           <label class="radio-label">Class</label>
-          <mat-radio-group [(ngModel)]="flight.class" class="radio-group">
+          <mat-radio-group [(ngModel)]="f.class" class="radio-group">
             @for (travelClass of TRAVEL_CLASSES_LIST; track travelClass.key) {
             <mat-radio-button [value]="travelClass.key">{{ travelClass.long }}</mat-radio-button>
             }
@@ -205,7 +203,7 @@
         <!-- Reason -->
         <div class="radio-group-container">
           <label class="radio-label">Reason</label>
-          <mat-radio-group [(ngModel)]="flight.reason" class="radio-group">
+          <mat-radio-group [(ngModel)]="f.reason" class="radio-group">
             <mat-radio-button value="B">Work</mat-radio-button>
             <mat-radio-button value="L">Leisure</mat-radio-button>
             <mat-radio-button value="C">Crew</mat-radio-button>
@@ -218,26 +216,26 @@
         <!-- Carrier -->
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Carrier</mat-label>
-          <input matInput [(ngModel)]="flight.carrier" placeholder="e.g. Austrian Airlines">
+          <input matInput [(ngModel)]="f.carrier" placeholder="e.g. Austrian Airlines">
         </mat-form-field>
 
         <!-- Name -->
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Name</mat-label>
-          <input matInput [(ngModel)]="flight.name" placeholder="Flight name">
+          <input matInput [(ngModel)]="f.name" placeholder="Flight name">
         </mat-form-field>
 
         <!-- Note -->
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Note</mat-label>
-          <input matInput [(ngModel)]="flight.note" placeholder="Additional notes">
+          <input matInput [(ngModel)]="f.note" placeholder="Additional notes">
         </mat-form-field>
 
         <!-- Error Message -->
-        @if (flight.errorMessage) {
+        @if (f.errorMessage) {
         <div class="error-message">
           <mat-icon>error</mat-icon>
-          <span>{{ flight.errorMessage }}</span>
+          <span>{{ f.errorMessage }}</span>
         </div>
         }
       </div>
