@@ -130,10 +130,7 @@
                 <div class="chart-container">
                     <div *ngFor="let item of stats().topAirlines" class="chart-row">
                         <div class="chart-label">{{ item.name }}</div>
-                        <div class="chart-bar-container">
-                            <div class="chart-bar"
-                                [style.width.%]="getPercentage(item.count, stats().topAirlines[0]?.count || 1)"></div>
-                        </div>
+
                         <div class="chart-value">{{ item.count }}</div>
                     </div>
                 </div>
@@ -150,11 +147,7 @@
                 <div class="chart-container">
                     <div *ngFor="let item of stats().topAircraftTypes" class="chart-row">
                         <div class="chart-label">{{ item.name }}</div>
-                        <div class="chart-bar-container">
-                            <div class="chart-bar"
-                                [style.width.%]="getPercentage(item.count, stats().topAircraftTypes[0]?.count || 1)">
-                            </div>
-                        </div>
+
                         <div class="chart-value">{{ item.count }}</div>
                     </div>
                 </div>
@@ -171,11 +164,7 @@
                 <div class="chart-container">
                     <div *ngFor="let item of stats().topRegistrations" class="chart-row">
                         <div class="chart-label">{{ item.name }}</div>
-                        <div class="chart-bar-container">
-                            <div class="chart-bar"
-                                [style.width.%]="getPercentage(item.count, stats().topRegistrations[0]?.count || 1)">
-                            </div>
-                        </div>
+
                         <div class="chart-value">{{ item.count }}</div>
                     </div>
                 </div>
@@ -192,10 +181,7 @@
                 <div class="chart-container">
                     <div *ngFor="let item of stats().topRoutes" class="chart-row">
                         <div class="chart-label">{{ getRouteLabel(item.name) }}</div>
-                        <div class="chart-bar-container">
-                            <div class="chart-bar"
-                                [style.width.%]="getPercentage(item.count, stats().topRoutes[0]?.count || 1)"></div>
-                        </div>
+
                         <div class="chart-value">{{ item.count }}</div>
                     </div>
                 </div>
@@ -212,10 +198,7 @@
                 <div class="chart-container">
                     <div *ngFor="let item of stats().topAirports" class="chart-row">
                         <div class="chart-label">{{ item.name }}</div>
-                        <div class="chart-bar-container">
-                            <div class="chart-bar"
-                                [style.width.%]="getPercentage(item.count, stats().topAirports[0]?.count || 1)"></div>
-                        </div>
+
                         <div class="chart-value">{{ item.count }}</div>
                     </div>
                 </div>
@@ -232,10 +215,7 @@
                 <div class="chart-container">
                     <div *ngFor="let item of stats().topCountries" class="chart-row">
                         <div class="chart-label">{{ item.name }}</div>
-                        <div class="chart-bar-container">
-                            <div class="chart-bar highlight"
-                                [style.width.%]="getPercentage(item.count, stats().topCountries[0]?.count || 1)"></div>
-                        </div>
+
                         <div class="chart-value">{{ item.count }}</div>
                     </div>
                 </div>
@@ -262,10 +242,7 @@
                                     </mat-chip>
                                 </mat-chip-set>
                             </div>
-                            <div class="chart-bar-container">
-                                <div class="chart-bar" [style.width.%]="getPercentage(class.value, stats().distance)">
-                                </div>
-                            </div>
+
                             <div class="chart-value">{{ class.value | number : '1.0-0' }} km</div>
                         </div>
                     </div>
@@ -281,10 +258,7 @@
                                     </mat-chip>
                                 </mat-chip-set>
                             </div>
-                            <div class="chart-bar-container">
-                                <div class="chart-bar highlight"
-                                    [style.width.%]="getPercentage(class.value, stats().totalTimeMilliseconds)"></div>
-                            </div>
+
                             <div class="chart-value">{{ class.value | amDurationExact }}</div>
                         </div>
                     </div>
