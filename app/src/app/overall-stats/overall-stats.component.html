@@ -140,7 +140,11 @@
                 <div class="chart-container">
                     @for (item of stats().topAirlines; track item.name) {
                     <div class="chart-row">
-                        <div class="chart-label">{{ item.name }}</div>
+                        <div class="chart-label">
+                            <img [src]="item.name | logo" class="airline-logo-mini" alt=""
+                                (error)="$event.target.src='assets/logos/default_airline.svg'; $event.target.onerror=null">
+                            {{ item.name }}
+                        </div>
                         <div class="chart-value">{{ item.count }}</div>
                     </div>
                     }
@@ -158,7 +162,9 @@
                 <div class="chart-container">
                     @for (item of stats().topAircraftTypes; track item.name) {
                     <div class="chart-row">
-                        <div class="chart-label">{{ item.name }}</div>
+                        <div class="chart-label">
+                            {{ item.name }}
+                        </div>
                         <div class="chart-value">{{ item.count }}</div>
                     </div>
                     }

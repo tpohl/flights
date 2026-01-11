@@ -11,6 +11,19 @@
   @include flex-between;
 }
 
+.logo-and-number {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+}
+
+.airline-logo {
+  height: 28px;
+  width: auto;
+  border-radius: $radius-sm;
+  color: $text-secondary;
+}
+
 .flight-number {
   @include heading($font-size-2xl, $font-weight-bold);
   letter-spacing: -0.02em;
@@ -170,6 +183,7 @@
   color: $text-secondary;
   font-weight: $font-weight-medium;
 }
+
 
 .separator {
   margin: 0 $spacing-sm;

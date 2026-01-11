@@ -5,6 +5,7 @@ import { OverallStats } from '../models/stats';
 import { FlightsService } from '../services/flights.service';
 import { CommonModule } from '@angular/common';
 import { ExactDurationPipe } from '../pipes/exactDurationPipe';
+import { LogoPipe } from '../pipes/logo.pipe';
 
 // Angular Material
 import { MatCardModule } from '@angular/material/card';
@@ -30,7 +31,8 @@ import { FlightSummaryCardComponent } from '../flight-summary-card/flight-summar
     MatChipsModule,
     MatButtonModule,
     MatMenuModule,
-    FlightSummaryCardComponent
+    FlightSummaryCardComponent,
+    LogoPipe
   ],
   templateUrl: './overall-stats.component.html',
   styleUrl: './overall-stats.component.scss'

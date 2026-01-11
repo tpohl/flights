@@ -8,8 +8,10 @@ import { Flight } from '../models/flight';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatIconModule } from '@angular/material/icon';
 
+import { LogoPipe } from '../pipes/logo.pipe';
+
 @Component({
-  imports: [CommonModule, FlightDistancePipe, SeatInfoComponent, MatChipsModule, MatIconModule],
+  imports: [CommonModule, FlightDistancePipe, SeatInfoComponent, MatChipsModule, MatIconModule, LogoPipe],
   selector: 'app-flight-tile',
   templateUrl: './flight-tile.component.html',
   styleUrls: ['./flight-tile.component.scss'],

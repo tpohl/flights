@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
-./mvnw package
+set -e
+./mvnw clean package
 
 docker build -f src/main/docker/Dockerfile.jvm -t flights-media-server .

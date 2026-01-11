@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
-./mvnw package -Pnative -Dquarkus.native.container-build=true
+set -e
+./mvnw clean package -Pnative -Dquarkus.native.container-build=true -Dquarkus.native.container-runtime=docker
 
 docker build -f src/main/docker/Dockerfile.native-micro -t flights-media-server .

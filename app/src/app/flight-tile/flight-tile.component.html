@@ -1,7 +1,11 @@
 <div class="flight-tile">
   <!-- Header: Flight number + tags -->
   <div class="tile-header">
-    <span class="flight-number">{{ flight().flightno }}</span>
+    <div class="logo-and-number">
+      <img [src]="flight().flightno | logo" class="airline-logo" alt=""
+        (error)="$event.target.src='assets/logos/default_airline.svg'; $event.target.onerror=null">
+      <span class="flight-number">{{ flight().flightno }}</span>
+    </div>
     <div class="tags">
       @if (compact() && flight().departureTime) {
       <span class="date-tag">{{ flight().departureTime | date:'dd.MM.yyyy' }}</span>

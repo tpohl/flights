@@ -145,6 +145,9 @@ mat-divider {
   font-weight: $font-weight-semibold;
   color: $text-primary;
   @include text-truncate;
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
 
   mat-chip-set {
     display: flex;
@@ -161,6 +164,15 @@ mat-divider {
   color: $text-primary;
   white-space: nowrap;
 }
+
+.airline-logo-mini {
+  height: 24px;
+  width: auto;
+  border-radius: $radius-xs;
+  color: $text-secondary;
+}
+
+
 
 /* Class Stats Grid */
 .class-stats-grid {

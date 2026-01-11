@@ -44,10 +44,39 @@
         },
         "operationId": "getAirportImage"
       }
+    },
+    "/airline/logo/{airlinecode}": {
+      "get": {
+        "parameters": [
+          {
+            "name": "airlinecode",
+            "description": "IATA code of the airline",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "LH"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "image/png": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            },
+            "description": "success"
+          }
+        },
+        "operationId": "getAirlineLogo"
+      }
     }
   },
   "components": {
-    "schemas": {
-    }
+    "schemas": {}
   }
 }
