@@ -170,6 +170,9 @@ mat-divider {
   width: auto;
   border-radius: $radius-xs;
   color: $text-secondary;
+  filter: grayscale(100%) brightness(0.7) contrast(1.2);
+  mix-blend-mode: multiply;
+  opacity: 0.8;
 }
 
 

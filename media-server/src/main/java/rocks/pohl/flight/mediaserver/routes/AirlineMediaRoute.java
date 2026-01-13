@@ -75,7 +75,7 @@ public class AirlineMediaRoute extends RouteBuilder {
                 .when(body().isNull())
                 .log("Airline logo not found in cache for ${header.normalized_code}, fetching from external source")
                 .removeHeader(Exchange.HTTP_URI)
-                .toD("https://pics.avs.io/200/200/${header.normalized_code}.png?httpMethod=GET")
+                .toD("https://www.gstatic.com/flights/airline_logos/70px/${header.normalized_code}.png?httpMethod=GET")
                 .choice()
                 .when(header(Exchange.HTTP_RESPONSE_CODE).isEqualTo(200))
                 .setHeader("Cache-Control", constant("public, max-age=31536000, immutable"))

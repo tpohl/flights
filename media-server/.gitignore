@@ -1,3 +1,5 @@
+imagecache/
+
 #Maven
 target/
 pom.xml.tag
