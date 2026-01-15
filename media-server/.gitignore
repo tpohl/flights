@@ -1,5 +1,5 @@
 imagecache/
-
+secrets.env
 #Maven
 target/
 pom.xml.tag
