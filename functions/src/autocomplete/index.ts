@@ -18,8 +18,7 @@ import lufthansaApiAutocompletion from "./lufthansa-api-autocompletion";
 import { loadAeroApiFlight, loadAeroApiTrack, loadOperator } from "./aero-api/loadFlight";
 import { isWithinXDaysAgo } from "../util/checkDates";
 
-const config = functions.config();
-const jwtsecret = config.jwt.secret;
+const jwtsecret = process.env.JWT_SECRET;
 
 export const autocompleteFlight = async (flightRef: admin.database.Reference, _context?: functions.EventContext) => {
   const flightInDb = await firstValueFrom(loadFlight(flightRef));

@@ -5,8 +5,7 @@ import { from, of } from "rxjs";
 import { map } from "rxjs/operators";
 import * as jwt from "jsonwebtoken";
 
-const config = functions.config();
-const jwtsecret = config.jwt.secret;
+const jwtsecret = process.env.JWT_SECRET;
 
 const prepareFutureAutoCompletion = (flightRef: admin.database.Reference) => {
   return (flight: Flight) => {

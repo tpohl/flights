@@ -1,5 +1,7 @@
 lib
 secrets.md
 .
+/.env
+/.env.local
 /.env.flights-159420
 node_modules

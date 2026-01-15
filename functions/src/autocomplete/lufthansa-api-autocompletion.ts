@@ -7,12 +7,10 @@ import { LhAircraftResponse, LhFlightStatusResponse } from "./lufthansa-api/mode
 import { replaceType, toFlight } from "./lufthansa-api/transformers";
 import * as functions from "firebase-functions/v1";
 
-const config = functions.config();
-
 const credentials = {
   client: {
-    id: config.lhapi.clientid,
-    secret: config.lhapi.clientsecret,
+    id: process.env.LHAPI_CLIENTID,
+    secret: process.env.LHAPI_CLIENTSECRET,
   },
   auth: {
     tokenHost: "https://api.lufthansa.com/v1",
@@ -24,8 +22,8 @@ const credentials = {
 let token: AccessToken;
 const oauth2 = new ClientCredentials(credentials);
 
-const getLhApiToken = function() {
-  const promise = new Promise<AccessToken>(function(resolve, reject) {
+const getLhApiToken = function () {
+  const promise = new Promise<AccessToken>(function (resolve, reject) {
     if (!token || token.expired()) {
       console.log("Refreshing token with credentials", credentials);
       oauth2.getToken({}).then((_token) => {
@@ -44,7 +42,7 @@ const getLhApiToken = function() {
 };
 
 
-const loadAircraftType = function(acTypeCode: string, _aircraftType: string) {
+const loadAircraftType = function (acTypeCode: string, _aircraftType: string) {
   return getLhApiToken()
     .pipe(
       map((apiTokenObj) => (apiTokenObj.token as any).access_token),
@@ -76,7 +74,7 @@ const loadAircraftType = function(acTypeCode: string, _aircraftType: string) {
 };
 
 
-const autocomplete = function(flightNo: string, dateStr: string): Observable<Flight> {
+const autocomplete = function (flightNo: string, dateStr: string): Observable<Flight> {
   const date = dateStr ? dateStr : DayJS().format("YYYY-MM-DD");
 
   console.log("Autocomplete Flight", flightNo, date);

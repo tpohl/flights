@@ -1,12 +1,12 @@
 import * as functions from "firebase-functions/v1";
-const config = functions.config();
+
 import { AeroApiFlight, AeroAPIIdentResponse, AeroAPIOperator, AeroAPITrackResponse } from "./models";
 import { mergeMap, filter } from "rxjs/operators";
 import { from, Observable } from "rxjs";
 
 import * as admin from "firebase-admin";
 
-export const loadOperator = function(iata: string): Observable<AeroAPIOperator> {
+export const loadOperator = function (iata: string): Observable<AeroAPIOperator> {
   const ref = admin.database().ref("/operators/" + iata);
   return from(ref.once("value")).pipe(
     mergeMap(async (snapshot: any) => {
@@ -17,7 +17,7 @@ export const loadOperator = function(iata: string): Observable<AeroAPIOperator> 
           const response = await fetch(`https://aeroapi.flightaware.com/aeroapi/operators/${iata}`, {
             headers: {
               "Accept": "application/json; charset=UTF-8",
-              "x-apikey": config.aeroapi.apikey,
+              "x-apikey": process.env.AEROAPI_APIKEY,
             },
           });
           if (response.ok) {
@@ -36,7 +36,7 @@ export const loadOperator = function(iata: string): Observable<AeroAPIOperator> 
   );
 };
 
-export const loadAeroApiFlight = function(carrier: string, flightNo: string, dateStr: string): Observable<AeroApiFlight> {
+export const loadAeroApiFlight = function (carrier: string, flightNo: string, dateStr: string): Observable<AeroApiFlight> {
   console.info(`Loading Aero API Flight ${carrier}${flightNo} on ${dateStr}`);
   return from((async () => {
     try {
@@ -44,7 +44,7 @@ export const loadAeroApiFlight = function(carrier: string, flightNo: string, dat
       const response = await fetch(url, {
         headers: {
           "Accept": "application/json; charset=UTF-8",
-          "x-apikey": config.aeroapi.apikey,
+          "x-apikey": process.env.AEROAPI_APIKEY,
         },
       });
       if (response.ok) {
@@ -59,13 +59,13 @@ export const loadAeroApiFlight = function(carrier: string, flightNo: string, dat
   })()) as Observable<AeroApiFlight>;
 };
 
-export const loadAeroApiTrack = function(faFlightId: string): Observable<AeroAPITrackResponse> {
+export const loadAeroApiTrack = function (faFlightId: string): Observable<AeroAPITrackResponse> {
   return from((async () => {
     try {
       const response = await fetch(`https://aeroapi.flightaware.com/aeroapi/flights/${faFlightId}/track?include_estimated_positions=true`, {
         headers: {
           "Accept": "application/json; charset=UTF-8",
-          "x-apikey": config.aeroapi.apikey,
+          "x-apikey": process.env.AEROAPI_APIKEY,
         },
       });
       if (response.ok) {

@@ -10,6 +10,14 @@ test.mockConfig({
     flightaware: { username: "test-user", apikey: "test-key" }
 });
 
+// Mock process.env for migration
+process.env.JWT_SECRET = "test-secret";
+process.env.AEROAPI_APIKEY = "test-api-key";
+process.env.LHAPI_CLIENTID = "test-id";
+process.env.LHAPI_CLIENTSECRET = "test-secret";
+process.env.FLIGHTAWARE_USERNAME = "test-user";
+process.env.FLIGHTAWARE_APIKEY = "test-key";
+
 // Initialize a dummy app to satisfy firebase-admin's internal registry
 // This prevents "no app" errors when admin.database() is called (even if we stub it later, the getApp check might run first)
 import * as admin from "firebase-admin";
