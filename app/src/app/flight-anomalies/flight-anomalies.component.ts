@@ -13,6 +13,8 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
   imports: [
@@ -25,7 +27,9 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
     MatButtonModule,
     MatIconModule,
     MatChipsModule,
-    MatCheckboxModule
+    MatCheckboxModule,
+    MatProgressSpinnerModule,
+    MatTooltipModule
   ],
   selector: 'app-flight-anomalies',
   templateUrl: './flight-anomalies.component.html',
@@ -51,6 +55,7 @@ export class FlightAnomaliesComponent {
   showTooFast = signal(true);
   showInvalid = signal(true);
   showValidated = signal(false);
+  recalculatingFlightId = signal<string | null>(null);
 
   displayedFlights = computed(() => {
     let flights: Flight[] = [];
@@ -105,5 +110,19 @@ export class FlightAnomaliesComponent {
       return 'slow';
     }
     return 'fast';
+  }
+
+  isMissingData(flight: Flight): boolean {
+    return !flight.durationMilliseconds || flight.durationMilliseconds <= 0 || !flight.distance || flight.distance <= 0;
+  }
+
+  recalculate(flight: Flight) {
+    if (flight._id) {
+      this.recalculatingFlightId.set(flight._id);
+      this.flightsService.recalculateFlightData(flight).subscribe({
+        next: () => this.recalculatingFlightId.set(null),
+        error: () => this.recalculatingFlightId.set(null)
+      });
+    }
   }
 }

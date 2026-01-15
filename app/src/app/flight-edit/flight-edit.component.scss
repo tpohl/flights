@@ -195,19 +195,57 @@ mat-divider {
 
 /* Form Actions */
 .form-actions {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
   gap: $spacing-md;
-  padding: $spacing-lg $spacing-xl $spacing-xl !important;
+  padding: $spacing-xl !important;
   margin: 0 !important;
+
+  @include respond-to('sm') {
+    grid-template-columns: 1fr;
+  }
 }
 
 .save-button {
-  flex: 1;
+  grid-column: 1 / -1;
   @include btn-primary;
+  width: 100% !important;
+}
+
+/* Form Actions */
+.form-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: $spacing-md;
+  padding: $spacing-xl !important;
+  margin: 0 !important;
+
+  @include respond-to('sm') {
+    grid-template-columns: 1fr;
+  }
+}
+
+.save-button {
+  grid-column: 1 / -1;
+  @include btn-primary;
+  width: 100% !important;
 }
 
 .delete-button {
   @include btn-base;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  gap: $spacing-sm;
+  background: rgba(255, 255, 255, 0.4) !important;
+  border: 1px solid rgba(0, 0, 0, 0.05) !important;
+  color: $color-error-red !important;
+  width: 100% !important;
+  @include transition;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.6) !important;
+  }
 }
 
 /* Responsive */
@@ -218,14 +256,6 @@ mat-divider {
 
   .page-title {
     font-size: 1.5rem;
-  }
-
-  .form-actions {
-    flex-direction: column;
-  }
-
-  .delete-button {
-    width: 100%;
   }
 }
 

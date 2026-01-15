@@ -12,6 +12,8 @@
     "typeRoots": [
       "node_modules/@types"
     ],
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
     "lib": [
       "es2017",
       "dom"

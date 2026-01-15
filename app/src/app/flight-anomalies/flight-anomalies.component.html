@@ -74,34 +74,59 @@
           <app-flight-tile [flight]="flight"></app-flight-tile>
 
           <div class="speed-info">
-            @if (isInvalidAnomaly(flight)) {
-            <span class="label">Duration:</span>
-            <span class="value invalid">
-              @if (flight.durationMilliseconds < 0) { Negative Duration } @else { Missing Duration } </span>
-                } @else {
-                <span class="label">Average Speed:</span>
-                <span class="value">{{ calculateAverageSpeed(flight) | number: '1.0-0' }} km/h</span>
-                }
+            <div class="info-metrics">
+              @if (isInvalidAnomaly(flight)) {
+              <div class="metric">
+                <span class="label">Duration:</span>
+                <span class="value invalid">
+                  @if (flight.durationMilliseconds < 0) { Negative Duration } @else { Missing Duration } </span>
+              </div>
+              @if (!flight.distance || flight.distance <= 0) { <div class="metric">
+                <span class="label">Distance:</span>
+                <span class="value invalid">Missing Distance</span>
+            </div>
+            }
+            } @else {
+            <div class="metric">
+              <span class="label">Average Speed:</span>
+              <span class="value">{{ calculateAverageSpeed(flight) | number: '1.0-0' }} km/h</span>
+            </div>
+            }
+          </div>
 
-                @if (getAnomalyType(flight) === 'validated') {
-                <span class="type-badge" [class.slow]="isSlowAnomaly(flight)" [class.fast]="isFastAnomaly(flight)"
-                  [class.invalid]="isInvalidAnomaly(flight)">
-                  @if (isSlowAnomaly(flight)) { Slow } @else if (isFastAnomaly(flight)) { Fast } @else { Invalid }
-                </span>
-                }
+          <div class="badge-and-actions">
+            @if (getAnomalyType(flight) === 'validated') {
+            <span class="type-badge" [class.slow]="isSlowAnomaly(flight)" [class.fast]="isFastAnomaly(flight)"
+              [class.invalid]="isInvalidAnomaly(flight)">
+              @if (isSlowAnomaly(flight)) { Slow } @else if (isFastAnomaly(flight)) { Fast } @else { Invalid }
+            </span>
+            }
+
+            @if (isMissingData(flight)) {
+            <button mat-icon-button color="primary" class="recalculate-btn"
+              (click)="recalculate(flight); $event.stopPropagation(); $event.preventDefault()"
+              [disabled]="recalculatingFlightId() === flight._id" matTooltip="Recalculate Duration & Distance">
+              @if (recalculatingFlightId() === flight._id) {
+              <mat-progress-spinner diameter="20" mode="indeterminate"></mat-progress-spinner>
+              } @else {
+              <mat-icon>refresh</mat-icon>
+              }
+            </button>
+            }
           </div>
         </div>
-      </app-flight-card>
-      }
-    </section>
-    }
-
-    <!-- Back to Flights button -->
-    <div class="action-buttons">
-      <button mat-raised-button color="primary" [routerLink]="['/flights']">
-        <mat-icon>arrow_back</mat-icon>
-        Back to Flights
-      </button>
-    </div>
   </div>
+  </app-flight-card>
+  }
+  </section>
+  }
+
+  <!-- Back to Flights button -->
+  <div class="action-buttons">
+    <button mat-raised-button color="primary" [routerLink]="['/flights']">
+      <mat-icon>arrow_back</mat-icon>
+      Back to Flights
+    </button>
+  </div>
+</div>
 </div>

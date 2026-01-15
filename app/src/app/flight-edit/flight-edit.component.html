@@ -143,11 +143,23 @@
         </div>
 
         <!-- Distance -->
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Distance</mat-label>
-          <input matInput [(ngModel)]="f.distance" placeholder="Distance in km">
-          <mat-hint>Calculated: {{ f | flightDistance | number : '1.0-0' }} km</mat-hint>
-        </mat-form-field>
+        <div class="input-with-action">
+          <mat-form-field appearance="outline" class="flex-grow">
+            <mat-label>Distance</mat-label>
+            <input matInput [(ngModel)]="f.distance" placeholder="Distance in km">
+            <mat-hint>Flown: {{ f | flightDistance | number : '1.0-0' }} km</mat-hint>
+          </mat-form-field>
+          @if (f._id && isMissingData()) {
+          <button mat-icon-button (click)="recalculate()" [disabled]="isRecalculating()"
+            matTooltip="Recalculate Duration & Distance">
+            @if (isRecalculating()) {
+            <mat-progress-spinner diameter="20" mode="indeterminate"></mat-progress-spinner>
+            } @else {
+            <mat-icon>refresh</mat-icon>
+            }
+          </button>
+          }
+        </div>
 
         <!-- Duration (read-only) -->
         <mat-form-field appearance="outline" class="full-width">
@@ -247,8 +259,9 @@
         <mat-icon>save</mat-icon>
         Save
       </button>
+
       <button mat-stroked-button color="warn" (click)="delete()" class="delete-button">
-        <mat-icon>delete</mat-icon>
+        <mat-icon>delete_outline</mat-icon>
         Delete
       </button>
     </mat-card-actions>

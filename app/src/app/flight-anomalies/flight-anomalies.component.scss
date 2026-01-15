@@ -171,6 +171,50 @@
     }
   }
 
+  .info-metrics {
+    @include flex-col;
+    gap: $spacing-xs;
+    flex: 1;
+  }
+
+  .metric {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: $spacing-md;
+  }
+
+  .badge-and-actions {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+  }
+
+  .recalculate-btn {
+    width: 32px !important;
+    height: 32px !important;
+    line-height: 32px !important;
+    padding: 0 !important;
+    border-radius: $radius-full !important;
+    background: rgba($primary-color, 0.1) !important;
+    @include transition;
+
+    &:hover:not([disabled]) {
+      background: rgba($primary-color, 0.2) !important;
+      transform: rotate(30deg);
+    }
+
+    mat-icon {
+      font-size: 1.25rem;
+      width: 1.25rem;
+      height: 1.25rem;
+    }
+
+    mat-progress-spinner {
+      margin: 0 auto;
+    }
+  }
+
   .type-badge {
     margin-left: $spacing-sm;
     padding: $spacing-xs $spacing-md;

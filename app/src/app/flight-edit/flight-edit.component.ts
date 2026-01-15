@@ -36,6 +36,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatChipsModule } from '@angular/material/chips';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 DayJS.extend(DayJSUtc);
 DayJS.extend(DayJSTimezone);
@@ -61,7 +62,8 @@ DayJS.extend(DayJSTimezone);
     MatTooltipModule,
     MatDatepickerModule,
     MatNativeDateModule,
-    MatChipsModule
+    MatChipsModule,
+    MatProgressSpinnerModule
   ],
   selector: 'app-flight-edit',
   providers: [Location, { provide: LocationStrategy, useClass: PathLocationStrategy }],
@@ -84,6 +86,7 @@ export class FlightEditComponent {
 
   departureTime = signal('00:00');
   arrivalTime = signal('00:00');
+  isRecalculating = signal(false);
 
   TRAVEL_CLASSES_LIST = Array.from(TRAVEL_CLASSES.values());
 
@@ -258,12 +261,31 @@ export class FlightEditComponent {
     return f ? this.flightsService.isFastAnomaly(f) : false;
   }
 
+  isMissingData(): boolean {
+    const f = this.flight();
+    return f ? this.flightsService.isInvalidAnomaly(f) : false;
+  }
+
   validateAnomaly(): void {
     const f = this.flight();
     if (f) {
       f.validatedAnomaly = !f.validatedAnomaly;
       this.flight.set({ ...f });
       this.save();
+    }
+  }
+
+  recalculate(): void {
+    const f = this.flight();
+    if (f) {
+      this.isRecalculating.set(true);
+      this.flightsService.recalculateFlightData(f).subscribe({
+        next: () => {
+          this.isRecalculating.set(false);
+          this.flight.set({ ...f }); // Force update signals
+        },
+        error: () => this.isRecalculating.set(false)
+      });
     }
   }
 }

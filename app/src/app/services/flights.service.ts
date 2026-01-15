@@ -75,6 +75,8 @@ export class FlightsService {
     { initialValue: [] }
   );
 
+  private airportService = inject(AirportService);
+
   private selectedFlight$ = new BehaviorSubject<Flight | null>(null);
 
   private auth = inject(Auth);
@@ -357,6 +359,58 @@ export class FlightsService {
 
   }
 
+  /**
+   * Recalculates duration and distance for a flight.
+   * This is useful when backend calculations have failed.
+   */
+  recalculateFlightData(flight: Flight): Observable<boolean> {
+    console.log('Recalculating flight data for', flight._id);
+
+    // 1. Recalculate Duration
+    if (flight.departureTime && flight.arrivalTime) {
+      const dep = dayjs(flight.departureTime);
+      const arr = dayjs(flight.arrivalTime);
+      if (dep.isValid() && arr.isValid()) {
+        const duration = arr.diff(dep);
+        if (duration > 0) {
+          flight.durationMilliseconds = duration;
+        }
+      }
+    }
+
+    // 2. Recalculate Distance (requires loading airports)
+    if (flight.from && flight.to) {
+      return forkJoin([
+        this.airportService.loadAirport(flight.from).pipe(take(1)),
+        this.airportService.loadAirport(flight.to).pipe(take(1))
+      ]).pipe(
+        switchMap(([fromAp, toAp]) => {
+          if (fromAp && toAp) {
+            const dist = this.calculateHaversineDistance(
+              fromAp.latitude, fromAp.longitude,
+              toAp.latitude, toAp.longitude
+            );
+            if (dist > 0) {
+              flight.distance = dist;
+            }
+          }
+          // Save the updated flight
+          return this.saveFlight(flight).pipe(map(result => !!result));
+        })
+      );
+    } else {
+      // Just save if airports are missing (though distance won't be calculated)
+      return this.saveFlight(flight).pipe(map(result => !!result));
+    }
+  }
+
+  private calculateHaversineDistance(lat1: number, long1: number, lat2: number, long2: number): number {
+    const p = 0.017453292519943295;    // Math.PI / 180
+    const c = Math.cos;
+    const a = 0.5 - c((lat1 - lat2) * p) / 2 + c(lat2 * p) * c((lat1) * p) * (1 - c(((long1 - long2) * p))) / 2;
+    return Math.round((12742 * Math.asin(Math.sqrt(a)))); // 2 * R; R = 6371 km
+  }
+
   saveFlight(_flight: Flight): Observable<SaveResult | null> {
     // console.log('Saving Flight', _flight);
     const user = this.user;
@@ -437,11 +491,11 @@ export class FlightsService {
   }
 
   /**
-   * Filters flights with negative or missing duration (Invalid)
+   * Filters flights with negative or missing duration, or missing distance (Invalid)
    */
   private filterInvalidFlights(flights: Flight[]): Flight[] {
     return flights
-      .filter(f => !f.durationMilliseconds || f.durationMilliseconds <= 0)
+      .filter(f => !f.durationMilliseconds || f.durationMilliseconds <= 0 || !f.distance || f.distance <= 0)
       .filter(f => !f.validatedAnomaly)
       .sort((a, b) => flightsSortFn(a, b));
   }
@@ -450,8 +504,8 @@ export class FlightsService {
    * Check if a flight is an anomaly (slow, fast or invalid)
    */
   isAnomalies(flight: Flight): boolean {
-    if (!flight.distance) {
-      return false;
+    if (!flight.distance || flight.distance <= 0) {
+      return true;
     }
     if (!flight.durationMilliseconds || flight.durationMilliseconds <= 0) {
       return true;
@@ -484,10 +538,10 @@ export class FlightsService {
   }
 
   /**
-   * Check if a flight is an invalid anomaly (negative or missing duration)
+   * Check if a flight is an invalid anomaly (negative or missing duration/distance)
    */
   isInvalidAnomaly(flight: Flight): boolean {
-    return !flight.durationMilliseconds || flight.durationMilliseconds <= 0;
+    return !flight.durationMilliseconds || flight.durationMilliseconds <= 0 || !flight.distance || flight.distance <= 0;
   }
 
 }
