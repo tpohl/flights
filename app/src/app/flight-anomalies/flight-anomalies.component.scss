@@ -2,9 +2,9 @@
 @use '../mixins' as *;
 
 .flight-anomalies-container {
-  @include page-container;
   @include flex-col;
   gap: $spacing-2xl;
+  @include page-container;
 }
 
 .page-header {

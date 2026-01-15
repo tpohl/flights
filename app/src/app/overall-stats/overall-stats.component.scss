@@ -86,8 +86,8 @@
 /* Main stats cards - light glass */
 .stats-card {
   @include light-glass-card;
-  @include stats-card-header;
   margin-bottom: $spacing-xl;
+  @include stats-card-header;
 
   mat-card-content {
     padding: 12px $spacing-xl $spacing-xl $spacing-xl !important;

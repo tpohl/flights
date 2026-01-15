@@ -4,7 +4,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { FlightsService } from '../services/flights.service';
-import { ExactDurationPipe } from '../pipes/exactDurationPipe';
+
 import { FlightTileComponent } from '../flight-tile/flight-tile.component';
 import { OverallStats } from '../models/stats';
 import { CesiumDirective } from '../cesium.directive';
@@ -23,7 +23,7 @@ import { MatRippleModule } from '@angular/material/core';
     CommonModule,
     FormsModule,
     RouterModule,
-    ExactDurationPipe,
+
     FlightTileComponent,
     CesiumDirective,
     MatCardModule,
