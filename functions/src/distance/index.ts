@@ -14,7 +14,7 @@ const calculateDistance = (lat1: number, long1: number, lat2: number, long2: num
   return dis;
 };
 
-const computeDistance = async (snapshot: functions.database.DataSnapshot, context: functions.EventContext) => {
+export const computeDistance = async (snapshot: functions.database.DataSnapshot, context: functions.EventContext) => {
   console.log("Computing Distance");
   const flightRef = snapshot.ref.parent;
   if (!flightRef) return;

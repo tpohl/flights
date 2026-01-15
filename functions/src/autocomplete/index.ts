@@ -21,7 +21,7 @@ import { isWithinXDaysAgo } from "../util/checkDates";
 const config = functions.config();
 const jwtsecret = config.jwt.secret;
 
-const autocompleteFlight = async (flightRef: admin.database.Reference, _context?: functions.EventContext) => {
+export const autocompleteFlight = async (flightRef: admin.database.Reference, _context?: functions.EventContext) => {
   const flightInDb = await firstValueFrom(loadFlight(flightRef));
   if (!flightInDb) return;
 
@@ -95,7 +95,7 @@ const autocompleteFlight = async (flightRef: admin.database.Reference, _context?
   await firstValueFrom(prepareFutureAutoCompletion(flightRef)(savedFlight));
 };
 
-const autocompleteAircraftType = async (flightRef: admin.database.Reference, _context?: functions.EventContext) => {
+export const autocompleteAircraftType = async (flightRef: admin.database.Reference, _context?: functions.EventContext) => {
   const flightInDb = await firstValueFrom(loadFlight(flightRef));
   if (!flightInDb) return;
 

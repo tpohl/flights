@@ -3,7 +3,7 @@ import * as functions from "firebase-functions/v1";
 import DayJS from "dayjs";
 import loadFlight from "../util/loadFlight";
 
-const computeDuration = async (snapshot: functions.database.DataSnapshot, context: functions.EventContext) => {
+export const computeDuration = async (snapshot: functions.database.DataSnapshot, context: functions.EventContext) => {
   const flightId = context.params.flightId;
   const userId = context.params.userId;
   console.log(`Computing Duration for Flight ${flightId} (User: ${userId})`);
