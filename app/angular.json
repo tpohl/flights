@@ -55,14 +55,28 @@
             "optimization": false,
             "namedChunks": true,
             "serviceWorker": "ngsw-config.json",
-            "browser": "src/main.ts"
+            "browser": "src/main.ts",
+            "allowedCommonJsDependencies": [
+              "dayjs",
+              "dayjs/plugin/utc",
+              "dayjs/plugin/timezone",
+              "dayjs/plugin/relativeTime",
+              "dayjs/plugin/duration",
+              "urijs",
+              "protobufjs/dist/minimal/protobuf.js",
+              "mersenne-twister",
+              "lerc",
+              "bitmap-sdf",
+              "grapheme-splitter",
+              "nosleep.js"
+            ]
           },
           "configurations": {
             "production": {
               "budgets": [
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "6kb"
+                  "maximumWarning": "10kb"
                 }
               ],
               "fileReplacements": [
