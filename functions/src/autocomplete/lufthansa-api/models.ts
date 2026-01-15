@@ -4,7 +4,7 @@ export interface LhFlightStatusResponse {
 
 export interface LhFlightStatusResource {
   Flights: LhFlights;
-  Meta:    Meta;
+  Meta: Meta;
 }
 
 export interface LhFlights {
@@ -12,23 +12,23 @@ export interface LhFlights {
 }
 
 export interface LhFlight {
-  Departure:        LhArrivalOrDeparture;
-  Arrival:          LhArrivalOrDeparture;
+  Departure: LhArrivalOrDeparture;
+  Arrival: LhArrivalOrDeparture;
   MarketingCarrier: LhCarrier;
   OperatingCarrier: LhCarrier;
-  Equipment?:        LhEquipment;
-  FlightStatus?:     LhStatus;
-  ServiceType?:      string;
+  Equipment?: LhEquipment;
+  FlightStatus?: LhStatus;
+  ServiceType?: string;
 }
 
 export interface LhArrivalOrDeparture {
-  AirportCode:        string;
+  AirportCode: string;
   ScheduledTimeLocal: LhDateTime;
-  ScheduledTimeUTC:   LhDateTime;
-  ActualTimeLocal?:    LhDateTime;
-  ActualTimeUTC?:      LhDateTime;
-  TimeStatus:         LhStatus;
-  Terminal:           LhTerminal;
+  ScheduledTimeUTC: LhDateTime;
+  ActualTimeLocal?: LhDateTime;
+  ActualTimeUTC?: LhDateTime;
+  TimeStatus: LhStatus;
+  Terminal: LhTerminal;
 }
 
 export interface LhDateTime {
@@ -41,28 +41,28 @@ export interface LhTerminal {
 }
 
 export interface LhStatus {
-  Code:       string;
+  Code: string;
   Definition: string;
 }
 
 export interface LhEquipment {
-  AircraftCode?:         string;
+  AircraftCode?: string;
   AircraftRegistration?: string;
 }
 
 export interface LhCarrier {
-  AirlineID:    string;
+  AirlineID: string;
   FlightNumber: string;
 }
 
 export interface Meta {
   "@Version": string;
-  Link:       Link[] | Link;
+  Link: Link[] | Link;
 }
 
 export type Link = {
   "@Href": string;
-  "@Rel":  string;
+  "@Rel": string;
 }
 
 
@@ -72,7 +72,7 @@ export interface LhAircraftResponse {
 
 export interface LhAircraftResource {
   AircraftSummaries: LhAircraftSummaries;
-  Meta:              Meta;
+  Meta: Meta;
 }
 
 export interface LhAircraftSummaries {
@@ -80,8 +80,8 @@ export interface LhAircraftSummaries {
 }
 
 export interface LhAircraftSummary {
-  AircraftCode:     string;
-  Names:            LhNames;
+  AircraftCode: string;
+  Names: LhNames;
   AirlineEquipCode: string;
 }
 
@@ -91,7 +91,7 @@ export interface LhNames {
 
 export interface LhName {
   "@LanguageCode": string;
-  $:               string;
+  $: string;
 }
 
 

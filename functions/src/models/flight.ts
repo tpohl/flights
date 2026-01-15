@@ -1,4 +1,4 @@
-import { AeroApiFlight, AeroAPITrackResponse } from "../autocomplete/aero-api/models";
+import { AeroApiFlight } from "../autocomplete/aero-api/models";
 import { FlightAwareFlight } from "../autocomplete/flightaware-autocompletion";
 
 export class Flight {
@@ -47,6 +47,5 @@ export class Flight {
   flightAwareFlightId: string;
 
   status: FlightStatus;
-
 }
 export type FlightStatus = "guess" | "scheduled" | "landed";

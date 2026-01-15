@@ -1,7 +1,7 @@
 // Import all the functions
-import autocompleteFunctions from './autocomplete';
-import durationFunctions from './duration';
-import distanceFunctions from './distance';
+import autocompleteFunctions from "./autocomplete";
+import durationFunctions from "./duration";
+import distanceFunctions from "./distance";
 
 
 // Export our functions

@@ -1,11 +1,13 @@
 {
   "compilerOptions": {
-    "lib": ["es2017"],
+    "lib": [
+      "es2022"
+    ],
     "module": "commonjs",
     "noImplicitReturns": true,
     "outDir": "lib",
     "sourceMap": true,
-    "target": "es2017",
+    "target": "es2022",
     "esModuleInterop": true
   },
   "compileOnSave": true,

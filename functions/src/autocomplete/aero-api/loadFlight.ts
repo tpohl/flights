@@ -1,66 +1,80 @@
-const functions = require('firebase-functions');
+import * as functions from "firebase-functions/v1";
 const config = functions.config();
-import { RxHR } from '@akanass/rx-http-request';
-import { AeroApiFlight, AeroAPIIdentResponse, AeroAPIOperator, AeroAPITrackResponse } from './models';
-import { map, mergeMap } from 'rxjs/operators';
-import { from, Observable, of } from 'rxjs';
-import { DataSnapshot } from 'firebase-admin/database';
+import { AeroApiFlight, AeroAPIIdentResponse, AeroAPIOperator, AeroAPITrackResponse } from "./models";
+import { mergeMap, filter } from "rxjs/operators";
+import { from, Observable } from "rxjs";
 
-const admin = require('firebase-admin');
+import * as admin from "firebase-admin";
 
-export const loadOperator = function(iata: string){
-    const ref = admin.database().ref('/operators/' + iata);
-    const operator$ =from(ref.once('value')) as Observable<DataSnapshot>;
-    return operator$
-    .pipe(mergeMap(snapshot => {
-        if (snapshot.exists()){
-            return of(snapshot.val() as AeroAPIOperator)
-        } else {
-            return RxHR.get<AeroAPIOperator>(`https://aeroapi.flightaware.com/aeroapi/operators/${iata}`,
-                {
-                    headers: {
-                        'Accept': 'application/json; charset=UTF-8',
-                        'x-apikey': config.aeroapi.apikey
-                    },
-                    json: true
-                })
-                .pipe(
-                    map(response => response.body),
-                    mergeMap(newOperator => from(ref.set(newOperator)) // This is a promise
-                    .pipe(
-                      map(() => newOperator)
-                    ))
-                )
+export const loadOperator = function(iata: string): Observable<AeroAPIOperator> {
+  const ref = admin.database().ref("/operators/" + iata);
+  return from(ref.once("value")).pipe(
+    mergeMap(async (snapshot: any) => {
+      if (snapshot.exists()) {
+        return snapshot.val() as AeroAPIOperator;
+      } else {
+        try {
+          const response = await fetch(`https://aeroapi.flightaware.com/aeroapi/operators/${iata}`, {
+            headers: {
+              "Accept": "application/json; charset=UTF-8",
+              "x-apikey": config.aeroapi.apikey,
+            },
+          });
+          if (response.ok) {
+            const newOperator = await response.json() as AeroAPIOperator;
+            await ref.set(newOperator);
+            return newOperator;
+          }
+          return null;
+        } catch (error) {
+          console.error("Error loading operator from AeroAPI", error);
+          return null;
         }
-    })
-)
-}
+      }
+    }),
+    filter((op): op is AeroAPIOperator => !!op)
+  );
+};
 
-export const loadAeroApiFlight = function (carrier: string, flightNo: string, dateStr: string): Observable<AeroApiFlight> {
-    console.info(`Loading Aero API Flight ${carrier}${flightNo} on ${dateStr}`)
-    return RxHR.get<AeroAPIIdentResponse>(`https://aeroapi.flightaware.com/aeroapi/flights/${carrier}${flightNo}?start=${dateStr}&end=${dateStr}T23:59:59Z`,
-        {
-            headers: {
-                'Accept': 'application/json; charset=UTF-8',
-                'x-apikey': config.aeroapi.apikey
-            },
-            json: true
-        })
-        .pipe(
-            map(response => response.response.statusCode == 200 ? response.body.flights[0] : null)
-        )
-}
+export const loadAeroApiFlight = function(carrier: string, flightNo: string, dateStr: string): Observable<AeroApiFlight> {
+  console.info(`Loading Aero API Flight ${carrier}${flightNo} on ${dateStr}`);
+  return from((async () => {
+    try {
+      const url = `https://aeroapi.flightaware.com/aeroapi/flights/${carrier}${flightNo}?start=${dateStr}&end=${dateStr}T23:59:59Z`;
+      const response = await fetch(url, {
+        headers: {
+          "Accept": "application/json; charset=UTF-8",
+          "x-apikey": config.aeroapi.apikey,
+        },
+      });
+      if (response.ok) {
+        const body = await response.json() as AeroAPIIdentResponse;
+        return body.flights ? body.flights[0] : null;
+      }
+      return null;
+    } catch (error) {
+      console.error("Error loading AeroAPI flight", error);
+      return null;
+    }
+  })()) as Observable<AeroApiFlight>;
+};
 
-export const loadAeroApiTrack = function (fa_flight_id: string): Observable<AeroAPITrackResponse> {
-    return RxHR.get<AeroAPITrackResponse>(`https://aeroapi.flightaware.com/aeroapi/flights/${fa_flight_id}/track?include_estimated_positions=true`,
-        {
-            headers: {
-                'Accept': 'application/json; charset=UTF-8',
-                'x-apikey': config.aeroapi.apikey
-            },
-            json: true
-        })
-        .pipe(
-            map(response => response.body)
-        )
-}
+export const loadAeroApiTrack = function(faFlightId: string): Observable<AeroAPITrackResponse> {
+  return from((async () => {
+    try {
+      const response = await fetch(`https://aeroapi.flightaware.com/aeroapi/flights/${faFlightId}/track?include_estimated_positions=true`, {
+        headers: {
+          "Accept": "application/json; charset=UTF-8",
+          "x-apikey": config.aeroapi.apikey,
+        },
+      });
+      if (response.ok) {
+        return await response.json() as AeroAPITrackResponse;
+      }
+      return null;
+    } catch (error) {
+      console.error("Error loading AeroAPI track", error);
+      return null;
+    }
+  })()) as Observable<AeroAPITrackResponse>;
+};
