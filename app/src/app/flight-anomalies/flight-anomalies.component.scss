@@ -140,6 +140,12 @@
     background: $color-success-lighter;
     color: $color-success;
   }
+
+  &.invalid {
+    background: rgba($color-error-red, 0.15);
+    color: $color-error-red;
+    border: 1px solid rgba($color-error-red, 0.2);
+  }
 }
 
 .speed-info {
@@ -159,6 +165,10 @@
   .value {
     font-weight: $font-weight-semibold;
     color: $text-primary;
+
+    &.invalid {
+      color: $color-error-red;
+    }
   }
 
   .type-badge {
@@ -177,6 +187,11 @@
 
     &.fast {
       background: $color-error-lighter;
+      color: $color-error-red;
+    }
+
+    &.invalid {
+      background: rgba($color-error-red, 0.15);
       color: $color-error-red;
     }
   }

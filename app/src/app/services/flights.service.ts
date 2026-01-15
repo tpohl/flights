@@ -68,6 +68,13 @@ export class FlightsService {
     { initialValue: [] }
   );
 
+  invalidFlights: Signal<Flight[]> = toSignal(
+    this.flightSubject.pipe(
+      map(flights => this.filterInvalidFlights(flights))
+    ),
+    { initialValue: [] }
+  );
+
   private selectedFlight$ = new BehaviorSubject<Flight | null>(null);
 
   private auth = inject(Auth);
@@ -419,8 +426,10 @@ export class FlightsService {
     const MIN_REASONABLE_SPEED = 300;
     const MAX_REASONABLE_SPEED = 950;
     return flights
-      .filter(f => f.validatedAnomaly && f.distance && f.durationMilliseconds && f.durationMilliseconds > 0)
+      .filter(f => f.validatedAnomaly && f.distance)
       .filter(f => {
+        if (f.durationMilliseconds && f.durationMilliseconds < 0) return true;
+        if (!f.durationMilliseconds || f.durationMilliseconds <= 0) return true; // Missing or zero duration
         const speed = this.getAverageSpeed(f);
         return speed < MIN_REASONABLE_SPEED || speed > MAX_REASONABLE_SPEED;
       })
@@ -428,12 +437,26 @@ export class FlightsService {
   }
 
   /**
-   * Check if a flight is an anomaly (slow or fast)
+   * Filters flights with negative or missing duration (Invalid)
+   */
+  private filterInvalidFlights(flights: Flight[]): Flight[] {
+    return flights
+      .filter(f => !f.durationMilliseconds || f.durationMilliseconds <= 0)
+      .filter(f => !f.validatedAnomaly)
+      .sort((a, b) => flightsSortFn(a, b));
+  }
+
+  /**
+   * Check if a flight is an anomaly (slow, fast or invalid)
    */
   isAnomalies(flight: Flight): boolean {
-    if (!flight.distance || !flight.durationMilliseconds || flight.durationMilliseconds === 0) {
+    if (!flight.distance) {
       return false;
     }
+    if (!flight.durationMilliseconds || flight.durationMilliseconds <= 0) {
+      return true;
+    }
+
     const speed = this.getAverageSpeed(flight);
     const MIN_REASONABLE_SPEED = 300;
     const MAX_REASONABLE_SPEED = 950;
@@ -454,10 +477,17 @@ export class FlightsService {
    * Check if a flight is anomalously fast
    */
   isFastAnomaly(flight: Flight): boolean {
-    if (!flight.distance || !flight.durationMilliseconds || flight.durationMilliseconds === 0) {
+    if (!flight.distance || !flight.durationMilliseconds || flight.durationMilliseconds <= 0) {
       return false;
     }
     return this.getAverageSpeed(flight) > 950;
+  }
+
+  /**
+   * Check if a flight is an invalid anomaly (negative or missing duration)
+   */
+  isInvalidAnomaly(flight: Flight): boolean {
+    return !flight.durationMilliseconds || flight.durationMilliseconds <= 0;
   }
 
 }

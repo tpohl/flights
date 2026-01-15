@@ -28,6 +28,9 @@
         <mat-checkbox [(ngModel)]="showTooFast" color="warn">
           Too Fast ({{ tooFastFlights().length }})
         </mat-checkbox>
+        <mat-checkbox [(ngModel)]="showInvalid" color="warn">
+          Invalid ({{ invalidFlights().length }})
+        </mat-checkbox>
         <mat-checkbox [(ngModel)]="showValidated" color="primary">
           Validated ({{ totalValidated() }})
         </mat-checkbox>
@@ -56,6 +59,11 @@
             <mat-icon>warning</mat-icon>
             <span>Very Slow</span>
           </div>
+          } @else if (getAnomalyType(flight) === 'invalid') {
+          <div class="anomaly-badge invalid">
+            <mat-icon>error</mat-icon>
+            <span>Invalid</span>
+          </div>
           } @else {
           <div class="anomaly-badge fast">
             <mat-icon>warning</mat-icon>
@@ -66,14 +74,21 @@
           <app-flight-tile [flight]="flight"></app-flight-tile>
 
           <div class="speed-info">
-            <span class="label">Average Speed:</span>
-            <span class="value">{{ calculateAverageSpeed(flight) | number: '1.0-0' }} km/h</span>
+            @if (isInvalidAnomaly(flight)) {
+            <span class="label">Duration:</span>
+            <span class="value invalid">
+              @if (flight.durationMilliseconds < 0) { Negative Duration } @else { Missing Duration } </span>
+                } @else {
+                <span class="label">Average Speed:</span>
+                <span class="value">{{ calculateAverageSpeed(flight) | number: '1.0-0' }} km/h</span>
+                }
 
-            @if (getAnomalyType(flight) === 'validated') {
-            <span class="type-badge" [class.slow]="isSlowAnomaly(flight)" [class.fast]="!isSlowAnomaly(flight)">
-              @if (isSlowAnomaly(flight)) { Slow } @else { Fast }
-            </span>
-            }
+                @if (getAnomalyType(flight) === 'validated') {
+                <span class="type-badge" [class.slow]="isSlowAnomaly(flight)" [class.fast]="isFastAnomaly(flight)"
+                  [class.invalid]="isInvalidAnomaly(flight)">
+                  @if (isSlowAnomaly(flight)) { Slow } @else if (isFastAnomaly(flight)) { Fast } @else { Invalid }
+                </span>
+                }
           </div>
         </div>
       </app-flight-card>

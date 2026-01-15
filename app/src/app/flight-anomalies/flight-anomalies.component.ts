@@ -36,6 +36,7 @@ export class FlightAnomaliesComponent {
 
   tooSlowFlights = this.flightsService.tooSlowFlights;
   tooFastFlights = this.flightsService.tooFastFlights;
+  invalidFlights = this.flightsService.invalidFlights;
   validatedAnomalies = this.flightsService.validatedAnomalies;
 
   // Filter states - using model for 2-way binding support if needed, 
@@ -48,6 +49,7 @@ export class FlightAnomaliesComponent {
 
   showTooSlow = signal(true);
   showTooFast = signal(true);
+  showInvalid = signal(true);
   showValidated = signal(false);
 
   displayedFlights = computed(() => {
@@ -61,6 +63,10 @@ export class FlightAnomaliesComponent {
       flights = [...flights, ...this.tooFastFlights()];
     }
 
+    if (this.showInvalid()) {
+      flights = [...flights, ...this.invalidFlights()];
+    }
+
     if (this.showValidated()) {
       flights = [...flights, ...this.validatedAnomalies()];
     }
@@ -69,7 +75,7 @@ export class FlightAnomaliesComponent {
     return flights.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   });
 
-  totalAnomalies = computed(() => this.tooSlowFlights().length + this.tooFastFlights().length);
+  totalAnomalies = computed(() => this.tooSlowFlights().length + this.tooFastFlights().length + this.invalidFlights().length);
   totalValidated = computed(() => this.validatedAnomalies().length);
 
   calculateAverageSpeed(flight: Flight): number {
@@ -81,12 +87,19 @@ export class FlightAnomaliesComponent {
   }
 
   isFastAnomaly(flight: Flight): boolean {
-    return !this.isSlowAnomaly(flight);
+    return this.flightsService.isFastAnomaly(flight);
   }
 
-  getAnomalyType(flight: Flight): 'slow' | 'fast' | 'validated' {
+  isInvalidAnomaly(flight: Flight): boolean {
+    return this.flightsService.isInvalidAnomaly(flight);
+  }
+
+  getAnomalyType(flight: Flight): 'slow' | 'fast' | 'invalid' | 'validated' {
     if (this.validatedAnomalies().some(f => f._id === flight._id)) {
       return 'validated';
+    }
+    if (this.invalidFlights().some(f => f._id === flight._id)) {
+      return 'invalid';
     }
     if (this.tooSlowFlights().some(f => f._id === flight._id)) {
       return 'slow';
