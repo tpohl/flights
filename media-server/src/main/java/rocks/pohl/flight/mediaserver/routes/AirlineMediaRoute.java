@@ -48,9 +48,10 @@ public class AirlineMediaRoute extends RouteBuilder {
                     String v = input.trim().toUpperCase();
                     String normalized = CARRIER_MAPPING.getOrDefault(v, v);
 
-                    // If it's a flight number like LH2065, extract prefix
-                    if (normalized.length() > 2 && normalized.matches("^[A-Z]{1,3}\\d+.*")) {
-                        normalized = normalized.replaceAll("^([A-Z]{1,3})\\d+.*", "$1");
+                    // If it's a flight number like LH2065 or X35436, extract prefix
+                    // Patterns: 3 letters (ICAO) or 2 characters (IATA, can be letter-digit)
+                    if (normalized.length() > 2 && normalized.matches("^([A-Z]{3}|[A-Z0-9]{2})\\d+.*")) {
+                        normalized = normalized.replaceAll("^([A-Z]{3}|[A-Z0-9]{2})\\d+.*", "$1");
                     }
 
                     // Ensure it's at most 3 chars
