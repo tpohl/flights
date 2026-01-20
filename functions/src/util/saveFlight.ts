@@ -3,12 +3,10 @@ import * as admin from "firebase-admin";
 import { from } from "rxjs";
 import { map } from "rxjs/operators";
 
-const saveFlightAndReturnIt = function(flightRef: admin.database.Reference) {
-  return (newFlight: Flight) =>
-    from(flightRef.set(newFlight)) // This is a promise
-      .pipe(
-        map(() => newFlight)
-      );
+const saveFlightAndReturnIt = async (flightRef: admin.database.Reference, newFlight: Flight) {
+  console.log("Saving Flight", newFlight);
+  await flightRef.set(newFlight);
+  return newFlight;
 };
 
 export default saveFlightAndReturnIt;

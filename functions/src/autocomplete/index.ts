@@ -87,8 +87,9 @@ export const autocompleteFlight = async (flightRef: admin.database.Reference, _c
 
   flight.needsAutocomplete = false;
 
+  console.log("Autocompleted Flight. About to save", flight);
   // Save
-  const savedFlight = await firstValueFrom(saveFlightAndReturnIt(flightRef)(flight));
+  const savedFlight = await saveFlightAndReturnIt(flightRef, flight);
 
   // Future autocompletion
   await firstValueFrom(prepareFutureAutoCompletion(flightRef)(savedFlight));
@@ -103,7 +104,7 @@ export const autocompleteAircraftType = async (flightRef: admin.database.Referen
       lufthansaApiAutocompletion.loadAircraftType(flightInDb.aircraftTypeCode, flightInDb.aircraftType)
     );
     flightInDb.aircraftType = type;
-    await firstValueFrom(saveFlightAndReturnIt(flightRef)(flightInDb));
+    await saveFlightAndReturnIt(flightRef, flightInDb);
   } catch (error) {
     console.error("Error loading aircraft type", error);
   }
