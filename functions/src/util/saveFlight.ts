@@ -3,7 +3,7 @@ import * as admin from "firebase-admin";
 import { from } from "rxjs";
 import { map } from "rxjs/operators";
 
-const saveFlightAndReturnIt = async (flightRef: admin.database.Reference, newFlight: Flight) {
+const saveFlightAndReturnIt = async function(flightRef: admin.database.Reference, newFlight: Flight) {
   console.log("Saving Flight", newFlight);
   await flightRef.set(newFlight);
   return newFlight;
