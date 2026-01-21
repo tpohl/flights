@@ -2,8 +2,6 @@ import "./test-setup";
 import { expect } from "chai";
 import * as sinon from "sinon";
 import proxyquire from "proxyquire";
-import * as functions from "firebase-functions/v1";
-import { of } from "rxjs";
 
 // Mock flight data
 const mockFlightData = {
@@ -36,43 +34,46 @@ describe("Autocomplete Cloud Function", () => {
 
         const lhMock = {
             default: {
-                autocomplete: sinon.stub().returns(of({ departureTime: "2023-10-27T10:00:00Z" }))
+                autocomplete: sinon.stub().resolves({ departureTime: "2023-10-27T10:00:00Z" }),
+                loadAircraftType: sinon.stub().resolves("Boeing 747")
             }
         };
 
         const faMock = {
             default: {
-                autocomplete: sinon.stub().returns(of({}))
+                autocomplete: sinon.stub().resolves({})
             }
         };
 
 
         // Mock loadOperator/loadFlight module
         const loadFlightMock = {
-            loadOperator: sinon.stub().returns(of({ icao: "DLH" }))
+            loadOperator: sinon.stub().resolves({ icao: "DLH" }),
+            loadAeroApiFlight: sinon.stub().resolves(null),
+            loadAeroApiTrack: sinon.stub().resolves(null)
         };
+
+        // Mock util/loadFlight
+        const loadFlightUtilMock = sinon.stub().resolves(mockFlightData);
 
         // Mock util/saveFlight
-        // It exports saveFlightAndReturnIt as a const that returns a function
-        const saveFlightMock = {
-            saveFlightAndReturnIt: sinon.stub().returns((f: any) => {
-                // Return an observable that completes immediately
-                return of(f);
-            })
-        };
+        const saveFlightMock = sinon.stub().callsFake(async (ref: any, flight: any) => flight);
 
         // Mock util/prepareFutureAutoCompletion
-        const prepareFutureMock = {
-            default: sinon.stub().returns(() => of(true))
-        };
+        const prepareFutureMock = sinon.stub().returns(async (f: any) => f);
+
+        // Mock util/defaulttime
+        const defaultTimeMock = sinon.stub().callsFake((f: any) => f);
 
         const module = proxyquire("../src/autocomplete/index", {
             "firebase-admin": adminMock,
             "./lufthansa-api-autocompletion": lhMock,
             "./flightaware-autocompletion": faMock,
             "./aero-api/loadFlight": loadFlightMock,
-            "../util/saveFlight": saveFlightMock,
-            "../util/prepareFutureAutoCompletion": prepareFutureMock
+            "../util/loadFlight": { default: loadFlightUtilMock },
+            "../util/saveFlight": { default: saveFlightMock },
+            "../util/prepareFutureAutoCompletion": { default: prepareFutureMock },
+            "../util/defaulttime": { default: defaultTimeMock }
         });
         autocompleteFlight = module.autocompleteFlight;
     });
