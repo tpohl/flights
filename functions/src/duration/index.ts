@@ -1,4 +1,3 @@
-import { firstValueFrom } from "rxjs";
 import * as functions from "firebase-functions/v1";
 import DayJS from "dayjs";
 import loadFlight from "../util/loadFlight";
@@ -11,7 +10,7 @@ export const computeDuration = async (snapshot: functions.database.DataSnapshot,
   const flightRef = snapshot.ref.parent;
   if (!flightRef) return;
 
-  const flight = await firstValueFrom(loadFlight(flightRef));
+  const flight = await loadFlight(flightRef);
   if (!flight) return;
 
   if (flight.departureTime && flight.arrivalTime) {

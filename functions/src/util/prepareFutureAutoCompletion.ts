@@ -1,25 +1,34 @@
-import { Flight } from "./../models/flight";
+import { Flight } from "../models/flight";
 import * as admin from "firebase-admin";
-import * as functions from "firebase-functions";
-import { from, of } from "rxjs";
-import { map } from "rxjs/operators";
 import * as jwt from "jsonwebtoken";
+
+// Declare fetch for Node 20+ native fetch support
+declare const fetch: typeof globalThis.fetch;
+
+// All available logging functions
+const {
+  log,
+  info,
+  debug,
+  warn,
+  error,
+  write
+} = require('firebase-functions/logger');
 
 const jwtsecret = process.env.JWT_SECRET;
 
 const prepareFutureAutoCompletion = (flightRef: admin.database.Reference) => {
-  return (flight: Flight) => {
-    console.log("PREPPING Future Auto-Completion");
+  return async (flight: Flight): Promise<Flight> => {
+    log("PREPPING Future Auto-Completion");
     const arrival = new Date(flight.arrivalTime);
     if (arrival.getTime() > Date.now()) {
       const flightId = flightRef.key;
       const userId = flightRef.parent.parent.key;
-      return from(doPrepareFutureAutoCompletion(userId, flightId, arrival))
-        .pipe(map(() => flight));
+      await doPrepareFutureAutoCompletion(userId, flightId, arrival);
     } else {
-      console.log("Not preparing because the Flight has already landed.");
-      return of(flight);
+      log("Not preparing because the Flight has already landed.");
     }
+    return flight;
   };
 };
 
@@ -30,9 +39,9 @@ const doPrepareFutureAutoCompletion = async (userId: string, flightId: string, e
     exp: (estimatedDate.getTime() + (60 * 60 * 1000)) / 1000,
   };
 
-  console.log("Payload", autocompletion);
+  log("Payload", autocompletion);
   const token = jwt.sign(autocompletion, jwtsecret);
-  console.log("JWT signed", token);
+  log("JWT signed", token);
 
   const url = "https://callmelater.pohl.rocks/tasks";
 
@@ -49,9 +58,9 @@ const doPrepareFutureAutoCompletion = async (userId: string, flightId: string, e
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(task),
     });
-    console.log("Response Code from callmelater", response.status);
+    log("Response Code from callmelater", response.status);
   } catch (error) {
-    console.error("Error calling callmelater", error);
+    error("Error calling callmelater", error);
   }
 };
 

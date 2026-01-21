@@ -1,5 +1,4 @@
 import { Flight } from "../models/flight";
-import { Observable, of } from "rxjs";
 
 export interface FlightAwareFlight {
   faFlightID: string;
@@ -42,9 +41,10 @@ export interface FlightAwareTimestamp {
 }
 
 const FlightAwareAutoCompleter = {
-  autocomplete: function(_flightNo: string, _flightDate: string): Observable<Flight | any> {
+  autocomplete: async function(_flightNo: string, _flightDate: string): Promise<Flight | any> {
     // Flightaware does not work at the moment
-    return of({});
+    // TODO: Implement FlightAware API integration
+    return {};
   },
 };
 

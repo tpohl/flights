@@ -47,8 +47,8 @@ const transformCarrier = function(lhCarrier: LhCarrier) {
   }
 };
 
-export const toFlight = function(lhApiFlight: LhFlight): Flight {
-  const flight = new Flight();
+export const toFlight = function(lhApiFlight: LhFlight, existingFlight: Flight): Flight {
+  const flight = existingFlight ? existingFlight : new Flight();
   flight.lhApiFlight = lhApiFlight;
   if (!!lhApiFlight.Departure && !!lhApiFlight.Arrival) {
     flight.from = lhApiFlight.Departure.AirportCode;

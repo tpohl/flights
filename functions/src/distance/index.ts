@@ -1,4 +1,3 @@
-import { firstValueFrom } from "rxjs";
 import * as functions from "firebase-functions/v1";
 import { Airport } from "../models/airport";
 
@@ -19,7 +18,7 @@ export const computeDistance = async (snapshot: functions.database.DataSnapshot,
   const flightRef = snapshot.ref.parent;
   if (!flightRef) return;
 
-  const flight = await firstValueFrom(loadFlight(flightRef));
+  const flight = await loadFlight(flightRef);
   if (!flight || !flight.from || !flight.to) {
     console.log("Missing flight data or airports, skipping distance calculation");
     return;

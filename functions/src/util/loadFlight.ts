@@ -1,14 +1,9 @@
-import { Flight } from "./../models/flight";
+import { Flight } from "../models/flight";
 import * as admin from "firebase-admin";
-import { from } from "rxjs";
-import { map } from "rxjs/operators";
 
-const loadFlight = function(flightRef: admin.database.Reference) {
-  return from(
-    flightRef.once("value"))
-    .pipe(
-      map((dateSnap) => dateSnap.val() as Flight)
-    );
+const loadFlight = async function(flightRef: admin.database.Reference): Promise<Flight> {
+  const dateSnap = await flightRef.once("value");
+  return dateSnap.val() as Flight;
 };
 
 export default loadFlight;
