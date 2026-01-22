@@ -77,6 +77,10 @@
 
   // To ensure it doesn't stretch too wide on larger screens if we don't want it to
   max-width: 100%;
+
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-lg;
 }
 
 .filter-group {
@@ -92,6 +96,28 @@
     &:last-child {
       margin-right: 0;
     }
+  }
+}
+
+.bulk-actions {
+  display: flex;
+  gap: $spacing-md;
+  padding-top: $spacing-sm;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.delete-all-btn {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+
+  mat-progress-spinner {
+    display: inline-block;
+    vertical-align: middle;
+  }
+
+  mat-icon {
+    margin-right: $spacing-xs;
   }
 }
 
@@ -145,6 +171,12 @@
     background: rgba($color-error-red, 0.15);
     color: $color-error-red;
     border: 1px solid rgba($color-error-red, 0.2);
+  }
+
+  &.incomplete {
+    background: rgba($color-warning-orange, 0.15);
+    color: $color-warning-orange;
+    border: 1px solid rgba($color-warning-orange, 0.2);
   }
 }
 
@@ -208,6 +240,32 @@
       font-size: 1.25rem;
       width: 1.25rem;
       height: 1.25rem;
+    }
+
+    mat-progress-spinner {
+      margin: 0 auto;
+    }
+  }
+
+  .delete-btn {
+    width: 32px !important;
+    height: 32px !important;
+    line-height: 32px !important;
+    padding: 0 !important;
+    border-radius: $radius-full !important;
+    background: rgba($color-error-red, 0.1) !important;
+    @include transition;
+
+    &:hover:not([disabled]) {
+      background: rgba($color-error-red, 0.2) !important;
+      transform: scale(1.1);
+    }
+
+    mat-icon {
+      font-size: 1.25rem;
+      width: 1.25rem;
+      height: 1.25rem;
+      color: $color-error-red;
     }
 
     mat-progress-spinner {
