@@ -6,6 +6,7 @@ import { FlightsService } from '../services/flights.service';
 import { CommonModule } from '@angular/common';
 import { ExactDurationPipe } from '../pipes/exactDurationPipe';
 import { LogoPipe } from '../pipes/logo.pipe';
+import { CoordinatePipe } from '../pipes/coordinate.pipe';
 
 // Angular Material
 import { MatCardModule } from '@angular/material/card';
@@ -32,7 +33,8 @@ import { FlightSummaryCardComponent } from '../flight-summary-card/flight-summar
     MatButtonModule,
     MatMenuModule,
     FlightSummaryCardComponent,
-    LogoPipe
+    LogoPipe,
+    CoordinatePipe
   ],
   templateUrl: './overall-stats.component.html',
   styleUrl: './overall-stats.component.scss'
