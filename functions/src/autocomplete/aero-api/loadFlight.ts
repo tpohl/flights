@@ -1,6 +1,6 @@
 import { AeroApiFlight, AeroAPIIdentResponse, AeroAPIOperator, AeroAPITrackResponse } from "./models";
 import * as admin from "firebase-admin";
-
+admin.initializeApp();
 // All available logging functions
 const {
   log,

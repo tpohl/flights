@@ -88,6 +88,8 @@ export const autocompleteFlight = async (flightRef: admin.database.Reference, _c
     } catch (err) {
       error('Problem with AeroAPI', err);
     }
+  } else {
+    log(`Skipping AeroAPI load - missing data or too old flight Carrier: ${flight.icaoCarrier} FlightNo: ${flight.cleanFlightNo}. Date Check: ${isWithinXDaysAgo(9, flight.date)} -> ${flight.date}`);
   }
 
   flight.needsAutocomplete = false;
