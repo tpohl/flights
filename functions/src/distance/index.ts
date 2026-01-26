@@ -1,4 +1,5 @@
-import * as functions from "firebase-functions/v1";
+import { onValueUpdated, onValueCreated } from "firebase-functions/v2/database";
+import { log, warn } from "firebase-functions/logger";
 import { Airport } from "../models/airport";
 
 import loadFlight from "../util/loadFlight";
@@ -13,14 +14,12 @@ const calculateDistance = (lat1: number, long1: number, lat2: number, long2: num
   return dis;
 };
 
-export const computeDistance = async (snapshot: functions.database.DataSnapshot, context: functions.EventContext) => {
-  console.log("Computing Distance");
-  const flightRef = snapshot.ref.parent;
-  if (!flightRef) return;
+export const computeDistance = async (flightRef: admin.database.Reference, flightId: string) => {
+  log("Computing Distance");
 
   const flight = await loadFlight(flightRef);
   if (!flight || !flight.from || !flight.to) {
-    console.log("Missing flight data or airports, skipping distance calculation");
+    log("Missing flight data or airports, skipping distance calculation");
     return;
   }
 
@@ -33,24 +32,30 @@ export const computeDistance = async (snapshot: functions.database.DataSnapshot,
   if (ap1 && ap2) {
     const dist = calculateDistance(ap1.latitude, ap1.longitude, ap2.latitude, ap2.longitude);
     if (dist > 0) {
-      console.log(`Computed Distance of Flight ${context.params.flightId}: ${dist} km`);
+      log(`Computed Distance of Flight ${flightId}: ${dist} km`);
       await flightRef.child("distance").set(dist);
     }
   } else {
-    console.warn(`Could not find airport data for ${flight.from} or ${flight.to}`);
+    warn(`Could not find airport data for ${flight.from} or ${flight.to}`);
   }
 };
 
-export default {
-  updatedDepartureAirport: functions.database.ref("/users/{userId}/flights/{flightId}/from")
-    .onUpdate((change, context) => computeDistance(change.after, context)),
+export const updatedDepartureAirport = onValueUpdated("/users/{userId}/flights/{flightId}/from", async (event) => {
+  const flightRef = event.data.after.ref.parent!;
+  return computeDistance(flightRef, event.params.flightId);
+});
 
-  updatedDepartureAirportOnCreate: functions.database.ref("/users/{userId}/flights/{flightId}/from")
-    .onCreate(computeDistance),
+export const updatedDepartureAirportOnCreate = onValueCreated("/users/{userId}/flights/{flightId}/from", async (event) => {
+  const flightRef = event.data.ref.parent!;
+  return computeDistance(flightRef, event.params.flightId);
+});
 
-  updatedArrivalAirport: functions.database.ref("/users/{userId}/flights/{flightId}/to")
-    .onUpdate((change, context) => computeDistance(change.after, context)),
+export const updatedArrivalAirport = onValueUpdated("/users/{userId}/flights/{flightId}/to", async (event) => {
+  const flightRef = event.data.after.ref.parent!;
+  return computeDistance(flightRef, event.params.flightId);
+});
 
-  updatedArrivalAirportCreate: functions.database.ref("/users/{userId}/flights/{flightId}/to")
-    .onCreate(computeDistance),
-};
+export const updatedArrivalAirportCreate = onValueCreated("/users/{userId}/flights/{flightId}/to", async (event) => {
+  const flightRef = event.data.ref.parent!;
+  return computeDistance(flightRef, event.params.flightId);
+});

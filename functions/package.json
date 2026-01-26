@@ -10,7 +10,8 @@
     "deploy": "firebase deploy --only functions --project flights-159420",
     "logs": "firebase functions:log",
     "postinstall": "npx --yes @kie/lock-treatment-tool -s",
-    "test": "mocha -r ts-node/register -r test/test-setup.ts 'test/**/*.test.ts'"
+    "test": "mocha -r ts-node/register -r test/test-setup.ts 'test/**/*.test.ts'",
+    "create-secret": "firebase functions:secrets:set FLIGHTS_CONFIG --project flights-159420"
   },
   "main": "lib/index.js",
   "dependencies": {

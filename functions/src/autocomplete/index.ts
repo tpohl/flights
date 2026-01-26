@@ -2,29 +2,25 @@
  * Functions for flight autocompletion.
  */
 
-import * as functions from 'firebase-functions/v1';
 import * as admin from 'firebase-admin';
 import * as jwt from 'jsonwebtoken';
+import { onRequest } from 'firebase-functions/v2/https';
+import { onValueUpdated, onValueCreated, onValueWritten } from 'firebase-functions/v2/database';
+import { defineJsonSecret } from 'firebase-functions/params';
+import { log, debug, warn, error } from 'firebase-functions/logger';
 
 import { Flight } from '../models/flight';
 import loadFlight from '../util/loadFlight';
 import defaultTimes from '../util/defaulttime';
 import saveFlightAndReturnIt from '../util/saveFlight';
-import prepareFutureAutoCompletion from '../util/prepareFutureAutoCompletion';
-import lufthansaApiAutocompletion from './lufthansa-api-autocompletion';
+import lhApiAutocompletion from './lufthansa-api-autocompletion';
 import { loadAeroApiFlight, loadAeroApiTrack, loadOperator } from './aero-api/loadFlight';
 import { isWithinXDaysAgo } from '../util/checkDates';
 
-// All available logging functions
-import { log, info, debug, warn, error, write } from 'firebase-functions/logger';
-import { defineJsonSecret } from 'firebase-functions/params';
 
 const config = defineJsonSecret("FLIGHTS_CONFIG");
 
-export const autocompleteFlight = async (flightRef: admin.database.Reference, _context?: functions.EventContext) => {
-  // Access secret value at runtime, not at module load time
-  const JWTSECRET = config.value().jwt.secret;
-
+export const autocompleteFlight = async (flightRef: admin.database.Reference) => {
   const flightInDb = await loadFlight(flightRef);
   if (!flightInDb) {
     return;
@@ -41,13 +37,13 @@ export const autocompleteFlight = async (flightRef: admin.database.Reference, _c
   log('Flight From DB', flight);
 
   try {
-    const lhApiFlight = await lufthansaApiAutocompletion.autocomplete(flightNo, dateStr, flight);
+    const lhApiFlight = await lhApiAutocompletion.autocomplete(flightNo, dateStr, flight);
     log('Autocompleted LH-Flight Data', lhApiFlight);
     flight = lhApiFlight;
     flight = defaultTimes(flight);
     debug('Flight after LH Autocompletion', flight);
-  } catch (error) {
-    error('Error during Autocompletion', error);
+  } catch (err) {
+    warn('Error during Autocompletion', err);
     flight = JSON.parse(JSON.stringify(flightInDb)); // Deep copy
     flight.note = flight.errorMessage ? flight.errorMessage + '\nCould not autocomplete.' : 'Could not autocomplete.';
   }
@@ -89,7 +85,7 @@ export const autocompleteFlight = async (flightRef: admin.database.Reference, _c
         debug(`No AeroAPI flight data for ${flight.icaoCarrier}${flight.cleanFlightNo} on ${flight.date}`);
       }
     } catch (err) {
-      error('Problem with AeroAPI', err);
+      warn('Problem with AeroAPI', err);
     }
   } else {
     log(`Skipping AeroAPI load - missing data or too old flight Carrier: ${flight.icaoCarrier} FlightNo: ${flight.cleanFlightNo}. Date Check: ${isWithinXDaysAgo(9, flight.date)} -> ${flight.date}`);
@@ -105,56 +101,71 @@ export const autocompleteFlight = async (flightRef: admin.database.Reference, _c
   // await prepareFutureAutoCompletion(flightRef)(savedFlight);
 };
 
-export const autocompleteAircraftType = async (flightRef: admin.database.Reference, _context?: functions.EventContext) => {
+export const autocompleteAircraftType = async (flightRef: admin.database.Reference) => {
   const flightInDb = await loadFlight(flightRef);
   if (!flightInDb) {
     return;
   }
 
   try {
-    const type = await lufthansaApiAutocompletion.loadAircraftType(flightInDb.aircraftTypeCode, flightInDb.aircraftType);
+    const type = await lhApiAutocompletion.loadAircraftType(flightInDb.aircraftTypeCode, flightInDb.aircraftType);
     flightInDb.aircraftType = type;
     await saveFlightAndReturnIt(flightRef, flightInDb);
-  } catch (error) {
-    error('Error loading aircraft type', error);
+  } catch (err) {
+    warn('Error loading aircraft type', err);
   }
 };
 
-export default {
-  lufthansaApiAutocompletion: functions.database.ref('/users/{userId}/flights/{flightId}/flightno')
-    .onUpdate((change, context) => autocompleteFlight(change.after.ref.parent, context)),
+export const lufthansaApiAutocompletion = onValueUpdated(
+  { ref: '/users/{userId}/flights/{flightId}/flightno', secrets: [config] },
+  async (event) => {
+    return autocompleteFlight(event.data.after.ref.parent!);
+  }
+);
 
-  lufthansaApiAutocompletionOnCreate: functions.database.ref('/users/{userId}/flights/{flightId}/flightno')
-    .onCreate((snapshot, context) => autocompleteFlight(snapshot.ref.parent, context)),
+export const lufthansaApiAutocompletionOnCreate = onValueCreated(
+  { ref: '/users/{userId}/flights/{flightId}/flightno', secrets: [config] },
+  async (event) => {
+    return autocompleteFlight(event.data.ref.parent!);
+  }
+);
 
-  autocompletionRequested: functions.database.ref('/users/{userId}/flights/{flightId}/needsAutocomplete')
-    .onUpdate((change, context) => {
-      if (change.after.val()) {
-        log('Autocompletion Triggered');
-        return autocompleteFlight(change.after.ref.parent, context);
-      }
-      return null;
-    }),
+export const autocompletionRequested = onValueUpdated(
+  { ref: '/users/{userId}/flights/{flightId}/needsAutocomplete', secrets: [config] },
+  async (event) => {
+    if (event.data.after.val()) {
+      log('Autocompletion Triggered');
+      return autocompleteFlight(event.data.after.ref.parent!);
+    }
+    return null;
+  }
+);
 
-  autocompletionRequestedCreate: functions.database.ref('/users/{userId}/flights/{flightId}/needsAutocomplete')
-    .onCreate((snapshot, context) => {
-      if (snapshot.val()) {
-        log('Autocompletion Triggered');
-        return autocompleteFlight(snapshot.ref.parent, context);
-      }
-      return null;
-    }),
+export const autocompletionRequestedCreate = onValueCreated(
+  { ref: '/users/{userId}/flights/{flightId}/needsAutocomplete', secrets: [config] },
+  async (event) => {
+    if (event.data.val()) {
+      log('Autocompletion Triggered');
+      return autocompleteFlight(event.data.ref.parent!);
+    }
+    return null;
+  }
+);
 
-  flightAcTypeCodeUpdated: functions.database.ref('/users/{userId}/flights/{flightId}/aircraftTypeCode')
-    .onWrite((change, context) => {
-      if (change.after.val()) {
-        log('AC Type Update Triggered');
-        return autocompleteAircraftType(change.after.ref.parent, context);
-      }
-      return null;
-    }),
+export const flightAcTypeCodeUpdated = onValueWritten(
+  { ref: '/users/{userId}/flights/{flightId}/aircraftTypeCode', secrets: [config] },
+  async (event) => {
+    if (event.data.after.val()) {
+      log('AC Type Update Triggered');
+      return autocompleteAircraftType(event.data.after.ref.parent!);
+    }
+    return null;
+  }
+);
 
-  autocomplete: functions.https.onRequest(async (req, res) => {
+export const autocomplete = onRequest(
+  { secrets: [config] }, // Declare secret dependency
+  async (req, res) => {
     // Access secret value at runtime, not at module load time
     const JWTSECRET = config.value().jwt.secret;
 
@@ -168,9 +179,9 @@ export default {
       await autocompleteFlight(admin.database().ref(`/users/${userId}/flights/${flightId}`));
       log('Autocompleted via HTTP trigger');
       res.status(200).send('OK');
-    } catch (error) {
-      error('HTTP Autocomplete error', error);
+    } catch (err) {
+      warn('HTTP Autocomplete error', err);
       res.status(400).send('NOT OK');
     }
-  }),
-};
+  }
+);

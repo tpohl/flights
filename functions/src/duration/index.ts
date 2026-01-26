@@ -1,14 +1,11 @@
-import * as functions from "firebase-functions/v1";
+import { onValueUpdated, onValueCreated } from "firebase-functions/v2/database";
+import { log, warn, error } from "firebase-functions/logger";
 import DayJS from "dayjs";
 import loadFlight from "../util/loadFlight";
+import * as admin from "firebase-admin";
 
-export const computeDuration = async (snapshot: functions.database.DataSnapshot, context: functions.EventContext) => {
-  const flightId = context.params.flightId;
-  const userId = context.params.userId;
-  console.log(`Computing Duration for Flight ${flightId} (User: ${userId})`);
-
-  const flightRef = snapshot.ref.parent;
-  if (!flightRef) return;
+export const computeDuration = async (flightRef: admin.database.Reference, flightId: string, userId: string) => {
+  log(`Computing Duration for Flight ${flightId} (User: ${userId})`);
 
   const flight = await loadFlight(flightRef);
   if (!flight) return;
@@ -20,27 +17,33 @@ export const computeDuration = async (snapshot: functions.database.DataSnapshot,
     if (dep.isValid() && arr.isValid()) {
       const durationMs = arr.diff(dep);
       if (durationMs > 0) {
-        console.log(`Calculated duration for ${flightId}: ${durationMs}ms`);
+        log(`Calculated duration for ${flightId}: ${durationMs}ms`);
         await flightRef.child("durationMilliseconds").set(durationMs);
       } else {
-        console.warn(`Calculated duration for ${flightId} is non-positive: ${durationMs}ms.`);
+        warn(`Calculated duration for ${flightId} is non-positive: ${durationMs}ms.`);
       }
     } else {
-      console.error(`Invalid times for flight ${flightId}: dep=${flight.departureTime}, arr=${flight.arrivalTime}`);
+      error(`Invalid times for flight ${flightId}: dep=${flight.departureTime}, arr=${flight.arrivalTime}`);
     }
   }
 };
 
-export default {
-  updatedDepartureTime: functions.database.ref("/users/{userId}/flights/{flightId}/departureTime")
-    .onUpdate((change, context) => computeDuration(change.after, context)),
+export const updatedDepartureTime = onValueUpdated("/users/{userId}/flights/{flightId}/departureTime", async (event) => {
+  const flightRef = event.data.after.ref.parent!;
+  return computeDuration(flightRef, event.params.flightId, event.params.userId);
+});
 
-  updatedDepartureTimeOnCreate: functions.database.ref("/users/{userId}/flights/{flightId}/departureTime")
-    .onCreate(computeDuration),
+export const updatedDepartureTimeOnCreate = onValueCreated("/users/{userId}/flights/{flightId}/departureTime", async (event) => {
+  const flightRef = event.data.ref.parent!;
+  return computeDuration(flightRef, event.params.flightId, event.params.userId);
+});
 
-  updatedArrivalTime: functions.database.ref("/users/{userId}/flights/{flightId}/arrivalTime")
-    .onUpdate((change, context) => computeDuration(change.after, context)),
+export const updatedArrivalTime = onValueUpdated("/users/{userId}/flights/{flightId}/arrivalTime", async (event) => {
+  const flightRef = event.data.after.ref.parent!;
+  return computeDuration(flightRef, event.params.flightId, event.params.userId);
+});
 
-  updatedArrivalTimeCreate: functions.database.ref("/users/{userId}/flights/{flightId}/arrivalTime")
-    .onCreate(computeDuration),
-};
+export const updatedArrivalTimeCreate = onValueCreated("/users/{userId}/flights/{flightId}/arrivalTime", async (event) => {
+  const flightRef = event.data.ref.parent!;
+  return computeDuration(flightRef, event.params.flightId, event.params.userId);
+});

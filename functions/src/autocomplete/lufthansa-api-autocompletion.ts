@@ -6,7 +6,7 @@ import { replaceType, toFlight } from './lufthansa-api/transformers';
 
 import { defineJsonSecret } from 'firebase-functions/params';
 // All available logging functions
-import { debug, log } from 'firebase-functions/logger';
+import { debug, log, error } from 'firebase-functions/logger';
 
 const config = defineJsonSecret('FLIGHTS_CONFIG');
 
@@ -39,9 +39,9 @@ const getLhApiToken = async function (): Promise<AccessToken> {
     try {
       token = await oauth2.getToken({});
       return token;
-    } catch (error) {
-      log('Access Token Error', error);
-      throw error;
+    } catch (err) {
+      log('Access Token Error', err);
+      throw err;
     }
   } else {
     return token;
@@ -71,8 +71,8 @@ const loadAircraftType = async function (acTypeCode: string, _aircraftType: stri
     }
 
     return acTypeCode;
-  } catch (error) {
-    error('Error fetching aircraft type', error);
+  } catch (err) {
+    error('Error fetching aircraft type', err);
     return acTypeCode;
   }
 };
@@ -109,9 +109,9 @@ const autocomplete = async function (flightNo: string, dateStr: string, existing
     flight.aircraftType = acType || flight.aircraftType;
 
     return flight as Flight;
-  } catch (error) {
-    error('Error in LH autocomplete', error);
-    return new Flight();
+  } catch (err) {
+    error('Error in LH autocomplete', err);
+    return existingFlight;
   }
 };
 
