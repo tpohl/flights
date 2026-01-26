@@ -15,7 +15,10 @@ const {
   write
 } = require('firebase-functions/logger');
 
-const jwtsecret = process.env.JWT_SECRET;
+const functions = require('firebase-functions');
+const { defineJsonSecret } = require('firebase-functions/params');
+
+const config = defineJsonSecret("FLIGHTS_CONFIG");
 
 const prepareFutureAutoCompletion = (flightRef: admin.database.Reference) => {
   return async (flight: Flight): Promise<Flight> => {
@@ -33,6 +36,9 @@ const prepareFutureAutoCompletion = (flightRef: admin.database.Reference) => {
 };
 
 const doPrepareFutureAutoCompletion = async (userId: string, flightId: string, estimatedDate: Date) => {
+  // Access secret value at runtime, not at module load time
+  const JWTSECRET = config.value().jwt.secret;
+
   const autocompletion = {
     flightId,
     userId,
@@ -40,7 +46,7 @@ const doPrepareFutureAutoCompletion = async (userId: string, flightId: string, e
   };
 
   log("Payload", autocompletion);
-  const token = jwt.sign(autocompletion, jwtsecret);
+  const token = jwt.sign(autocompletion, JWTSECRET);
   log("JWT signed", token);
 
   const url = "https://callmelater.pohl.rocks/tasks";

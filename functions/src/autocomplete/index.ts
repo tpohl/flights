@@ -16,18 +16,15 @@ import { loadAeroApiFlight, loadAeroApiTrack, loadOperator } from './aero-api/lo
 import { isWithinXDaysAgo } from '../util/checkDates';
 
 // All available logging functions
-const {
-  log,
-  info,
-  debug,
-  warn,
-  error,
-  write
-} = require('firebase-functions/logger');
+import { log, info, debug, warn, error, write } from 'firebase-functions/logger';
+import { defineJsonSecret } from 'firebase-functions/params';
 
-const jwtsecret = process.env.JWT_SECRET;
+const config = defineJsonSecret("FLIGHTS_CONFIG");
 
 export const autocompleteFlight = async (flightRef: admin.database.Reference, _context?: functions.EventContext) => {
+  // Access secret value at runtime, not at module load time
+  const JWTSECRET = config.value().jwt.secret;
+
   const flightInDb = await loadFlight(flightRef);
   if (!flightInDb) {
     return;
@@ -74,16 +71,22 @@ export const autocompleteFlight = async (flightRef: admin.database.Reference, _c
     try {
       const aeroApiFlight = await loadAeroApiFlight(flight.icaoCarrier, flight.cleanFlightNo, flight.date);
       if (aeroApiFlight) {
+        log('Loaded AeroAPI Flight', aeroApiFlight);
         flight.aeroApiFlight = aeroApiFlight;
         flight.flightAwareFlightId = aeroApiFlight.fa_flight_id;
         const aeroApiTrack = await loadAeroApiTrack(aeroApiFlight.fa_flight_id);
         if (aeroApiTrack) {
+          debug('Loaded AeroAPI Track', aeroApiTrack);
           if (typeof aeroApiTrack.actual_distance === 'number' && aeroApiTrack.actual_distance > 0) {
             flight.flownDistance = aeroApiTrack.actual_distance * 1.60934;
           }
           const aeroApiTrackRef = flightRef.parent.parent.child('aeroApiTracks').child(aeroApiFlight.fa_flight_id);
           await aeroApiTrackRef.set(aeroApiTrack);
+        } else {
+          debug(`No AeroAPI track data for flight ID ${aeroApiFlight.fa_flight_id}`);
         }
+      } else {
+        debug(`No AeroAPI flight data for ${flight.icaoCarrier}${flight.cleanFlightNo} on ${flight.date}`);
       }
     } catch (err) {
       error('Problem with AeroAPI', err);
@@ -152,9 +155,12 @@ export default {
     }),
 
   autocomplete: functions.https.onRequest(async (req, res) => {
+    // Access secret value at runtime, not at module load time
+    const JWTSECRET = config.value().jwt.secret;
+
     const taskJwt = req.body;
     try {
-      const autocompletion = jwt.verify(taskJwt, jwtsecret) as any;
+      const autocompletion = jwt.verify(taskJwt, JWTSECRET) as any;
       const userId = autocompletion.userId;
       const flightId = autocompletion.flightId;
       log(`autocomplete called for ${flightId}`);
