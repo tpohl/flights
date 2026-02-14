@@ -1,10 +1,16 @@
 <div class="flight-list-container">
   <header class="page-header">
     <h1 class="page-title">Your Flights</h1>
-    <button mat-fab extended color="primary" [routerLink]="['/flight', 'new']">
-      <mat-icon>add</mat-icon>
-      Add Flight
-    </button>
+    <div class="header-buttons">
+      <button mat-fab extended color="primary" [routerLink]="['/flight', 'new']">
+        <mat-icon>add</mat-icon>
+        Add Flight
+      </button>
+      <button mat-fab extended color="accent" [routerLink]="['/trip-wizard']">
+        <mat-icon>travel_explore</mat-icon>
+        Add Trip
+      </button>
+    </div>
   </header>
 
   <div class="main-content">
@@ -13,7 +19,6 @@
       <app-cesium *ngIf="flights()" [flights]="flights()" [showCountries]="mapOptions.countries"></app-cesium>
     </div>
 
-    <!-- Stats Panel -->
     <!-- Stats Panel -->
     <aside class="stats-panel">
       <!-- Map Options Card -->
@@ -28,6 +33,18 @@
               Show visited Countries
             </mat-slide-toggle>
           </div>
+          <div class="option-row">
+            <mat-form-field appearance="outline" class="trip-filter-field">
+              <mat-label>Filter by Trip</mat-label>
+              <mat-select [(ngModel)]="selectedTripId">
+                <mat-option value="all">All Flights</mat-option>
+                <mat-option value="none">No Trip</mat-option>
+                @for (trip of trips(); track trip._id) {
+                <mat-option [value]="trip._id">🌍 {{ trip.name }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          </div>
         </mat-card-content>
       </mat-card>
 
@@ -40,7 +57,7 @@
   <section class="flights-grid">
     @for (flight of flights(); track flight._id) {
     <app-flight-card [flight]="flight">
-      <app-flight-tile [flight]="flight"></app-flight-tile>
+      <app-flight-tile [flight]="flight" [tripName]="getTripName(flight)"></app-flight-tile>
     </app-flight-card>
     }
   </section>

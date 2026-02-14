@@ -1,0 +1,122 @@
+<div class="trips-container">
+    <header class="page-header">
+        <button mat-icon-button routerLink="/flights">
+            <mat-icon>arrow_back</mat-icon>
+        </button>
+        <h1 class="page-title">My Trips</h1>
+        <button mat-fab extended color="accent" routerLink="/trip-wizard" style="margin-left: auto;">
+            <mat-icon>add</mat-icon>
+            New Trip
+        </button>
+    </header>
+
+    <div class="trips-grid">
+        @for (info of tripInfos(); track info.trip._id) {
+        <mat-card class="trip-card glass-card" (click)="openTrip(info.trip._id)" [style.cursor]="'pointer'">
+            <!-- Reason chips in top-right -->
+            @if (info.reasons.length > 0) {
+            <div class="reason-chips">
+                @for (reason of info.reasons; track reason) {
+                <mat-chip class="reason-chip">
+                    <mat-icon class="reason-icon">{{ getReasonInfo(reason).icon }}</mat-icon>
+                    <span class="reason-label">{{ getReasonInfo(reason).label }}</span>
+                </mat-chip>
+                }
+            </div>
+            }
+
+            <mat-card-header>
+                <mat-icon mat-card-avatar>travel_explore</mat-icon>
+
+                <mat-card-title *ngIf="editingTripId() !== info.trip._id">
+                    {{ info.trip.name }}
+                </mat-card-title>
+
+                <div *ngIf="editingTripId() === info.trip._id" class="edit-mode">
+                    <mat-form-field appearance="outline" class="dense-form-field" (click)="$event.stopPropagation()">
+                        <input matInput [(ngModel)]="editName" (keydown.enter)="saveEdit(info.trip)"
+                            (keydown.escape)="cancelEdit()" autoFocus (click)="$event.stopPropagation()">
+                    </mat-form-field>
+                </div>
+            </mat-card-header>
+
+            <!-- Trip Info -->
+            <mat-card-content class="trip-info">
+                <!-- Dates & Stats -->
+                <div class="trip-stats">
+                    @if (info.startDate) {
+                    <div class="stat-row">
+                        <mat-icon class="stat-icon">calendar_today</mat-icon>
+                        <span>{{ info.startDate | date:'dd MMM yyyy' }}</span>
+                        @if (info.endDate && info.startDate.getTime() !== info.endDate.getTime()) {
+                        <span>&ndash; {{ info.endDate | date:'dd MMM yyyy' }}</span>
+                        }
+                    </div>
+                    }
+                    <div class="stat-row">
+                        <mat-icon class="stat-icon">flight</mat-icon>
+                        <span>{{ info.flightCount }} flight{{ info.flightCount !== 1 ? 's' : '' }}</span>
+                        <span class="separator">•</span>
+                        <span>{{ info.totalDistance | number:'1.0-0' }} km</span>
+                    </div>
+                    @if (info.airlines.length > 0) {
+                    <div class="stat-row">
+                        <mat-icon class="stat-icon">airlines</mat-icon>
+                        <span>{{ info.airlines.join(', ') }}</span>
+                    </div>
+                    }
+                    @if (info.aircraftTypes.length > 0) {
+                    <div class="stat-row">
+                        <mat-icon class="stat-icon">airplanemode_active</mat-icon>
+                        <span>{{ info.aircraftTypes.join(', ') }}</span>
+                    </div>
+                    }
+                    @if (info.travelClasses.length > 0) {
+                    <div class="stat-row">
+                        <mat-icon class="stat-icon">airline_seat_recline_extra</mat-icon>
+                        @for (cls of info.travelClasses; track cls) {
+                        <mat-chip class="class-chip" [class]="getClassCss(cls)">{{ getClassLabel(cls) }}</mat-chip>
+                        }
+                    </div>
+                    }
+                </div>
+
+                <!-- Airport Images -->
+                @if (info.airports.length > 0) {
+                <div class="airport-images">
+                    @for (code of info.airports; track code) {
+                    <div class="airport-thumb" [matTooltip]="code"
+                        [style.background-image]="'url(' + airportImageUrl(code) + ')'">
+                    </div>
+                    }
+                </div>
+                }
+            </mat-card-content>
+
+            <mat-card-actions align="end">
+                @if (editingTripId() !== info.trip._id) {
+                <button mat-icon-button (click)="startEdit(info.trip); $event.stopPropagation()" matTooltip="Rename">
+                    <mat-icon>edit</mat-icon>
+                </button>
+                <button mat-icon-button color="warn" (click)="deleteTrip(info.trip); $event.stopPropagation()"
+                    matTooltip="Delete">
+                    <mat-icon>delete</mat-icon>
+                </button>
+                } @else {
+                <button mat-icon-button color="primary" (click)="saveEdit(info.trip); $event.stopPropagation()">
+                    <mat-icon>check</mat-icon>
+                </button>
+                <button mat-icon-button (click)="cancelEdit(); $event.stopPropagation()">
+                    <mat-icon>close</mat-icon>
+                </button>
+                }
+            </mat-card-actions>
+        </mat-card>
+        } @empty {
+        <div class="empty-state">
+            <mat-icon>sentiment_dissatisfied</mat-icon>
+            <p>No trips found. Create one to group your flights!</p>
+        </div>
+        }
+    </div>
+</div>

@@ -1,0 +1,104 @@
+<div class="trip-detail-container">
+    <header class="page-header glass-header">
+        <button mat-icon-button routerLink="/trips">
+            <mat-icon>arrow_back</mat-icon>
+        </button>
+
+        <!-- View Mode -->
+        <h1 class="page-title" *ngIf="!isEditing()">{{ trip()?.name || 'Loading...' }}</h1>
+
+        <!-- Edit Mode -->
+        <mat-form-field *ngIf="isEditing()" appearance="outline" class="rename-field">
+            <input matInput [(ngModel)]="editName" (keydown.enter)="saveRename()" (keydown.escape)="cancelRename()"
+                autofocus>
+        </mat-form-field>
+
+        <div class="header-actions">
+            @if (isEditing()) {
+            <button mat-fab extended color="primary" (click)="saveRename()">
+                <mat-icon>check</mat-icon>
+                Save
+            </button>
+            <button mat-fab extended (click)="cancelRename()">
+                <mat-icon>close</mat-icon>
+                Cancel
+            </button>
+            } @else {
+            <button mat-fab extended (click)="startRename()">
+                <mat-icon>edit</mat-icon>
+                Rename
+            </button>
+            <button mat-fab extended color="accent" (click)="startMerge()" [disabled]="otherTrips().length === 0">
+                <mat-icon>merge</mat-icon>
+                Merge
+            </button>
+            }
+        </div>
+    </header>
+
+    <!-- Merge Bar -->
+    @if (isMerging()) {
+    <div class="merge-bar glass-card">
+        <mat-icon>merge</mat-icon>
+        <span>Merge into:</span>
+        <mat-form-field appearance="outline" class="merge-select">
+            <mat-select [(ngModel)]="selectedMergeTargetId" placeholder="Select a trip">
+                @for (t of otherTrips(); track t._id) {
+                <mat-option [value]="t._id">{{ t.name }}</mat-option>
+                }
+            </mat-select>
+        </mat-form-field>
+        <button mat-flat-button color="primary" [disabled]="!selectedMergeTargetId()" (click)="executeMerge()">
+            Merge
+        </button>
+        <button mat-button (click)="cancelMerge()">Cancel</button>
+    </div>
+    }
+
+    <div class="content-grid">
+        <!-- Map Section -->
+        <div class="map-section glass-card">
+            <app-cesium *ngIf="flights().length > 0" [flights]="flights()" [showCountries]="true">
+            </app-cesium>
+            <div *ngIf="flights().length === 0" class="empty-map">
+                No flights to map yet.
+            </div>
+        </div>
+
+        <!-- Flights List -->
+        <div class="flights-list">
+            <h2 class="section-title">Flights ({{ flights().length }})</h2>
+            @for (flight of flights(); track flight._id) {
+            <div class="flight-row">
+                <app-flight-card [flight]="flight" class="flight-card-wrapper">
+                    <app-flight-tile [flight]="flight"></app-flight-tile>
+                </app-flight-card>
+                <button mat-fab extended color="warn" class="remove-btn" (click)="removeFlightFromTrip(flight)">
+                    <mat-icon>remove_circle_outline</mat-icon>
+                    Remove
+                </button>
+            </div>
+            } @empty {
+            <div class="empty-state">
+                <p>No flights in this trip.</p>
+            </div>
+            }
+
+            <!-- Suggested Flights -->
+            @if (suggestedFlights().length > 0) {
+            <h2 class="section-title suggested-title">Nearby Flights</h2>
+            @for (flight of suggestedFlights(); track flight._id) {
+            <div class="flight-row suggested-row">
+                <app-flight-card [flight]="flight" class="flight-card-wrapper suggested-card">
+                    <app-flight-tile [flight]="flight" [compact]="true"></app-flight-tile>
+                </app-flight-card>
+                <button mat-fab extended color="primary" class="add-btn" (click)="addFlightToTrip(flight)">
+                    <mat-icon>add</mat-icon>
+                    Add
+                </button>
+            </div>
+            }
+            }
+        </div>
+    </div>
+</div>

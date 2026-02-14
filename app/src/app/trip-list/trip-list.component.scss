@@ -1,0 +1,156 @@
+@use '../variables' as *;
+@use '../mixins' as *;
+
+.trips-container {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.page-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.page-title {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 500;
+}
+
+.trips-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 16px;
+}
+
+.trip-card {
+    transition: transform 0.2s;
+    cursor: pointer;
+    position: relative;
+    overflow: visible;
+}
+
+.trip-card:hover {
+    transform: translateY(-2px);
+}
+
+.edit-mode {
+    flex: 1;
+}
+
+.dense-form-field {
+    width: 100%;
+    font-size: 14px;
+}
+
+/* Reason chips - top right */
+.reason-chips {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    display: flex;
+    gap: 4px;
+    z-index: 1;
+}
+
+.reason-chip {
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    min-height: 22px !important;
+    height: 22px !important;
+    padding: 0 10px !important;
+    border-radius: 12px !important;
+    background: rgba(255, 152, 0, 0.15) !important;
+    color: #e65100 !important;
+    border: 1px solid rgba(255, 152, 0, 0.3) !important;
+
+    .reason-icon {
+        font-size: 14px !important;
+        width: 14px !important;
+        height: 14px !important;
+        margin-right: 2px;
+    }
+
+    .reason-label {
+        @media (max-width: 600px) {
+            display: none;
+        }
+    }
+}
+
+/* Class chips - reuse existing mixin */
+@include class-chips;
+
+/* Trip info section */
+.trip-info {
+    padding-top: 8px;
+}
+
+.trip-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 12px;
+}
+
+.stat-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: rgba(0, 0, 0, 0.6);
+}
+
+.stat-icon {
+    font-size: 16px !important;
+    width: 16px !important;
+    height: 16px !important;
+    opacity: 0.6;
+}
+
+.separator {
+    margin: 0 2px;
+    opacity: 0.4;
+}
+
+/* Airport images */
+.airport-images {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.airport-thumb {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    background-size: cover;
+    background-position: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    transition: transform 0.2s;
+}
+
+.airport-thumb:hover {
+    transform: scale(1.1);
+}
+
+/* Empty state */
+.empty-state {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 40px;
+    color: rgba(255, 255, 255, 0.7);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+}
+
+.empty-state mat-icon {
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+}

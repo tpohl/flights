@@ -46,6 +46,26 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   {
+    path: 'settings',
+    loadComponent: () => import('./settings/settings.component').then(m => m.SettingsComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'trips',
+    loadComponent: () => import('./trip-list/trip-list.component').then(m => m.TripListComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'trips/:id',
+    loadComponent: () => import('./trip-detail/trip-detail.component').then(m => m.TripDetailComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'trip-wizard',
+    loadComponent: () => import('./trip-wizard/trip-wizard.component').then(m => m.TripWizardComponent),
+    canActivate: [authGuard]
+  },
+  {
     path: '',
     redirectTo: '/flights',
     pathMatch: 'full'

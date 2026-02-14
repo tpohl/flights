@@ -8,6 +8,10 @@
         <mat-icon matListItemIcon>flight</mat-icon>
         <span matListItemTitle>Flights</span>
       </a>
+      <a mat-list-item routerLink="/trips" routerLinkActive="active" (click)="closeSidenav()">
+        <mat-icon matListItemIcon>travel_explore</mat-icon>
+        <span matListItemTitle>My Trips</span>
+      </a>
       <a mat-list-item routerLink="/anomalies" routerLinkActive="active" (click)="closeSidenav()">
         <mat-icon matListItemIcon>warning</mat-icon>
         <span matListItemTitle>Anomalies</span>
@@ -24,6 +28,11 @@
       <a mat-list-item routerLink="/export" (click)="closeSidenav()">
         <mat-icon matListItemIcon>cloud_download</mat-icon>
         <span matListItemTitle>Export Flights</span>
+      </a>
+      <mat-divider></mat-divider>
+      <a mat-list-item routerLink="/settings" routerLinkActive="active" (click)="closeSidenav()">
+        <mat-icon matListItemIcon>settings</mat-icon>
+        <span matListItemTitle>Settings</span>
       </a>
       <mat-divider></mat-divider>
       <a mat-list-item (click)="logout(); closeSidenav()">
@@ -54,6 +63,10 @@
           <mat-icon>list</mat-icon>
           Flights
         </a>
+        <a mat-button routerLink="/trips" routerLinkActive="active-link">
+          <mat-icon>travel_explore</mat-icon>
+          Trips
+        </a>
         <a mat-button routerLink="/anomalies" routerLinkActive="active-link">
           <mat-icon>warning</mat-icon>
           Anomalies
@@ -72,6 +85,9 @@
         </a>
       </nav>
 
+      <button mat-icon-button routerLink="/settings" matTooltip="Settings">
+        <mat-icon>settings</mat-icon>
+      </button>
       <button mat-icon-button (click)="logout()" matTooltip="Logout">
         <mat-icon>logout</mat-icon>
       </button>

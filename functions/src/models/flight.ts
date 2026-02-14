@@ -47,5 +47,6 @@ export class Flight {
   flightAwareFlightId: string;
 
   status: FlightStatus;
+  tripId?: string;
 }
 export type FlightStatus = "guess" | "scheduled" | "landed";

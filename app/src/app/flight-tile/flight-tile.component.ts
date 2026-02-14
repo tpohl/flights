@@ -21,6 +21,7 @@ export class FlightTileComponent {
 
   flight = input.required<Flight>();
   compact = input(false);
+  tripName = input<string | undefined>(undefined);
 
   constructor() { }
 

@@ -1,0 +1,55 @@
+<div class="main-container">
+    <mat-card class="wizard-card">
+        <mat-card-header>
+            <mat-card-title>Create New Trip</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+            <form [formGroup]="tripForm" (ngSubmit)="createTrip()">
+
+                <!-- Trip Name -->
+                <mat-form-field appearance="fill" class="full-width">
+                    <mat-label>Trip Name</mat-label>
+                    <input matInput formControlName="name" placeholder="e.g. California 2024">
+                </mat-form-field>
+
+                <!-- Flight Segments -->
+                <div formArrayName="segments">
+                    <div *ngFor="let segment of segments.controls; let i=index" [formGroupName]="i" class="segment-row">
+
+                        <mat-form-field appearance="fill">
+                            <mat-label>Flight No</mat-label>
+                            <input matInput formControlName="flightNo" placeholder="LH456">
+                        </mat-form-field>
+
+                        <mat-form-field appearance="fill">
+                            <mat-label>Date</mat-label>
+                            <input matInput [matDatepicker]="picker" formControlName="date">
+                            <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+                            <mat-datepicker #picker></mat-datepicker>
+                        </mat-form-field>
+
+                        <button mat-icon-button color="warn" type="button" (click)="removeSegment(i)"
+                            *ngIf="segments.length > 1">
+                            <mat-icon>delete</mat-icon>
+                        </button>
+
+                    </div>
+                </div>
+
+                <div class="actions">
+                    <button mat-stroked-button type="button" (click)="addSegment()">
+                        <mat-icon>add</mat-icon> Add Flight
+                    </button>
+                </div>
+
+            </form>
+        </mat-card-content>
+        <mat-card-actions align="end">
+            <button mat-button (click)="cancel()">Cancel</button>
+            <button mat-raised-button color="primary" (click)="createTrip()"
+                [disabled]="tripForm.invalid || isSaving()">
+                {{ isSaving() ? 'Creating...' : 'Create Trip' }}
+            </button>
+        </mat-card-actions>
+    </mat-card>
+</div>

@@ -9,6 +9,8 @@
 /* Header */
 .tile-header {
   @include flex-between;
+  flex-wrap: wrap;
+  gap: $spacing-sm;
 }
 
 .logo-and-number {
@@ -73,6 +75,15 @@
   background: rgba(17, 153, 142, 0.15) !important;
   color: #0b8a7d !important;
   border: 1px solid rgba(17, 153, 142, 0.3) !important;
+}
+
+.trip-label {
+  text-align: center;
+  font-size: $font-size-xs;
+  color: $text-secondary;
+  font-weight: $font-weight-medium;
+  padding-top: $spacing-sm;
+  opacity: 0.7;
 }
 
 /* Route Section */

@@ -1,0 +1,26 @@
+<div class="settings-container">
+    <header class="page-header">
+        <button mat-icon-button routerLink="/flights">
+            <mat-icon>arrow_back</mat-icon>
+        </button>
+        <h1 class="page-title">Settings</h1>
+    </header>
+
+    <div class="main-content">
+        <mat-card class="settings-card glass-card">
+            <mat-card-header>
+                <mat-card-title>General</mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+                <div class="setting-row">
+                    <mat-form-field appearance="outline" class="full-width">
+                        <mat-label>Home Airport</mat-label>
+                        <input matInput [ngModel]="settingsService.settings().homeAirport"
+                            (ngModelChange)="settingsService.updateHomeAirport($event)" placeholder="e.g. HAM">
+                        <mat-hint>Used for map centering and trip suggestions</mat-hint>
+                    </mat-form-field>
+                </div>
+            </mat-card-content>
+        </mat-card>
+    </div>
+</div>

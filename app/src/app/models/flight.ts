@@ -42,6 +42,7 @@ export class Flight {
   errorMessage!: string;
 
   validatedAnomaly!: boolean;
+  tripId?: string;
 
   _objectReference!: string;
   _deleted!: boolean;

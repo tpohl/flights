@@ -1,0 +1,30 @@
+.main-container {
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+}
+
+.wizard-card {
+    max-width: 600px;
+    width: 100%;
+}
+
+.full-width {
+    width: 100%;
+}
+
+.segment-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.actions {
+    margin-top: 10px;
+    margin-bottom: 20px;
+}
+
+mat-form-field {
+    flex: 1;
+}

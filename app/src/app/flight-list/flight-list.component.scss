@@ -8,6 +8,11 @@
 .page-header {
   @include flex-between;
   margin-bottom: $spacing-xl;
+
+  .header-buttons {
+    display: flex;
+    gap: 10px;
+  }
 }
 
 .page-title {
@@ -70,6 +75,10 @@
 
 .option-row {
   padding: $spacing-sm 0;
+}
+
+.trip-filter-field {
+  width: 100%;
 }
 
 

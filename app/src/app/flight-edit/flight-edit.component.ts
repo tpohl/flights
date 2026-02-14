@@ -16,6 +16,7 @@ import DayJSUtc from 'dayjs/plugin/utc';
 import DayJSTimezone from 'dayjs/plugin/timezone';
 
 import { FlightsService, SaveResultType } from '../services/flights.service';
+import { TripsService } from '../services/trips.service';
 import { ExactDurationPipe } from '../pipes/exactDurationPipe';
 import { FlightTileComponent } from '../flight-tile/flight-tile.component';
 
@@ -23,6 +24,8 @@ import { AuthService } from '../services/auth.service';
 import { toSignal, toObservable } from '@angular/core/rxjs-interop';
 import { switchMap, filter, map } from 'rxjs/operators';
 import { of } from 'rxjs';
+import { MatDialog } from '@angular/material/dialog';
+import { MatSelectModule } from '@angular/material/select';
 
 // Angular Material
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -58,6 +61,7 @@ DayJS.extend(DayJSTimezone);
     MatIconModule,
     MatCardModule,
     MatRadioModule,
+    MatSelectModule,
     MatDividerModule,
     MatTooltipModule,
     MatDatepickerModule,
@@ -74,6 +78,7 @@ export class FlightEditComponent {
 
   private authService = inject(AuthService);
   protected flightsService = inject(FlightsService);
+  protected tripsService = inject(TripsService);
   private airportService = inject(AirportService);
   private location = inject(Location);
   private router = inject(Router);
@@ -108,6 +113,10 @@ export class FlightEditComponent {
     const f = this.flight();
     return f ? [f] : [];
   });
+
+  trips = this.tripsService.trips;
+
+
 
   constructor() {
     effect(() => {
@@ -285,6 +294,22 @@ export class FlightEditComponent {
           this.flight.set({ ...f }); // Force update signals
         },
         error: () => this.isRecalculating.set(false)
+      });
+    }
+  }
+
+  createTrip() {
+    const name = window.prompt('Enter Trip Name:');
+    if (name) {
+      const newTrip = { name } as any;
+      this.tripsService.saveTrip(newTrip).subscribe(id => {
+        if (id) {
+          const f = this.flight();
+          if (f) {
+            f.tripId = id;
+            this.flight.set({ ...f });
+          }
+        }
       });
     }
   }

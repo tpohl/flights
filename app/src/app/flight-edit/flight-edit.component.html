@@ -89,6 +89,22 @@
           <mat-datepicker #picker></mat-datepicker>
         </mat-form-field>
 
+        <!-- Trip -->
+        <div class="input-with-action">
+          <mat-form-field appearance="outline" class="flex-grow">
+            <mat-label>Trip</mat-label>
+            <mat-select [(ngModel)]="f.tripId">
+              <mat-option [value]="undefined">-- None --</mat-option>
+              @for (trip of trips(); track trip._id) {
+              <mat-option [value]="trip._id">{{ trip.name }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+          <button mat-icon-button (click)="createTrip()" matTooltip="Create new trip">
+            <mat-icon>add_circle_outline</mat-icon>
+          </button>
+        </div>
+
         <!-- Flight Number with autocomplete -->
         <div class="input-with-action">
           <mat-form-field appearance="outline" class="flex-grow">
