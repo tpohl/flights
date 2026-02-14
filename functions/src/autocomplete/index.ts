@@ -2,202 +2,186 @@
  * Functions for flight autocompletion.
  */
 
-import { mergeMap, tap, map, catchError, withLatestFrom } from 'rxjs/operators';
-import { of, zip } from 'rxjs';
-import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import * as jwt from 'jsonwebtoken';
+import { onRequest } from 'firebase-functions/v2/https';
+import { onValueUpdated, onValueCreated, onValueWritten } from 'firebase-functions/v2/database';
+import { defineJsonSecret } from 'firebase-functions/params';
+import { log, debug, warn, error } from 'firebase-functions/logger';
 
 import { Flight } from '../models/flight';
 import loadFlight from '../util/loadFlight';
 import defaultTimes from '../util/defaulttime';
 import saveFlightAndReturnIt from '../util/saveFlight';
-import prepareFutureAutoCompletion from '../util/prepareFutureAutoCompletion';
-import FlightAwareAutoCompleter from './flightaware-autocompletion';
-import lufthansaApiAutocompletion from './lufthansa-api-autocompletion';
+import lhApiAutocompletion from './lufthansa-api-autocompletion';
 import { loadAeroApiFlight, loadAeroApiTrack, loadOperator } from './aero-api/loadFlight';
 import { isWithinXDaysAgo } from '../util/checkDates';
 
-const config = functions.config();
-const jwtsecret = config.jwt.secret;
 
-const autocompleteFlight = function (flightRef: admin.database.Reference, context: functions.EventContext) {
-  return loadFlight(flightRef).pipe(
-    mergeMap(flightInDb => {
-      const flightNo: string = flightInDb['flightno'];
-      const dateStr: string = flightInDb['date'];
-      console.log('About to autocomplete flight:', flightInDb, flightNo, dateStr);
+const config = defineJsonSecret("FLIGHTS_CONFIG");
 
-      return zip(lufthansaApiAutocompletion.autocomplete(flightNo, dateStr), FlightAwareAutoCompleter.autocomplete(flightNo, dateStr))
+export const autocompleteFlight = async (flightRef: admin.database.Reference) => {
+  const flightInDb = await loadFlight(flightRef);
+  if (!flightInDb) {
+    return;
+  }
 
-        .pipe(
-          tap(flights => console.log('Autocompleted Flight', flights)),
-          map(flights => {
-            const lhApiFlight = flights[0];
-            const flightAwareFlight = flights[1];
-            console.log('Merging flights: DB', flightInDb);
-            console.log('Merging flights: Flight Aware', flightAwareFlight);
-            console.log('Merging flights: Lufthansa API', lhApiFlight);
-            let result = flightInDb;
-            if (!!flightAwareFlight && !(Object.keys(flightAwareFlight).length === 0)) {
-              result = { ...result, ...flightAwareFlight } as Flight;
-              console.log('Result after Flight Aware Merge', result);
-            }
-            result = { ...result, ...lhApiFlight } as Flight;
-            console.log('Result after LH API merge', result);
-            return result;
-          }),
-          map(defaultTimes),
-          catchError(
-            (error) => {
-              console.error('Error during Autocompletion', error);
-              return of(flightInDb)
-                .pipe(
-                  map(flight => {
-                    flight['note'] = flight['errorMessage'] ? flight['errorMessage'] + '/nCould not autocomplete.' : 'Could not autocomplete.';
-                    return flight;
-                  })
-                );
-            })
-        );
-    }),
-    mergeMap(flight => {
-      if (!!flight.flightno && flight.flightno.length > 2){
-        const iata = flight.flightno.substring(0,2)
-        flight.cleanFlightNo = flight.flightno.substring(2)
-        return loadOperator(iata).pipe(
-          map(operator => {
-            flight.icaoCarrier = operator.icao
-            return flight;
-          })
-        )
-      } else {
-       return of(flight);
+  const flightNo: string = flightInDb['flightno'];
+  const dateStr: string = flightInDb['date'];
+  const flightId = flightInDb['_id'];
+
+  let flight: Flight;
+  flight = JSON.parse(JSON.stringify(flightInDb )); // Deep copy
+
+  log('About to autocomplete flight:', flightInDb, flightNo, dateStr, flightId);
+  log('Flight From DB', flight);
+
+  try {
+    const lhApiFlight = await lhApiAutocompletion.autocomplete(flightNo, dateStr, flight);
+    log('Autocompleted LH-Flight Data', lhApiFlight);
+    flight = lhApiFlight;
+    flight = defaultTimes(flight);
+    debug('Flight after LH Autocompletion', flight);
+  } catch (err) {
+    warn('Error during Autocompletion', err);
+    flight = JSON.parse(JSON.stringify(flightInDb)); // Deep copy
+    flight.note = flight.errorMessage ? flight.errorMessage + '\nCould not autocomplete.' : 'Could not autocomplete.';
+  }
+
+  // Carrier icao
+  if (flight.flightno && flight.flightno.length > 2) {
+    const iata = flight.flightno.substring(0, 2);
+    flight.cleanFlightNo = flight.flightno.substring(2);
+    try {
+      const operator = await loadOperator(iata);
+      if (operator) {
+        flight.icaoCarrier = operator.icao;
       }
-    }),
-    mergeMap(flight => {
-      if (!!flight.icaoCarrier && !! flight.cleanFlightNo && isWithinXDaysAgo(9, flight.date)) {
-        return loadAeroApiFlight(flight.icaoCarrier, flight.cleanFlightNo, flight.date)
-          .pipe(
-            mergeMap(aeroApiFlight => {
-              if (!aeroApiFlight){
-                console.warn(`No AERO API Flight found for ${flight.icaoCarrier}, ${flight.cleanFlightNo}, ${flight.date}`);
-                return of(flight);
-              }
-              return loadAeroApiTrack(aeroApiFlight.fa_flight_id)
-                .pipe(
-                  tap( result => console.log('Received AeroAPI Track', result)),
-                  mergeMap(aeroApiTrack => {
-                    flight.aeroApiFlight = aeroApiFlight;
-                    flight.flightAwareFlightId = aeroApiFlight.fa_flight_id;
-                    if ((typeof aeroApiTrack.actual_distance === 'number') && (aeroApiTrack.actual_distance > 0) ){
-                       flight.flownDistance = aeroApiTrack.actual_distance * 1.60934;
-                    }
-                    const aeroApiTrackRef = flightRef.parent.parent.child("aeroApiTracks").child(aeroApiFlight.fa_flight_id)
-                    return of(aeroApiTrackRef.set(aeroApiTrack))
-                      .pipe(map(_=> flight))
-                  }))
-            })
-            , catchError(err => {
-              console.error('Problem with AeroAPI', err)
-              return of(flight)
-            })
+    } catch (err) {
+      warn('Problem loading operator', err);
+    }
+  }
 
-          )
+  // AeroAPI
+  if (flight.icaoCarrier && flight.cleanFlightNo && isWithinXDaysAgo(9, flight.date)) {
+    try {
+      const aeroApiFlight = await loadAeroApiFlight(flight.icaoCarrier, flight.cleanFlightNo, flight.date);
+      if (aeroApiFlight) {
+        log('Loaded AeroAPI Flight', aeroApiFlight);
+        flight.aeroApiFlight = aeroApiFlight;
+        flight.flightAwareFlightId = aeroApiFlight.fa_flight_id;
+        const aeroApiTrack = await loadAeroApiTrack(aeroApiFlight.fa_flight_id);
+        if (aeroApiTrack) {
+          debug('Loaded AeroAPI Track', aeroApiTrack);
+          if (typeof aeroApiTrack.actual_distance === 'number' && aeroApiTrack.actual_distance > 0) {
+            flight.flownDistance = aeroApiTrack.actual_distance * 1.60934;
+          }
+          const aeroApiTrackRef = flightRef.parent.parent.child('aeroApiTracks').child(aeroApiFlight.fa_flight_id);
+          await aeroApiTrackRef.set(aeroApiTrack);
+        } else {
+          debug(`No AeroAPI track data for flight ID ${aeroApiFlight.fa_flight_id}`);
+        }
       } else {
-        return of(flight);
+        debug(`No AeroAPI flight data for ${flight.icaoCarrier}${flight.cleanFlightNo} on ${flight.date}`);
       }
-    }),
+    } catch (err) {
+      warn('Problem with AeroAPI', err);
+    }
+  } else {
+    log(`Skipping AeroAPI load - missing data or too old flight Carrier: ${flight.icaoCarrier} FlightNo: ${flight.cleanFlightNo}. Date Check: ${isWithinXDaysAgo(9, flight.date)} -> ${flight.date}`);
+  }
 
-    map(newFlight => {
-      newFlight['needsAutocomplete'] = false;
-      return newFlight;
-    }),
-    mergeMap(saveFlightAndReturnIt(flightRef)),
-    mergeMap(prepareFutureAutoCompletion(flightRef))
-  )
-    .toPromise();
+  flight.needsAutocomplete = false;
+
+  log('Autocompleted Flight. About to save', flight);
+  // Save
+  const savedFlight = await saveFlightAndReturnIt(flightRef, flight);
+
+  // Future autocompletion - deactivated for now
+  // await prepareFutureAutoCompletion(flightRef)(savedFlight);
 };
 
-const autocompleteAircraftType = function (flightRef: admin.database.Reference, context: functions.EventContext) {
+export const autocompleteAircraftType = async (flightRef: admin.database.Reference) => {
+  const flightInDb = await loadFlight(flightRef);
+  if (!flightInDb) {
+    return;
+  }
 
-  return loadFlight(flightRef).pipe(
-    mergeMap(flightInDb => {
-      return lufthansaApiAutocompletion.loadAircraftType(flightInDb.aircraftTypeCode, flightInDb.aircraftType)
-        .pipe(
-          map(type => {
-            flightInDb.aircraftType = type;
-            return flightInDb;
-          })
-        );
-    }),
-    mergeMap(saveFlightAndReturnIt(flightRef))
-  ).toPromise();
+  try {
+    const type = await lhApiAutocompletion.loadAircraftType(flightInDb.aircraftTypeCode, flightInDb.aircraftType);
+    flightInDb.aircraftType = type;
+    await saveFlightAndReturnIt(flightRef, flightInDb);
+  } catch (err) {
+    warn('Error loading aircraft type', err);
+  }
 };
 
+export const lufthansaApiAutocompletion = onValueUpdated(
+  { ref: '/users/{userId}/flights/{flightId}/flightno', secrets: [config] },
+  async (event) => {
+    return autocompleteFlight(event.data.after.ref.parent!);
+  }
+);
 
-export default {
-  lufthansaApiAutocompletion: functions.database.ref('/users/{userId}/flights/{flightId}/flightno')
-    .onUpdate((change, context) => {
-      return autocompleteFlight(change.after.ref.parent, context);
-    }),
+export const lufthansaApiAutocompletionOnCreate = onValueCreated(
+  { ref: '/users/{userId}/flights/{flightId}/flightno', secrets: [config] },
+  async (event) => {
+    return autocompleteFlight(event.data.ref.parent!);
+  }
+);
 
+export const autocompletionRequested = onValueUpdated(
+  { ref: '/users/{userId}/flights/{flightId}/needsAutocomplete', secrets: [config] },
+  async (event) => {
+    if (event.data.after.val()) {
+      log('Autocompletion Triggered');
+      return autocompleteFlight(event.data.after.ref.parent!);
+    }
+    return null;
+  }
+);
 
-  lufthansaApiAutocompletionOnCreate: functions.database.ref('/users/{userId}/flights/{flightId}/flightno')
-    .onCreate((snapshot, context) => {
-      return autocompleteFlight(snapshot.ref.parent, context);
-    }),
+export const autocompletionRequestedCreate = onValueCreated(
+  { ref: '/users/{userId}/flights/{flightId}/needsAutocomplete', secrets: [config] },
+  async (event) => {
+    if (event.data.val()) {
+      log('Autocompletion Triggered');
+      return autocompleteFlight(event.data.ref.parent!);
+    }
+    return null;
+  }
+);
 
-  lufthansaApiAutocompletionRequested: functions.database.ref('/users/{userId}/flights/{flightId}/needsAutocomplete')
-    .onUpdate((change, context) => {
-      if (change.after.val()) {
-        console.log('Autocompletion Triggered');
-        return autocompleteFlight(change.after.ref.parent, context);
-      } else {
-        return of(true).toPromise();
-      }
-    }),
+export const flightAcTypeCodeUpdated = onValueWritten(
+  { ref: '/users/{userId}/flights/{flightId}/aircraftTypeCode', secrets: [config] },
+  async (event) => {
+    if (event.data.after.val()) {
+      log('AC Type Update Triggered');
+      return autocompleteAircraftType(event.data.after.ref.parent!);
+    }
+    return null;
+  }
+);
 
-  lufthansaApiAutocompletionRequestedCreate: functions.database.ref('/users/{userId}/flights/{flightId}/needsAutocomplete')
-    .onCreate((snapshot, context) => {
-      if (snapshot.val()) {
-        console.log('Autocompletion Triggered');
-        return autocompleteFlight(snapshot.ref.parent, context);
-      } else {
-        return of(true).toPromise();
-      }
-    }),
+export const autocomplete = onRequest(
+  { secrets: [config] }, // Declare secret dependency
+  async (req, res) => {
+    // Access secret value at runtime, not at module load time
+    const JWTSECRET = config.value().jwt.secret;
 
-  flightAcTypeCodeUpdated: functions.database.ref('/users/{userId}/flights/{flightId}/aircraftTypeCode')
-    .onWrite((change, context) => {
-      if (!!change.after.val()) {
-        console.log('AC Type Update Triggered');
-        return autocompleteAircraftType(change.after.ref.parent, context);
-      } else {
-        return of(true).toPromise();
-      }
-    }),
-
-  autocomplete: functions.https.onRequest((req, res) => {
     const taskJwt = req.body;
     try {
-      const autocompletion = jwt.verify(taskJwt, jwtsecret);
+      const autocompletion = jwt.verify(taskJwt, JWTSECRET) as any;
+      const userId = autocompletion.userId;
+      const flightId = autocompletion.flightId;
+      log(`autocomplete called for ${flightId}`);
 
-      const userId = autocompletion['userId'];
-      const flightId = autocompletion['flightId'];
-      console.log('autocomplete called');
-      console.log('REF ', `/users/${userId}/flights/${flightId}`);
-      autocompleteFlight(
-        admin.database().ref(`/users/${userId}/flights/${flightId}`), undefined).then(() => {
-          console.log('Autocompleted');
-          res.status(200).send('OK').end();
-        }, () => {
-          console.log('REJECTED');
-          res.status(200).send('NOT OK').end();
-        });
-    } catch (error) {
-      console.log(error);
-      res.status(400).send('NOT OK').end();
+      await autocompleteFlight(admin.database().ref(`/users/${userId}/flights/${flightId}`));
+      log('Autocompleted via HTTP trigger');
+      res.status(200).send('OK');
+    } catch (err) {
+      warn('HTTP Autocomplete error', err);
+      res.status(400).send('NOT OK');
     }
-  })
-};
+  }
+);

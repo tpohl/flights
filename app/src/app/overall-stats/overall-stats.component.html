@@ -87,8 +87,7 @@
                     <span matListItemTitle>Most Northern</span>
                     <span matListItemLine>{{ stats().extremeAirports.north?.name }} ({{
                         stats().extremeAirports.north?.code }})</span>
-                    <span matListItemMeta class="stat-value">{{ stats().extremeAirports.north?.latitude | number :
-                        '1.2-2' }}°N</span>
+                    <span matListItemMeta class="stat-value">{{ stats().extremeAirports.north?.latitude | coordinate: 'latitude' }}</span>
                 </mat-list-item>
                 }
                 <mat-divider></mat-divider>
@@ -98,8 +97,7 @@
                     <span matListItemTitle>Most Southern</span>
                     <span matListItemLine>{{ stats().extremeAirports.south?.name }} ({{
                         stats().extremeAirports.south?.code }})</span>
-                    <span matListItemMeta class="stat-value">{{ stats().extremeAirports.south?.latitude | number :
-                        '1.2-2' }}°S</span>
+                    <span matListItemMeta class="stat-value">{{ stats().extremeAirports.south?.latitude | coordinate: 'latitude' }}</span>
                 </mat-list-item>
                 }
                 <mat-divider></mat-divider>
@@ -109,8 +107,7 @@
                     <span matListItemTitle>Most Eastern</span>
                     <span matListItemLine>{{ stats().extremeAirports.east?.name }} ({{
                         stats().extremeAirports.east?.code }})</span>
-                    <span matListItemMeta class="stat-value">{{ stats().extremeAirports.east?.longitude | number :
-                        '1.2-2' }}°E</span>
+                    <span matListItemMeta class="stat-value">{{ stats().extremeAirports.east?.longitude | coordinate: 'longitude' }}</span>
                 </mat-list-item>
                 }
                 <mat-divider></mat-divider>
@@ -120,8 +117,7 @@
                     <span matListItemTitle>Most Western</span>
                     <span matListItemLine>{{ stats().extremeAirports.west?.name }} ({{
                         stats().extremeAirports.west?.code }})</span>
-                    <span matListItemMeta class="stat-value">{{ stats().extremeAirports.west?.longitude | number :
-                        '1.2-2' }}°W</span>
+                    <span matListItemMeta class="stat-value">{{ stats().extremeAirports.west?.longitude | coordinate: 'longitude' }}</span>
                 </mat-list-item>
                 }
             </mat-list>
@@ -256,16 +252,16 @@
                 <div class="class-stat-column">
                     <h3>By Distance</h3>
                     <div class="chart-container">
-                        @for (class of stats().distanceByClass | keyvalue; track class.key) {
+                        @for (travelClass of stats().distanceByClass | keyvalue; track travelClass.key) {
                         <div class="chart-row">
                             <div class="chart-label">
                                 <mat-chip-set>
-                                    <mat-chip class="class-chip" [class]="getClassCss(class.key.toString())">
-                                        {{ getClassLabel(class.key.toString()) }}
+                                    <mat-chip class="class-chip" [class]="getClassCss(travelClass.key.toString())">
+                                        {{ getClassLabel(travelClass.key.toString()) }}
                                     </mat-chip>
                                 </mat-chip-set>
                             </div>
-                            <div class="chart-value">{{ class.value | number : '1.0-0' }} km</div>
+                            <div class="chart-value">{{ travelClass.value | number : '1.0-0' }} km</div>
                         </div>
                         }
                     </div>
@@ -273,16 +269,16 @@
                 <div class="class-stat-column">
                     <h3>By Time</h3>
                     <div class="chart-container">
-                        @for (class of stats().timeByClass | keyvalue; track class.key) {
+                        @for (travelClass of stats().timeByClass | keyvalue; track travelClass.key) {
                         <div class="chart-row">
                             <div class="chart-label">
                                 <mat-chip-set>
-                                    <mat-chip class="class-chip" [class]="getClassCss(class.key.toString())">
-                                        {{ getClassLabel(class.key.toString()) }}
+                                    <mat-chip class="class-chip" [class]="getClassCss(travelClass.key.toString())">
+                                        {{ getClassLabel(travelClass.key.toString()) }}
                                     </mat-chip>
                                 </mat-chip-set>
                             </div>
-                            <div class="chart-value">{{ class.value | amDurationExact }}</div>
+                            <div class="chart-value">{{ travelClass.value | amDurationExact }}</div>
                         </div>
                         }
                     </div>

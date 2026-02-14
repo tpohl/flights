@@ -1,58 +1,73 @@
+import { Flight } from "../models/flight";
+import * as admin from "firebase-admin";
+import * as jwt from "jsonwebtoken";
 
-import { Flight } from './../models/flight';
-import * as admin from 'firebase-admin';
-import * as functions from 'firebase-functions';
-import { of } from 'rxjs';
-import { map, tap } from 'rxjs/operators';
-import { RxHR } from '@akanass/rx-http-request';
-import * as jwt from 'jsonwebtoken';
+// Declare fetch for Node 20+ native fetch support
+declare const fetch: typeof globalThis.fetch;
 
-const config = functions.config();
-const jwtsecret = config.jwt.secret;
+// All available logging functions
+const {
+  log,
+  info,
+  debug,
+  warn,
+  error,
+  write
+} = require('firebase-functions/logger');
 
-const prepareFutureAutoCompletion = function(flightRef: admin.database.Reference){
-  return (flight: Flight) => {
-  console.log('PREPPING');
-  const arrival = new Date(flight.arrivalTime);
-  if (arrival.getTime() > Date.now()) {
-    const flightId = flightRef.key;
-    const userId = flightRef.parent.parent.key;
-    return doPrepareFutureAutoCompletion(userId, flightId, arrival)
-      .pipe(map(result => flight));
-  } else {
-    console.log('Not preparing because the Flight has already landed.');
-    return of(flight);
-  }
-}
-}
+const functions = require('firebase-functions');
+const { defineJsonSecret } = require('firebase-functions/params');
 
-const doPrepareFutureAutoCompletion = function (userId: string, flightId: string, estimatedDate: Date) {
-  const autocompletion = {};
-  autocompletion['flightId'] = flightId;
-  autocompletion['userId'] = userId;
-  autocompletion['exp'] = (estimatedDate.getTime() + (60 * 60 * 1000)) / 1000;
-  // TODO NotBefore autocompletion['nbf'] = (estimatedDate.getTime() + 60000) / 1000;
-  console.log('Payload', autocompletion);
-  const token = jwt.sign(autocompletion, jwtsecret);
-  console.log('JWT signed', token);
-  // TODO call callmelater and POST the token
+const config = defineJsonSecret("FLIGHTS_CONFIG");
 
-  const url = 'https://callmelater.pohl.rocks/tasks'
+const prepareFutureAutoCompletion = (flightRef: admin.database.Reference) => {
+  return async (flight: Flight): Promise<Flight> => {
+    log("PREPPING Future Auto-Completion");
+    const arrival = new Date(flight.arrivalTime);
+    if (arrival.getTime() > Date.now()) {
+      const flightId = flightRef.key;
+      const userId = flightRef.parent.parent.key;
+      await doPrepareFutureAutoCompletion(userId, flightId, arrival);
+    } else {
+      log("Not preparing because the Flight has already landed.");
+    }
+    return flight;
+  };
+};
+
+const doPrepareFutureAutoCompletion = async (userId: string, flightId: string, estimatedDate: Date) => {
+  // Access secret value at runtime, not at module load time
+  const JWTSECRET = config.value().jwt.secret;
+
+  const autocompletion = {
+    flightId,
+    userId,
+    exp: (estimatedDate.getTime() + (60 * 60 * 1000)) / 1000,
+  };
+
+  log("Payload", autocompletion);
+  const token = jwt.sign(autocompletion, JWTSECRET);
+  log("JWT signed", token);
+
+  const url = "https://callmelater.pohl.rocks/tasks";
 
   // Schedule this task
   const task = {
-    "url": "https://flights.pohl.rocks/autocomplete",
-    "payload": token,
-    "scheduled_date": (Math.max(estimatedDate.getTime() + (10 * 60 * 1000), Date.now()) + (10 * 60 * 1000))
+    url: "https://flights.pohl.rocks/autocomplete",
+    payload: token,
+    scheduled_date: (Math.max(estimatedDate.getTime() + (10 * 60 * 1000), Date.now()) + (10 * 60 * 1000)),
+  };
+
+  try {
+    const response = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(task),
+    });
+    log("Response Code from callmelater", response.status);
+  } catch (error) {
+    error("Error calling callmelater", error);
   }
-
-  return RxHR.post(url, {
-    body: task,
-    json: true
-  }).pipe(tap(response => {
-    console.log('Response Code from callmelater', response.response.statusCode);
-  }));
-}
-
+};
 
 export default prepareFutureAutoCompletion;

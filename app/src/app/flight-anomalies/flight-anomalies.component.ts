@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal, model } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -41,6 +41,7 @@ export class FlightAnomaliesComponent {
   tooSlowFlights = this.flightsService.tooSlowFlights;
   tooFastFlights = this.flightsService.tooFastFlights;
   invalidFlights = this.flightsService.invalidFlights;
+  incompleteFlights = this.flightsService.incompleteFlights;
   validatedAnomalies = this.flightsService.validatedAnomalies;
 
   // Filter states - using model for 2-way binding support if needed, 
@@ -54,8 +55,11 @@ export class FlightAnomaliesComponent {
   showTooSlow = signal(true);
   showTooFast = signal(true);
   showInvalid = signal(true);
+  showIncomplete = signal(false);
   showValidated = signal(false);
   recalculatingFlightId = signal<string | null>(null);
+  deletingFlightId = signal<string | null>(null);
+  deletingAllIncomplete = signal(false);
 
   displayedFlights = computed(() => {
     let flights: Flight[] = [];
@@ -72,6 +76,10 @@ export class FlightAnomaliesComponent {
       flights = [...flights, ...this.invalidFlights()];
     }
 
+    if (this.showIncomplete()) {
+      flights = [...flights, ...this.incompleteFlights()];
+    }
+
     if (this.showValidated()) {
       flights = [...flights, ...this.validatedAnomalies()];
     }
@@ -80,7 +88,7 @@ export class FlightAnomaliesComponent {
     return flights.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   });
 
-  totalAnomalies = computed(() => this.tooSlowFlights().length + this.tooFastFlights().length + this.invalidFlights().length);
+  totalAnomalies = computed(() => this.tooSlowFlights().length + this.tooFastFlights().length + this.invalidFlights().length + this.incompleteFlights().length);
   totalValidated = computed(() => this.validatedAnomalies().length);
 
   calculateAverageSpeed(flight: Flight): number {
@@ -99,9 +107,16 @@ export class FlightAnomaliesComponent {
     return this.flightsService.isInvalidAnomaly(flight);
   }
 
-  getAnomalyType(flight: Flight): 'slow' | 'fast' | 'invalid' | 'validated' {
+  isIncompleteAnomaly(flight: Flight): boolean {
+    return !flight.departureTime || !flight.from || !flight.to;
+  }
+
+  getAnomalyType(flight: Flight): 'slow' | 'fast' | 'invalid' | 'incomplete' | 'validated' {
     if (this.validatedAnomalies().some(f => f._id === flight._id)) {
       return 'validated';
+    }
+    if (this.incompleteFlights().some(f => f._id === flight._id)) {
+      return 'incomplete';
     }
     if (this.invalidFlights().some(f => f._id === flight._id)) {
       return 'invalid';
@@ -122,6 +137,35 @@ export class FlightAnomaliesComponent {
       this.flightsService.recalculateFlightData(flight).subscribe({
         next: () => this.recalculatingFlightId.set(null),
         error: () => this.recalculatingFlightId.set(null)
+      });
+    }
+  }
+
+  deleteFlight(flight: Flight) {
+    if (flight._id && confirm('Are you sure you want to permanently delete this incomplete flight?')) {
+      this.deletingFlightId.set(flight._id);
+      this.flightsService.deleteFlight(flight).subscribe({
+        next: () => this.deletingFlightId.set(null),
+        error: () => this.deletingFlightId.set(null)
+      });
+    }
+  }
+
+  deleteAllIncompleteFlights() {
+    const incompleteCount = this.incompleteFlights().length;
+    if (incompleteCount === 0) {
+      return;
+    }
+
+    const confirmed = confirm(
+      `Are you sure you want to permanently delete all ${incompleteCount} incomplete flight${incompleteCount > 1 ? 's' : ''}?`
+    );
+
+    if (confirmed) {
+      this.deletingAllIncomplete.set(true);
+      this.flightsService.deleteAllIncompleteFlights().subscribe({
+        next: () => this.deletingAllIncomplete.set(false),
+        error: () => this.deletingAllIncomplete.set(false)
       });
     }
   }

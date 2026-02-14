@@ -17,5 +17,5 @@ export class Country {
   iso2: string;
   iso3: string;
   isoNo: string;
-  internet: string
+  internet: string;
 }

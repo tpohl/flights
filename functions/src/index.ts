@@ -1,11 +1,6 @@
-// Import all the functions
-import autocompleteFunctions from './autocomplete';
-import durationFunctions from './duration';
-import distanceFunctions from './distance';
+// Export all the functions individually for v2
+export * from "./autocomplete";
+export * from "./duration";
+export * from "./distance";
 
-
-// Export our functions
-export const duration = durationFunctions;
-export const distance = distanceFunctions;
-export const autocomplete = autocompleteFunctions;
 

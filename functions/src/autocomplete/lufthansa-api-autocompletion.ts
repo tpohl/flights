@@ -1,131 +1,118 @@
-'use strict';
-
 import { Flight } from '../models/flight';
-import { RxHR } from '@akanass/rx-http-request';
 import DayJS from 'dayjs';
-import { catchError, defaultIfEmpty, filter, map, mergeMap, tap } from 'rxjs/operators';
-import { from, Observable, of } from 'rxjs';
-import { AccessToken, ClientCredentials, ModuleOptions } from 'simple-oauth2';
+import { AccessToken, ClientCredentials } from 'simple-oauth2';
 import { LhAircraftResponse, LhFlightStatusResponse } from './lufthansa-api/models';
 import { replaceType, toFlight } from './lufthansa-api/transformers';
 
-const admin = require('firebase-admin');
-const functions = require('firebase-functions');
-const config = functions.config();
+import { defineJsonSecret } from 'firebase-functions/params';
+// All available logging functions
+import { debug, log, error } from 'firebase-functions/logger';
 
-admin.initializeApp();
-
-const credentials = {
-  client: {
-    id: config.lhapi.clientid,
-    secret: config.lhapi.clientsecret
-  },
-  auth: {
-    tokenHost: 'https://api.lufthansa.com/v1',
-    tokenPath: '/v1/oauth/token'
-  }
-} as ModuleOptions<'client_id'>;
+const config = defineJsonSecret('FLIGHTS_CONFIG');
 
 
-const tokenConfig = {};
+// Declare fetch for Node 20+ native fetch support
+declare const fetch: typeof globalThis.fetch;
+
+
 let token: AccessToken;
-const oauth2 = new ClientCredentials(credentials);
 
-const getLhApiToken = function () {
-  const promise = new Promise<AccessToken>(function (resolve, reject) {
-      if (!token || token.expired()) {
-        console.log('Refreshing token with credentials', credentials);
-        oauth2.getToken(tokenConfig).then((_token) => {
-          token = _token;
-          resolve(_token);
-        }).catch(error => {
 
-          reject(error);
-          console.log('Access Token Error', error);
+const getLhApiToken = async function (): Promise<AccessToken> {
+  if (!token || token.expired()) {
+    log('Refreshing LH-API token ...');
 
-        });
+    // Access secret values at runtime, not at module load time
+    const clientId = config.value().lhapi.clientid as string;
+    const clientSecret = config.value().lhapi.clientsecret as string;
 
-      } else {
-        resolve(token);
+    const oauth2 = new ClientCredentials({
+      client: {
+        id: clientId,
+        secret: clientSecret
+      },
+      auth: {
+        tokenHost: 'https://api.lufthansa.com/v1',
+        tokenPath: '/v1/oauth/token'
       }
+    });
+    try {
+      token = await oauth2.getToken({});
+      return token;
+    } catch (err) {
+      log('Access Token Error', err);
+      throw err;
     }
-  );
-  return from(promise);
+  } else {
+    return token;
+  }
 };
 
 
+const loadAircraftType = async function (acTypeCode: string, _aircraftType: string): Promise<string> {
+  try {
+    const apiTokenObj = await getLhApiToken();
+    const apiToken = (apiTokenObj.token as any).access_token;
 
-const loadAircraftType = function (acTypeCode: string, aircraftType: string) {
+    const response = await fetch(`https://api.lufthansa.com/v1/mds-references/aircraft/${acTypeCode}`, {
+      headers: {
+        'User-Agent': 'request',
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${apiToken}`
+      }
+    });
 
-  return getLhApiToken()
-    .pipe(map(apiTokenObj => apiTokenObj.token.access_token))
-    .pipe(mergeMap(apiToken =>
-      // Fetch the Aircraft Type from the Lufthansa API.
-      RxHR.get<LhAircraftResponse>('https://api.lufthansa.com/v1/mds-references/aircraft/' + acTypeCode,
-        {
-          headers: {
-            'User-Agent': 'request',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + apiToken
-          },
-          json: true
-        })
-        .pipe(
-          tap(data => console.log('Aircraft Response', data)),
-          filter(data => data.response.statusCode === 200),
-          map(data => data.body),
-          map(apiResponse => apiResponse.AircraftResource.AircraftSummaries.AircraftSummary.Names.Name.$),
-          defaultIfEmpty(acTypeCode),
-          map(replaceType),
-          defaultIfEmpty(acTypeCode),
-          tap(replacedType => console.log('Replaced AC Type', acTypeCode, replacedType))
-        )
-    ));
+    if (response.ok) {
+      const data = await response.json() as LhAircraftResponse;
+      const aircraftName = data.AircraftResource.AircraftSummaries.AircraftSummary.Names.Name.$;
+      const replacedType = replaceType(aircraftName);
+      log('Replaced AC Type', acTypeCode, replacedType);
+      return replacedType;
+    }
 
+    return acTypeCode;
+  } catch (err) {
+    error('Error fetching aircraft type', err);
+    return acTypeCode;
+  }
 };
 
 
-const autocomplete = function (flightNo, dateStr: string): Observable<Flight> {
-  // Default to current Date.
+const autocomplete = async function (flightNo: string, dateStr: string, existingFlight: Flight): Promise<Flight> {
   const date = dateStr ? dateStr : DayJS().format('YYYY-MM-DD');
 
-  console.log('Autocomplete Flight', flightNo, date);
+  log('Autocomplete Flight', flightNo, date);
 
+  try {
+    const apiTokenObj = await getLhApiToken();
+    const apiToken = (apiTokenObj.token as any).access_token;
 
-  return getLhApiToken()
-    .pipe(
-      map(apiTokenObj => apiTokenObj.token.access_token),
-      mergeMap(apiToken =>
-        RxHR.get<LhFlightStatusResponse>('https://api.lufthansa.com/v1/operations/flightstatus/' + flightNo + '/' + date,
-          {
-            headers: {
-              'User-Agent': 'request',
-              'Accept': 'application/json',
-              'Authorization': 'Bearer ' + apiToken
-            },
-            json: true
-          })
-      ),
-      //tap(data => console.log('Status from LH API', data.response.statusCode)),
-      filter(data => data.response.statusCode === 200),
-      map(data => data.body)
-    ).pipe(
-      //tap(body => console.log('Body from LH API', body)),
-      map(apiResponse => apiResponse.FlightStatusResource.Flights.Flight),
-      // The Flights are now an array but maybe not always.
-      map(apiResponse => Array.isArray(apiResponse) ? apiResponse[0] : apiResponse),
-      //tap(body => console.log('Flight from LH API', body)),
-      map(toFlight),
-      //flatMap(addDistance),
-      mergeMap((flight) => loadAircraftType(flight.aircraftTypeCode, flight.aircraftType)
-        .pipe(map(acType => {
-          flight.aircraftType = acType;
-          return flight as Flight;
-        }))
-      ),
-      //tap(body => console.log('Complete Flight after autocompletion', body)),
-      defaultIfEmpty(new Flight())
-    ) as Observable<Flight>;
+    const response = await fetch(`https://api.lufthansa.com/v1/operations/flightstatus/${flightNo}/${date}`, {
+      headers: {
+        'User-Agent': 'request',
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${apiToken}`
+      }
+    });
+
+    if (!response.ok) {
+      return new Flight();
+    }
+
+    const data = await response.json() as LhFlightStatusResponse;
+    const flightData = data.FlightStatusResource.Flights.Flight;
+    const apiResponse = Array.isArray(flightData) ? flightData[0] : flightData;
+    const flight = toFlight(apiResponse, existingFlight);
+
+    // Load aircraft type
+    const acType = await loadAircraftType(flight.aircraftTypeCode, flight.aircraftType);
+    flight.aircraftType = acType || flight.aircraftType;
+
+    return flight as Flight;
+  } catch (err) {
+    error('Error in LH autocomplete', err);
+    return existingFlight;
+  }
 };
 
 const FlightAutoCompleter = {

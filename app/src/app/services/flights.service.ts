@@ -27,7 +27,17 @@ export class SaveResult {
 })
 export class FlightsService {
   private flightSubject = new BehaviorSubject<Flight[]>([]);
-  flights: Signal<Flight[]> = toSignal(this.flightSubject, { initialValue: [] });
+  private validFlights$ = this.flightSubject.pipe(
+    map(flights => flights.filter( flight => !flight._deleted && !!flight.departureTime))
+  );
+  allFlightsIncludingInvalidAndDeleted: Signal<Flight[]> = toSignal(this.flightSubject, { initialValue: [] });
+
+  // Flights that are not deleted and have a departure time
+  flights: Signal<Flight[]> = toSignal(
+    this.validFlights$,
+    { initialValue: [] }
+  );
+
   activeFlight = signal<Flight | null>(null);
 
   statsSubject = new BehaviorSubject<OverallStats>(new OverallStats());
@@ -36,7 +46,7 @@ export class FlightsService {
   selectedYear = signal<number | null>(null);
 
   availableYears: Signal<number[]> = toSignal(
-    this.flightSubject.pipe(
+    this.validFlights$.pipe(
       map(flights => {
         const years = flights
           .map(f => f.departureTime ? dayjs(f.departureTime).year() : null)
@@ -48,29 +58,36 @@ export class FlightsService {
   );
 
   tooSlowFlights: Signal<Flight[]> = toSignal(
-    this.flightSubject.pipe(
+    this.validFlights$.pipe(
       map(flights => this.filterSlowFlights(flights))
     ),
     { initialValue: [] }
   );
 
   tooFastFlights: Signal<Flight[]> = toSignal(
-    this.flightSubject.pipe(
+    this.validFlights$.pipe(
       map(flights => this.filterFastFlights(flights))
     ),
     { initialValue: [] }
   );
 
   validatedAnomalies: Signal<Flight[]> = toSignal(
-    this.flightSubject.pipe(
+    this.validFlights$.pipe(
       map(flights => this.filterValidatedAnomalies(flights))
     ),
     { initialValue: [] }
   );
 
   invalidFlights: Signal<Flight[]> = toSignal(
-    this.flightSubject.pipe(
+    this.validFlights$.pipe(
       map(flights => this.filterInvalidFlights(flights))
+    ),
+    { initialValue: [] }
+  );
+
+  incompleteFlights: Signal<Flight[]> = toSignal(
+    this.flightSubject.pipe(
+      map(flights => this.filterIncompleteFlights(flights))
     ),
     { initialValue: [] }
   );
@@ -106,7 +123,7 @@ export class FlightsService {
         statistics.flight = selectedFlight;
         return statistics;
       };
-      return this.flightSubject.pipe(
+      return this.validFlights$.pipe(
         filter(flightArray => !!flightArray && flightArray.length > 1),
         take(1),
         switchMap((flightArray) => from(flightArray)
@@ -146,9 +163,10 @@ export class FlightsService {
       filter(user => !!user),
       switchMap(user => {
         const flightsRef = ref(this.db, `users/${user.uid}/flights`);
+        // Load all flights from the database
+        // Deleted flights are now completely removed from the database, not just marked as deleted
         return listVal<Flight>(flightsRef, { keyField: '_id' });
       }),
-      map(flights => flights.filter(flight => !flight._deleted && !!flight.departureTime)),
       map(flights => flights.sort(flightsSortFn))
     ).subscribe(flights => this.flightSubject.next(flights))
     );
@@ -158,7 +176,7 @@ export class FlightsService {
 
   private initStats() {
     combineLatest([
-      this.flightSubject,
+      this.validFlights$,
       toObservable(this.selectedYear, { injector: this.injector })
     ]).pipe(
       switchMap(([flightsArray, year]) => {
@@ -436,6 +454,56 @@ export class FlightsService {
   }
 
   /**
+   * Permanently deletes a flight from the database (sets _deleted flag)
+   */
+  deleteFlight(flight: Flight): Observable<boolean> {
+    const user = this.user;
+    if (!user || !flight._id) {
+      return of(false);
+    }
+
+    return runInInjectionContext(this.injector, () => {
+      flight._deleted = true;
+      const flightRef = flight._objectReference
+        ? ref(this.db, flight._objectReference)
+        : ref(this.db, `users/${user.uid}/flights/${flight._id}`);
+
+      return from(set(flightRef, flight)).pipe(
+        map(() => true)
+      );
+    });
+  }
+
+  /**
+   * Deletes all incomplete flights from the database (sets _deleted flag)
+   */
+  deleteAllIncompleteFlights(): Observable<boolean> {
+    const user = this.user;
+    if (!user) {
+      return of(false);
+    }
+
+    const incompleteFlightsList = this.incompleteFlights();
+    if (incompleteFlightsList.length === 0) {
+      return of(true);
+    }
+
+    return runInInjectionContext(this.injector, () => {
+      const deleteOperations = incompleteFlightsList.map(flight => {
+        flight._deleted = true;
+        const flightRef = flight._objectReference
+          ? ref(this.db, flight._objectReference)
+          : ref(this.db, `users/${user.uid}/flights/${flight._id}`);
+        return from(set(flightRef, flight));
+      });
+
+      return forkJoin(deleteOperations).pipe(
+        map(() => true)
+      );
+    });
+  }
+
+  /**
    * Calculates the average speed of a flight in km/h
    */
   getAverageSpeed(flight: Flight): number {
@@ -497,6 +565,17 @@ export class FlightsService {
     return flights
       .filter(f => !f.durationMilliseconds || f.durationMilliseconds <= 0 || !f.distance || f.distance <= 0)
       .filter(f => !f.validatedAnomaly)
+      .filter(f => !!f.departureTime) // Has departureTime but invalid data
+      .sort((a, b) => flightsSortFn(a, b));
+  }
+
+  /**
+   * Filters incomplete flights (missing departureTime or other critical data)
+   */
+  private filterIncompleteFlights(flights: Flight[]): Flight[] {
+    return flights
+      .filter(f => !f._deleted)
+      .filter(f => !f.departureTime || !f.from || !f.to)
       .sort((a, b) => flightsSortFn(a, b));
   }
 

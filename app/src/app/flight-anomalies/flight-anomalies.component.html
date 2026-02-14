@@ -1,23 +1,10 @@
 <div class="flight-anomalies-container">
   <header class="page-header">
     <h1 class="page-title">Flight Anomalies</h1>
-    <span class="subtitle">Flights with unusual speeds that may contain data errors</span>
+    <span class="subtitle"> <strong>{{ totalAnomalies() }}</strong> Flights with unusual speeds that may contain data errors</span>
   </header>
 
   <div class="main-content">
-    <!-- Info Card -->
-    <mat-card class="info-card glass-card">
-      <mat-card-content>
-        <mat-icon class="info-icon">info</mat-icon>
-        <div class="info-text">
-          <strong>{{ totalAnomalies() }}</strong> flight(s) detected with unusual speeds
-        </div>
-        <div class="info-description">
-          These flights are either exceptionally slow or fast, indicating potential data entry errors.
-          Click any flight below to edit and correct the data.
-        </div>
-      </mat-card-content>
-    </mat-card>
 
     <!-- Filters -->
     <section class="filters-container glass-card">
@@ -31,10 +18,30 @@
         <mat-checkbox [(ngModel)]="showInvalid" color="warn">
           Invalid ({{ invalidFlights().length }})
         </mat-checkbox>
+        <mat-checkbox [(ngModel)]="showIncomplete" color="warn">
+          Incomplete ({{ incompleteFlights().length }})
+        </mat-checkbox>
         <mat-checkbox [(ngModel)]="showValidated" color="primary">
           Validated ({{ totalValidated() }})
         </mat-checkbox>
       </div>
+
+      @if (showIncomplete()) {
+      <div class="bulk-actions">
+        <button mat-raised-button color="warn"
+          (click)="deleteAllIncompleteFlights()"
+          [disabled]="deletingAllIncomplete()"
+          class="delete-all-btn">
+          @if (deletingAllIncomplete()) {
+            <mat-progress-spinner diameter="20" mode="indeterminate"></mat-progress-spinner>
+            <span>Deleting...</span>
+          } @else {
+            <mat-icon>delete_sweep</mat-icon>
+            <span>Delete All Incomplete ({{ incompleteFlights().length }})</span>
+          }
+        </button>
+      </div>
+      }
     </section>
 
     <!-- Content -->
@@ -59,6 +66,11 @@
             <mat-icon>warning</mat-icon>
             <span>Very Slow</span>
           </div>
+          } @else if (getAnomalyType(flight) === 'incomplete') {
+          <div class="anomaly-badge incomplete">
+            <mat-icon>error_outline</mat-icon>
+            <span>Incomplete</span>
+          </div>
           } @else if (getAnomalyType(flight) === 'invalid') {
           <div class="anomaly-badge invalid">
             <mat-icon>error</mat-icon>
@@ -75,7 +87,16 @@
 
           <div class="speed-info">
             <div class="info-metrics">
-              @if (isInvalidAnomaly(flight)) {
+              @if (isIncompleteAnomaly(flight)) {
+              <div class="metric incomplete-info">
+                <span class="label">Missing Data:</span>
+                <span class="value invalid">
+                  @if (!flight.departureTime) { Departure Time }
+                  @if (!flight.from) { @if (!flight.departureTime) {, } Origin }
+                  @if (!flight.to) { @if (!flight.departureTime || !flight.from) {, } Destination }
+                </span>
+              </div>
+              } @else if (isInvalidAnomaly(flight)) {
               <div class="metric">
                 <span class="label">Duration:</span>
                 <span class="value invalid">
@@ -102,7 +123,17 @@
             </span>
             }
 
-            @if (isMissingData(flight)) {
+            @if (isIncompleteAnomaly(flight)) {
+            <button mat-icon-button color="warn" class="delete-btn"
+              (click)="deleteFlight(flight); $event.stopPropagation(); $event.preventDefault()"
+              [disabled]="deletingFlightId() === flight._id" matTooltip="Delete Incomplete Flight">
+              @if (deletingFlightId() === flight._id) {
+              <mat-progress-spinner diameter="20" mode="indeterminate"></mat-progress-spinner>
+              } @else {
+              <mat-icon>delete</mat-icon>
+              }
+            </button>
+            } @else if (isMissingData(flight)) {
             <button mat-icon-button color="primary" class="recalculate-btn"
               (click)="recalculate(flight); $event.stopPropagation(); $event.preventDefault()"
               [disabled]="recalculatingFlightId() === flight._id" matTooltip="Recalculate Duration & Distance">
