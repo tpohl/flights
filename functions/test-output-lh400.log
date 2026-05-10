@@ -1,0 +1,7 @@
+Running end-to-end test for Lufthansa API...
+Flight: LH400, Date: 2026-05-09
+{"severity":"INFO","message":"Autocomplete Flight LH400 2026-05-09"}
+{"severity":"INFO","message":"Refreshing LH-API token ..."}
+{"severity":"ERROR","message":"Error: Error in LH autocomplete flightstatus for LH400 on 2026-05-09: 503 Service Unavailable - {\"ProcessingErrors\":{\"ProcessingError\":[{\"@RetryIndicator\":false,\"Type\":\"ResourceNotFound\",\"Code\":\"3201\",\"Description\":\"Requested flight status resource not available due to error at backend.\",\"InfoURL\":\"not supported yet: http://api.lufthansa.com/errorcodes/{processingError.Code}\"}]}}\n    at entryFromArgs (/Users/thorstenpohl/dev/thorsten/flights/functions/node_modules/firebase-functions/lib/logger/index.js:120:13)\n    at error (/Users/thorstenpohl/dev/thorsten/flights/functions/node_modules/firebase-functions/lib/logger/index.js:109:8)\n    at Object.autocomplete (/Users/thorstenpohl/dev/thorsten/flights/functions/src/autocomplete/lufthansa-api-autocompletion.ts:103:12)\n    at processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async run (/Users/thorstenpohl/dev/thorsten/flights/functions/test/lh-api-e2e.ts:31:20)"}
+Autocomplete result:
+{}

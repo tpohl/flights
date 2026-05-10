@@ -39,8 +39,8 @@ const getLhApiToken = async function (): Promise<AccessToken> {
     try {
       token = await oauth2.getToken({});
       return token;
-    } catch (err) {
-      log('Access Token Error', err);
+    } catch (err: any) {
+      error(`Access Token Error: ${err.message}`, err);
       throw err;
     }
   } else {
@@ -68,6 +68,9 @@ const loadAircraftType = async function (acTypeCode: string, _aircraftType: stri
       const replacedType = replaceType(aircraftName);
       log('Replaced AC Type', acTypeCode, replacedType);
       return replacedType;
+    } else {
+      const errorText = await response.text();
+      error(`Error fetching aircraft type ${acTypeCode}: ${response.status} ${response.statusText} - ${errorText}`);
     }
 
     return acTypeCode;
@@ -87,7 +90,13 @@ const autocomplete = async function (flightNo: string, dateStr: string, existing
     const apiTokenObj = await getLhApiToken();
     const apiToken = (apiTokenObj.token as any).access_token;
 
-    const response = await fetch(`https://api.lufthansa.com/v1/operations/flightstatus/${flightNo}/${date}`, {
+    let flightData: any;
+
+    // Try flightstatus first
+    const fsUrl = `https://api.lufthansa.com/v1/operations/flightstatus/${flightNo}/${date}`;
+    log(`CURL DEBUG (flightstatus): curl -X GET "${fsUrl}" -H "Accept: application/json" -H "Authorization: Bearer ${apiToken}"`);
+
+    let response = await fetch(fsUrl, {
       headers: {
         'User-Agent': 'request',
         'Accept': 'application/json',
@@ -95,12 +104,34 @@ const autocomplete = async function (flightNo: string, dateStr: string, existing
       }
     });
 
-    if (!response.ok) {
-      return new Flight();
-    }
+    if (response.ok) {
+      const data = await response.json() as any;
+      flightData = data.FlightStatusResource.Flights.Flight;
+    } else {
+      const errorText = await response.text();
+      log(`flightstatus failed for ${flightNo} on ${date} (${response.status}): ${errorText}. Falling back to customerflightinformation.`);
+      
+      // Fallback to customerflightinformation
+      const cfiUrl = `https://api.lufthansa.com/v1/operations/customerflightinformation/${flightNo}/${date}`;
+      log(`CURL DEBUG (customerflightinformation): curl -X GET "${cfiUrl}" -H "Accept: application/json" -H "Authorization: Bearer ${apiToken}"`);
 
-    const data = await response.json() as LhFlightStatusResponse;
-    const flightData = data.FlightStatusResource.Flights.Flight;
+      response = await fetch(cfiUrl, {
+        headers: {
+          'User-Agent': 'request',
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${apiToken}`
+        }
+      });
+
+      if (!response.ok) {
+        const cfiErrorText = await response.text();
+        error(`Error in LH autocomplete customerflightinformation for ${flightNo} on ${date}: ${response.status} ${response.statusText} - ${cfiErrorText}`);
+        return new Flight();
+      }
+
+      const data = await response.json() as any;
+      flightData = data.FlightInformation.Flights.Flight;
+    }
     const apiResponse = Array.isArray(flightData) ? flightData[0] : flightData;
     const flight = toFlight(apiResponse, existingFlight);
 

@@ -52,23 +52,44 @@ export const toFlight = function(lhApiFlight: LhFlight, existingFlight: Flight):
   flight.lhApiFlight = lhApiFlight;
   if (!!lhApiFlight.Departure && !!lhApiFlight.Arrival) {
     flight.from = lhApiFlight.Departure.AirportCode;
+    
+    // Departure Time
     if (lhApiFlight.Departure.ActualTimeUTC) {
       flight.departureTime = lhApiFlight.Departure.ActualTimeUTC.DateTime;
-    } else {
+    } else if (lhApiFlight.Departure.ScheduledTimeUTC) {
       flight.departureTime = lhApiFlight.Departure.ScheduledTimeUTC.DateTime;
-    }
-    flight.to = lhApiFlight.Arrival.AirportCode;
-    if (lhApiFlight.Arrival.ActualTimeUTC) {
-      flight.arrivalTime = lhApiFlight.Arrival.ActualTimeUTC.DateTime;
-    } else {
-      flight.arrivalTime = lhApiFlight.Arrival.ScheduledTimeUTC.DateTime;
+    } else if ((lhApiFlight.Departure as any).Actual) {
+      const act = (lhApiFlight.Departure as any).Actual;
+      flight.departureTime = `${act.Date}T${act.Time}:00`;
+    } else if ((lhApiFlight.Departure as any).Scheduled) {
+      const sched = (lhApiFlight.Departure as any).Scheduled;
+      flight.departureTime = `${sched.Date}T${sched.Time}:00`;
     }
 
-    flight.aircraftTypeCode = lhApiFlight.Equipment.AircraftCode;
-    if (!!lhApiFlight.Equipment.AircraftRegistration && !("" === lhApiFlight.Equipment.AircraftRegistration)) {
+    flight.to = lhApiFlight.Arrival.AirportCode;
+    
+    // Arrival Time
+    if (lhApiFlight.Arrival.ActualTimeUTC) {
+      flight.arrivalTime = lhApiFlight.Arrival.ActualTimeUTC.DateTime;
+    } else if (lhApiFlight.Arrival.ScheduledTimeUTC) {
+      flight.arrivalTime = lhApiFlight.Arrival.ScheduledTimeUTC.DateTime;
+    } else if ((lhApiFlight.Arrival as any).Actual) {
+      const act = (lhApiFlight.Arrival as any).Actual;
+      flight.arrivalTime = `${act.Date}T${act.Time}:00`;
+    } else if ((lhApiFlight.Arrival as any).Scheduled) {
+      const sched = (lhApiFlight.Arrival as any).Scheduled;
+      flight.arrivalTime = `${sched.Date}T${sched.Time}:00`;
+    }
+
+    if (lhApiFlight.Equipment && lhApiFlight.Equipment.AircraftCode) {
+      flight.aircraftTypeCode = lhApiFlight.Equipment.AircraftCode;
+    }
+    if (lhApiFlight.Equipment && !!lhApiFlight.Equipment.AircraftRegistration && !("" === lhApiFlight.Equipment.AircraftRegistration)) {
       flight.aircraftRegistration = transformRegistration(lhApiFlight.Equipment.AircraftRegistration);
     }
-    flight.carrier = transformCarrier(lhApiFlight.OperatingCarrier);
+    if (lhApiFlight.OperatingCarrier) {
+      flight.carrier = transformCarrier(lhApiFlight.OperatingCarrier);
+    }
   } else {
     console.log("LH API FLight is invalid", lhApiFlight);
   }

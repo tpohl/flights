@@ -1,0 +1,66 @@
+Running end-to-end test for Lufthansa API...
+Flight: OS260, Date: 2026-05-11
+{"severity":"INFO","message":"Autocomplete Flight OS260 2026-05-11"}
+{"severity":"INFO","message":"Refreshing LH-API token ..."}
+{"severity":"INFO","message":"CURL DEBUG: curl -X GET \"https://api.lufthansa.com/v1/operations/customerflightinformation/OS260/2026-05-11\" -H \"Accept: application/json\" -H \"Authorization: Bearer sbb38czufpsr33tur753jkpn\""}
+{"severity":"INFO","message":"Replaced AC Type 320 Airbus A320"}
+Autocomplete result:
+{
+  "from": "HAM",
+  "to": "VIE",
+  "departureTime": "2026-05-11T07:30:00",
+  "arrivalTime": "2026-05-11T09:00:00",
+  "aircraftType": "Airbus A320",
+  "aircraftTypeCode": "320",
+  "carrier": "Austrian",
+  "lhApiFlight": {
+    "Departure": {
+      "AirportCode": "HAM",
+      "Scheduled": {
+        "Date": "2026-05-11",
+        "Time": "07:30"
+      },
+      "Actual": {
+        "Date": "2026-05-11",
+        "Time": "07:30"
+      },
+      "Terminal": {
+        "Name": "2",
+        "Gate": "C08"
+      },
+      "Status": {
+        "Code": "OT",
+        "Description": "Flight On Time"
+      }
+    },
+    "Arrival": {
+      "AirportCode": "VIE",
+      "Scheduled": {
+        "Date": "2026-05-11",
+        "Time": "09:00"
+      },
+      "Actual": {
+        "Date": "2026-05-11",
+        "Time": "09:00"
+      },
+      "Terminal": {
+        "Name": "3"
+      },
+      "Status": {
+        "Code": "OT",
+        "Description": "Flight On Time"
+      }
+    },
+    "OperatingCarrier": {
+      "AirlineID": "OS",
+      "FlightNumber": "260"
+    },
+    "Equipment": {
+      "AircraftCode": "320"
+    },
+    "Status": {
+      "Code": "OT",
+      "Description": "Flight On Time"
+    }
+  }
+}

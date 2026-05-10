@@ -70,6 +70,14 @@ export const autocompleteFlight = async (flightRef: admin.database.Reference) =>
         log('Loaded AeroAPI Flight', aeroApiFlight);
         flight.aeroApiFlight = aeroApiFlight;
         flight.flightAwareFlightId = aeroApiFlight.fa_flight_id;
+        
+        if (!flight.aircraftRegistration && aeroApiFlight.registration) {
+          flight.aircraftRegistration = aeroApiFlight.registration;
+        }
+        if (!flight.aircraftTypeCode && aeroApiFlight.aircraft_type) {
+          flight.aircraftTypeCode = aeroApiFlight.aircraft_type;
+        }
+
         const aeroApiTrack = await loadAeroApiTrack(aeroApiFlight.fa_flight_id);
         if (aeroApiTrack) {
           debug('Loaded AeroAPI Track', aeroApiTrack);
