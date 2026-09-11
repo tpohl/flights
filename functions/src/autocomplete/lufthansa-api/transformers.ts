@@ -1,5 +1,6 @@
 import { LhCarrier, LhFlight } from "./models";
-import { Flight } from "../../models/flight";
+import { Flight, FlightManualField } from "../../models/flight";
+import { parseFlightTime } from "../../util/flightTime";
 
 const lhApiTypeReplacements = {
   "32V": "Airbus A320neo",
@@ -47,30 +48,35 @@ const transformCarrier = function(lhCarrier: LhCarrier) {
   }
 };
 
-export const toFlight = function(lhApiFlight: LhFlight, existingFlight: Flight): Flight {
-  const flight = existingFlight ? existingFlight : new Flight();
-  flight.lhApiFlight = lhApiFlight;
-  if (!!lhApiFlight.Departure && !!lhApiFlight.Arrival) {
-    flight.from = lhApiFlight.Departure.AirportCode;
-    if (lhApiFlight.Departure.ActualTimeUTC) {
-      flight.departureTime = lhApiFlight.Departure.ActualTimeUTC.DateTime;
-    } else {
-      flight.departureTime = lhApiFlight.Departure.ScheduledTimeUTC.DateTime;
-    }
-    flight.to = lhApiFlight.Arrival.AirportCode;
-    if (lhApiFlight.Arrival.ActualTimeUTC) {
-      flight.arrivalTime = lhApiFlight.Arrival.ActualTimeUTC.DateTime;
-    } else {
-      flight.arrivalTime = lhApiFlight.Arrival.ScheduledTimeUTC.DateTime;
-    }
+const normalizeUtcTime = (value?: string): string | undefined => {
+  if (!value) return undefined;
+  // Lufthansa explicitly labels these fields UTC, even when the value omits Z.
+  const timestamp = /(?:Z|[+-]\d{2}:\d{2})$/.test(value) ? value : `${value}Z`;
+  if (!parseFlightTime(timestamp)) throw new Error("Lufthansa returned an invalid UTC timestamp.");
+  return timestamp;
+};
 
-    flight.aircraftTypeCode = lhApiFlight.Equipment.AircraftCode;
-    if (!!lhApiFlight.Equipment.AircraftRegistration && !("" === lhApiFlight.Equipment.AircraftRegistration)) {
-      flight.aircraftRegistration = transformRegistration(lhApiFlight.Equipment.AircraftRegistration);
+export const toFlight = function(lhApiFlight: LhFlight, existingFlight: Flight): Flight {
+  if (!lhApiFlight?.Departure?.AirportCode || !lhApiFlight?.Arrival?.AirportCode) {
+    throw new Error("Lufthansa returned no usable flight.");
+  }
+  const flight = { ...existingFlight };
+  const setAvailable = <K extends Exclude<FlightManualField, "distance">>(field: K, value: Flight[K]) => {
+    if (value && flight.manualOverrides?.[field] !== true) {
+      flight[field] = value;
     }
-    flight.carrier = transformCarrier(lhApiFlight.OperatingCarrier);
-  } else {
-    console.log("LH API FLight is invalid", lhApiFlight);
+  };
+  flight.lhApiFlight = lhApiFlight;
+  setAvailable("from", lhApiFlight.Departure.AirportCode);
+  setAvailable("to", lhApiFlight.Arrival.AirportCode);
+  setAvailable("departureTime", normalizeUtcTime(lhApiFlight.Departure.ActualTimeUTC?.DateTime ||
+    lhApiFlight.Departure.ScheduledTimeUTC?.DateTime));
+  setAvailable("arrivalTime", normalizeUtcTime(lhApiFlight.Arrival.ActualTimeUTC?.DateTime ||
+    lhApiFlight.Arrival.ScheduledTimeUTC?.DateTime));
+  setAvailable("aircraftTypeCode", lhApiFlight.Equipment?.AircraftCode);
+  setAvailable("aircraftRegistration", transformRegistration(lhApiFlight.Equipment?.AircraftRegistration));
+  if (lhApiFlight.OperatingCarrier?.AirlineID) {
+    setAvailable("carrier", transformCarrier(lhApiFlight.OperatingCarrier));
   }
   return flight;
 };

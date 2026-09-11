@@ -2,7 +2,7 @@ import "./test-setup";
 import { expect } from "chai";
 import * as sinon from "sinon";
 import proxyquire from "proxyquire";
-import * as functions from "firebase-functions/v1";
+import { flightReference } from "./helpers";
 
 // Mock flight data
 const mockFlightData = {
@@ -54,34 +54,12 @@ describe("Distance Cloud Function", () => {
     });
 
     it("should calculate distance correctly", async () => {
-        const setStub = sinon.stub().resolves();
-
-        const flightRefStub = {
-            key: "flightDistanceTest",
-            once: sinon.stub().resolves({
-                val: () => mockFlightData,
-                exists: () => true
-            }),
-            child: sinon.stub().returns({
-                set: setStub
-            })
-        };
-
-        const snapshotStub = {
-            ref: {
-                parent: flightRefStub
-            }
-        } as unknown as functions.database.DataSnapshot;
-
-        const context = {
-            params: { userId: "testUser", flightId: "flightDistanceTest" }
-        } as unknown as functions.EventContext;
-
-        await computeDistance(snapshotStub, context);
+        const flightRef = flightReference(mockFlightData);
+        await computeDistance(flightRef, "flightDistanceTest");
 
         // Approx distance FRA-JFK is ~6200 km.
-        expect(setStub.calledOnce).to.be.true;
-        const distanceArg = setStub.firstCall.args[0];
+        expect(flightRef.transaction.calledOnce).to.be.true;
+        const distanceArg = flightRef.current.distance;
         expect(distanceArg).to.be.greaterThan(6100);
         expect(distanceArg).to.be.lessThan(6300);
     });

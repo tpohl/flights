@@ -1,4 +1,8 @@
 <div class="edit-container">
+  @if (!flight() && saveError()) {
+  <p class="error-message" role="alert">{{ saveError() }}</p>
+  <a mat-button routerLink="/flights">Back to flights</a>
+  }
   @if (flight(); as f) {
   <!-- Header -->
   <div class="edit-header">
@@ -79,11 +83,11 @@
     </mat-card-header>
 
     <mat-card-content>
-      <div class="form-grid">
+      <fieldset class="form-grid" [disabled]="isSaving() || isRecalculating() || recordUnavailable()">
         <!-- Date -->
         <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Date</mat-label>
-          <input matInput [matDatepicker]="picker" [value]="f.date" (dateChange)="onDateChange($event)"
+          <mat-label>Departure Date</mat-label>
+          <input matInput name="departureDate" [matDatepicker]="picker" [value]="departureDateValue()" (dateChange)="onDateChange($event.value)"
             placeholder="YYYY-MM-DD">
           <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
           <mat-datepicker #picker></mat-datepicker>
@@ -93,10 +97,11 @@
         <div class="input-with-action">
           <mat-form-field appearance="outline" class="flex-grow">
             <mat-label>Flight Number</mat-label>
-            <input matInput [(ngModel)]="f.flightno" placeholder="e.g. LH123">
+            <input matInput [ngModel]="f.flightno" (ngModelChange)="updateField('flightno', $event)" placeholder="e.g. LH123">
             <mat-icon matSuffix>flight</mat-icon>
           </mat-form-field>
           <button mat-icon-button (click)="autocomplete()" [class.loading]="f.needsAutocomplete"
+            [disabled]="isSaving() || isRecalculating() || f.needsAutocomplete || recordUnavailable()"
             matTooltip="Auto-complete flight info">
             <mat-icon>auto_fix_high</mat-icon>
           </button>
@@ -107,50 +112,71 @@
         <!-- From Airport -->
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>From</mat-label>
-          <input matInput [(ngModel)]="f.from" placeholder="Origin (e.g. VIE)">
+          <input matInput [ngModel]="f.from" (ngModelChange)="updateAirport('from', $event)" placeholder="Origin (e.g. VIE)">
           <mat-hint>{{ fromAirport()?.name }}</mat-hint>
         </mat-form-field>
 
         <!-- To Airport -->
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>To</mat-label>
-          <input matInput [(ngModel)]="f.to" placeholder="Destination (e.g. HAM)">
+          <input matInput [ngModel]="f.to" (ngModelChange)="updateAirport('to', $event)" placeholder="Destination (e.g. HAM)">
           <mat-hint>{{ toAirport()?.name }}</mat-hint>
         </mat-form-field>
 
         <mat-divider></mat-divider>
 
         <!-- Departure Time -->
-        <div class="input-with-action">
-          <mat-form-field appearance="outline" class="flex-grow">
-            <mat-label>Departure Time</mat-label>
-            <input matInput type="time" [(ngModel)]="departureTime">
-          </mat-form-field>
-          <button mat-icon-button (click)="selectDepartureTime()" matTooltip="Set departure time">
-            <mat-icon>schedule</mat-icon>
-          </button>
-        </div>
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Departure Time (local)</mat-label>
+          <input matInput name="departureTime" type="time" step="1" [ngModel]="departureTime()" (ngModelChange)="setTime('departure', $event)">
+          <mat-hint>{{ departureWarning() || fromAirport()?.timezoneId || 'Select an airport to resolve its timezone.' }}</mat-hint>
+        </mat-form-field>
+
+        @if (departureOptions().options.length > 1) {
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Departure UTC offset</mat-label>
+          <mat-select [ngModel]="departureOccurrence()" (ngModelChange)="setOccurrence('departure', $event)">
+            @for (option of departureOptions().options; track option.value) {
+            <mat-option [value]="option.value">{{ option.offset }}</mat-option>
+            }
+          </mat-select>
+          <mat-hint>This local time occurs twice because the clocks change.</mat-hint>
+        </mat-form-field>
+        }
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Arrival Date (local)</mat-label>
+          <input matInput name="arrivalDate" type="date" [ngModel]="arrivalDate()" (ngModelChange)="setArrivalDate($event)">
+        </mat-form-field>
 
         <!-- Arrival Time -->
-        <div class="input-with-action">
-          <mat-form-field appearance="outline" class="flex-grow">
-            <mat-label>Arrival Time</mat-label>
-            <input matInput type="time" [(ngModel)]="arrivalTime">
-          </mat-form-field>
-          <button mat-icon-button (click)="selectArrivalTime()" matTooltip="Set arrival time">
-            <mat-icon>schedule</mat-icon>
-          </button>
-        </div>
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Arrival Time (local)</mat-label>
+          <input matInput name="arrivalTime" type="time" step="1" [ngModel]="arrivalTime()" (ngModelChange)="setTime('arrival', $event)">
+          <mat-hint>{{ arrivalWarning() || toAirport()?.timezoneId || 'Select an airport to resolve its timezone.' }}</mat-hint>
+        </mat-form-field>
+
+        @if (arrivalOptions().options.length > 1) {
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Arrival UTC offset</mat-label>
+          <mat-select [ngModel]="arrivalOccurrence()" (ngModelChange)="setOccurrence('arrival', $event)">
+            @for (option of arrivalOptions().options; track option.value) {
+            <mat-option [value]="option.value">{{ option.offset }}</mat-option>
+            }
+          </mat-select>
+          <mat-hint>This local time occurs twice because the clocks change.</mat-hint>
+        </mat-form-field>
+        }
 
         <!-- Distance -->
         <div class="input-with-action">
           <mat-form-field appearance="outline" class="flex-grow">
             <mat-label>Distance</mat-label>
-            <input matInput [(ngModel)]="f.distance" placeholder="Distance in km">
+            <input matInput type="number" min="0" [ngModel]="f.distance" (ngModelChange)="updateField('distance', $event)" placeholder="Distance in km">
             <mat-hint>Flown: {{ f | flightDistance | number : '1.0-0' }} km</mat-hint>
           </mat-form-field>
           @if (f._id && isMissingData()) {
-          <button mat-icon-button (click)="recalculate()" [disabled]="isRecalculating()"
+          <button mat-icon-button (click)="recalculate()" [disabled]="isRecalculating() || isSaving() || isDirty()"
             matTooltip="Recalculate Duration & Distance">
             @if (isRecalculating()) {
             <mat-progress-spinner diameter="20" mode="indeterminate"></mat-progress-spinner>
@@ -173,14 +199,14 @@
         <!-- Aircraft Type -->
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Aircraft Type Code</mat-label>
-          <input matInput [(ngModel)]="f.aircraftTypeCode" placeholder="e.g. A320">
+          <input matInput [ngModel]="f.aircraftTypeCode" (ngModelChange)="updateField('aircraftTypeCode', $event)" placeholder="e.g. A320">
           <mat-hint>{{ f.aircraftType }}</mat-hint>
         </mat-form-field>
 
         <!-- Aircraft Registration -->
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Aircraft Registration</mat-label>
-          <input matInput [(ngModel)]="f.aircraftRegistration" placeholder="e.g. OE-LBL">
+          <input matInput [ngModel]="f.aircraftRegistration" (ngModelChange)="updateField('aircraftRegistration', $event)" placeholder="e.g. OE-LBL">
         </mat-form-field>
 
         <mat-divider></mat-divider>
@@ -188,14 +214,14 @@
         <!-- Seat -->
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Seat</mat-label>
-          <input matInput [(ngModel)]="f.seat" placeholder="e.g. 12A">
+          <input matInput [ngModel]="f.seat" (ngModelChange)="updateField('seat', $event)" placeholder="e.g. 12A">
           <mat-icon matSuffix>airline_seat_recline_normal</mat-icon>
         </mat-form-field>
 
         <!-- Seat Type -->
         <div class="radio-group-container">
           <label class="radio-label">Seat Type</label>
-          <mat-radio-group [(ngModel)]="f.seatType" class="radio-group">
+          <mat-radio-group [ngModel]="f.seatType" (ngModelChange)="updateField('seatType', $event)" class="radio-group">
             <mat-radio-button value="A">Aisle</mat-radio-button>
             <mat-radio-button value="M">Middle</mat-radio-button>
             <mat-radio-button value="W">Window</mat-radio-button>
@@ -205,7 +231,7 @@
         <!-- Class -->
         <div class="radio-group-container">
           <label class="radio-label">Class</label>
-          <mat-radio-group [(ngModel)]="f.class" class="radio-group">
+          <mat-radio-group [ngModel]="f.class" (ngModelChange)="updateField('class', $event)" class="radio-group">
             @for (travelClass of TRAVEL_CLASSES_LIST; track travelClass.key) {
             <mat-radio-button [value]="travelClass.key">{{ travelClass.long }}</mat-radio-button>
             }
@@ -215,7 +241,7 @@
         <!-- Reason -->
         <div class="radio-group-container">
           <label class="radio-label">Reason</label>
-          <mat-radio-group [(ngModel)]="f.reason" class="radio-group">
+          <mat-radio-group [ngModel]="f.reason" (ngModelChange)="updateField('reason', $event)" class="radio-group">
             <mat-radio-button value="B">Work</mat-radio-button>
             <mat-radio-button value="L">Leisure</mat-radio-button>
             <mat-radio-button value="C">Crew</mat-radio-button>
@@ -228,19 +254,19 @@
         <!-- Carrier -->
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Carrier</mat-label>
-          <input matInput [(ngModel)]="f.carrier" placeholder="e.g. Austrian Airlines">
+          <input matInput [ngModel]="f.carrier" (ngModelChange)="updateField('carrier', $event)" placeholder="e.g. Austrian Airlines">
         </mat-form-field>
 
         <!-- Name -->
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Name</mat-label>
-          <input matInput [(ngModel)]="f.name" placeholder="Flight name">
+          <input matInput [ngModel]="f.name" (ngModelChange)="updateField('name', $event)" placeholder="Flight name">
         </mat-form-field>
 
         <!-- Note -->
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Note</mat-label>
-          <input matInput [(ngModel)]="f.note" placeholder="Additional notes">
+          <input matInput [ngModel]="f.note" (ngModelChange)="updateField('note', $event)" placeholder="Additional notes">
         </mat-form-field>
 
         <!-- Error Message -->
@@ -250,17 +276,31 @@
           <span>{{ f.errorMessage }}</span>
         </div>
         }
-      </div>
+        @if (f.aeroApiEnrichment?.message && f.aeroApiEnrichment?.message !== f.errorMessage) {
+        <div role="status">
+          <mat-icon>info</mat-icon>
+          <span>{{ f.aeroApiEnrichment?.message }}</span>
+        </div>
+        }
+      </fieldset>
+      @if (saveError()) {
+      <p class="error-message" role="alert">{{ saveError() }}</p>
+      }
+      @if (saveMessage()) {
+      <p role="status">{{ saveMessage() }}</p>
+      }
     </mat-card-content>
 
     <!-- Actions -->
     <mat-card-actions class="form-actions">
-      <button mat-flat-button color="primary" (click)="save()" class="save-button">
+      <button mat-flat-button color="primary" (click)="save()" class="save-button"
+        [disabled]="isSaving() || isRecalculating() || recordUnavailable()">
         <mat-icon>save</mat-icon>
-        Save
+        {{ isSaving() ? 'Saving...' : 'Save' }}
       </button>
 
-      <button mat-stroked-button color="warn" (click)="delete()" class="delete-button">
+      <button mat-stroked-button color="warn" (click)="delete()" class="delete-button"
+        [disabled]="isSaving() || isRecalculating() || recordUnavailable()">
         <mat-icon>delete_outline</mat-icon>
         Delete
       </button>

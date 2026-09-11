@@ -123,6 +123,10 @@
 .form-grid {
   @include flex-col;
   gap: $spacing-lg;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
 }
 
 .full-width {

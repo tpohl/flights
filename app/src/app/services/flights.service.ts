@@ -1,6 +1,6 @@
 import { Injectable, inject, Injector, runInInjectionContext, Signal, signal } from '@angular/core';
 import { toSignal, toObservable } from '@angular/core/rxjs-interop';
-import { BehaviorSubject, from, Observable, of, combineLatest, forkJoin } from 'rxjs';
+import { BehaviorSubject, from, Observable, of, combineLatest, forkJoin, throwError } from 'rxjs';
 
 import { filter, map, reduce, switchMap, take, tap } from 'rxjs/operators';
 import dayjs from 'dayjs';
@@ -11,9 +11,10 @@ import { AirportService } from './airport.service';
 import { flightDistance } from '../pipes/flightDistancePipe';
 import { AeroAPITrackResponse, UpdateType } from '../models/aeroapi';
 
-import { Database, ref, set, push } from '@angular/fire/database';
+import { Database, ref, set, push, update, get, runTransaction } from '@angular/fire/database';
 import { Auth, authState, User } from '@angular/fire/auth';
 import { listVal, objectVal } from 'rxfire/database';
+import { mergeFlightChanges, flightWriteValues, flightWriteContext, FlightWriteContext } from './flight-write';
 
 export const enum SaveResultType { CREATED, UPDATED }
 
@@ -383,6 +384,7 @@ export class FlightsService {
    */
   recalculateFlightData(flight: Flight): Observable<boolean> {
     console.log('Recalculating flight data for', flight._id);
+    const expected = flightWriteContext(flight);
 
     // 1. Recalculate Duration
     if (flight.departureTime && flight.arrivalTime) {
@@ -413,12 +415,15 @@ export class FlightsService {
             }
           }
           // Save the updated flight
-          return this.saveFlight(flight).pipe(map(result => !!result));
+          return this.saveFlight(flight, {
+            durationMilliseconds: flight.durationMilliseconds,
+            distance: flight.distance
+          }, expected).pipe(map(result => !!result));
         })
       );
     } else {
       // Just save if airports are missing (though distance won't be calculated)
-      return this.saveFlight(flight).pipe(map(result => !!result));
+      return this.saveFlight(flight, { durationMilliseconds: flight.durationMilliseconds }, expected).pipe(map(result => !!result));
     }
   }
 
@@ -429,28 +434,37 @@ export class FlightsService {
     return Math.round((12742 * Math.asin(Math.sqrt(a)))); // 2 * R; R = 6371 km
   }
 
-  saveFlight(_flight: Flight): Observable<SaveResult | null> {
-    // console.log('Saving Flight', _flight);
+  saveFlight(flight: Flight, changes: Partial<Flight> = flight, expected?: FlightWriteContext): Observable<SaveResult | null> {
     const user = this.user;
     if (!user) {
-      return of(null);
+      return throwError(() => new Error('Sign in before saving a flight.'));
     }
-    const flight = clearFlight(_flight);
     return runInInjectionContext(this.injector, () => {
-      if (!!flight._objectReference) {
-        const flightRef = ref(this.db, flight._objectReference);
-        return from(set(flightRef, flight)).pipe(
-          map(() => ({ flightId: flight._id, type: SaveResultType.UPDATED } as SaveResult))
+      if (flight._id) {
+        const flightId = flight._id;
+        const flightRef = ref(this.db, `users/${user.uid}/flights/${flightId}`);
+        let conflict = '';
+        return from(get(flightRef)).pipe(
+          switchMap(() => runInInjectionContext(this.injector, () =>
+            from(runTransaction(flightRef, current => {
+              const result = mergeFlightChanges(current, changes, expected);
+              conflict = result.error ?? '';
+              return result.flight;
+            }, { applyLocally: false }))
+          )),
+          map(result => {
+            if (!result.committed) throw new Error(conflict || 'The flight could not be saved. Please try again.');
+            return { flightId, type: SaveResultType.UPDATED };
+          })
         );
       } else {
         const newFlightRef = push(ref(this.db, `users/${user.uid}/flights`));
-        flight._id = newFlightRef.key;
-        return from(set(newFlightRef, flight)).pipe(
-          map(() => ({ flightId: flight._id, type: SaveResultType.CREATED } as SaveResult))
+        const flightId = newFlightRef.key!;
+        return from(set(newFlightRef, flightWriteValues({ ...flight, _id: flightId }))).pipe(
+          map(() => ({ flightId, type: SaveResultType.CREATED }))
         );
       }
-    })
-      ;
+    });
   }
 
   /**
@@ -463,12 +477,11 @@ export class FlightsService {
     }
 
     return runInInjectionContext(this.injector, () => {
-      flight._deleted = true;
       const flightRef = flight._objectReference
         ? ref(this.db, flight._objectReference)
         : ref(this.db, `users/${user.uid}/flights/${flight._id}`);
 
-      return from(set(flightRef, flight)).pipe(
+      return from(update(flightRef, { _deleted: true })).pipe(
         map(() => true)
       );
     });
@@ -490,11 +503,10 @@ export class FlightsService {
 
     return runInInjectionContext(this.injector, () => {
       const deleteOperations = incompleteFlightsList.map(flight => {
-        flight._deleted = true;
         const flightRef = flight._objectReference
           ? ref(this.db, flight._objectReference)
           : ref(this.db, `users/${user.uid}/flights/${flight._id}`);
-        return from(set(flightRef, flight));
+        return from(update(flightRef, { _deleted: true }));
       });
 
       return forkJoin(deleteOperations).pipe(
@@ -624,17 +636,6 @@ export class FlightsService {
   }
 
 }
-
-const clearFlight = (flight: Flight) => {   // Clear any undefined values
-  (Object.keys(flight) as (keyof Flight)[]).forEach(
-    key => {
-      if (!flight[key]) {
-        (flight as any)[key] = null;
-      }
-    }
-  );
-  return flight;
-};
 
 const flightsSortFn = (a: Flight, b: Flight) => {
   if ((a.departureTime && !b.departureTime) || a.departureTime < b.departureTime) {

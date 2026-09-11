@@ -1,6 +1,9 @@
 # See http://help.github.com/ignore-files/ for more about ignoring files.
 src/environments
 
+# Private flight and airport exports
+/data/
+
 firebase-debug.log
 
 # compiled output
@@ -45,4 +48,3 @@ Thumbs.db
 .firebaserc
 functions/firebase-debug.log
 .firebase
-

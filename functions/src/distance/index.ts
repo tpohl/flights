@@ -18,7 +18,7 @@ export const computeDistance = async (flightRef: admin.database.Reference, fligh
   log("Computing Distance");
 
   const flight = await loadFlight(flightRef);
-  if (!flight || !flight.from || !flight.to) {
+  if (!flight || flight._deleted || !flight.from || !flight.to || flight.manualOverrides?.distance === true) {
     log("Missing flight data or airports, skipping distance calculation");
     return;
   }
@@ -33,7 +33,16 @@ export const computeDistance = async (flightRef: admin.database.Reference, fligh
     const dist = calculateDistance(ap1.latitude, ap1.longitude, ap2.latitude, ap2.longitude);
     if (dist > 0) {
       log(`Computed Distance of Flight ${flightId}: ${dist} km`);
-      await flightRef.child("distance").set(dist);
+      await flightRef.transaction((current) => {
+        if (!current) return null;
+        if (current._deleted || current.manualOverrides?.distance === true ||
+            current.flightno !== flight.flightno || current.date !== flight.date ||
+            current.from !== flight.from || current.to !== flight.to ||
+            current.distance !== flight.distance) {
+          return undefined;
+        }
+        return { ...current, distance: dist };
+      }, undefined, false);
     }
   } else {
     warn(`Could not find airport data for ${flight.from} or ${flight.to}`);

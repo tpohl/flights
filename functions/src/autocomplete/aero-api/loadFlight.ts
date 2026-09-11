@@ -1,101 +1,84 @@
-import { AeroApiFlight, AeroAPIIdentResponse, AeroAPIOperator, AeroAPITrackResponse } from "./models";
 import * as admin from "firebase-admin";
-admin.initializeApp();
-// All available logging functions
-const {
-  log,
-  info,
-  debug,
-  warn,
-  error,
-  write
-} = require('firebase-functions/logger');
+import { error, info } from "firebase-functions/logger";
+import { defineJsonSecret } from "firebase-functions/params";
+import { guardAeroApiCall } from "./budget";
+import { buildFlightSearchWindow, normalizeFlightNumber } from "./matcher";
+import { AeroApiFlight, AeroAPIIdentResponse, AeroAPITrackResponse } from "./models";
 
-
-const functions = require('firebase-functions');
-const { defineJsonSecret } = require('firebase-functions/params');
+if (!admin.apps.length) admin.initializeApp();
 
 const config = defineJsonSecret("FLIGHTS_CONFIG");
+const FLIGHT_SEARCH_COST = 0.005;
+const TRACK_COST = 0.012;
 
-// Declare fetch for Node 20+ native fetch support
-declare const fetch: typeof globalThis.fetch;
+const apiKey = () => config.value().aeroapi.apikey as string;
+const budgetRoot = () => admin.database().ref("/internal/aeroApiBudget");
+const headers = (key: string) => ({
+  "Accept": "application/json; charset=UTF-8",
+  "x-apikey": key,
+});
 
-export const loadOperator = async function (iata: string): Promise<AeroAPIOperator | null> {
-  const ref = admin.database().ref("/operators/" + iata);
-  const snapshot = await ref.once("value");
-
-  if (snapshot.exists()) {
-    return snapshot.val() as AeroAPIOperator;
-  }
-
+export const loadAeroApiFlights = async (
+  flightNumber: string,
+  date: string,
+  now = new Date()
+): Promise<AeroApiFlight[]> => {
+  const ident = normalizeFlightNumber(flightNumber);
+  const window = buildFlightSearchWindow(date, now);
+  const key = apiKey();
+  await guardAeroApiCall(budgetRoot(), key, "flights", FLIGHT_SEARCH_COST, fetch, now);
+  const params = new URLSearchParams({
+    start: window.start,
+    end: window.end,
+    ident_type: "designator",
+    max_pages: "1",
+  });
+  const url = `https://aeroapi.flightaware.com/aeroapi/flights/${encodeURIComponent(ident)}?${params}`;
+  info("Loading AeroAPI flight candidates", { ident, date });
   try {
-    // Access secret value at runtime, not at module load time
-    const AEROAPI_APIKEY = config.value().aeroapi.apikey;
-
-    const response = await fetch(`https://aeroapi.flightaware.com/aeroapi/operators/${iata}`, {
-      headers: {
-        "Accept": "application/json; charset=UTF-8",
-        "x-apikey": AEROAPI_APIKEY,
-      },
-    });
-
-    if (response.ok) {
-      const newOperator = await response.json() as AeroAPIOperator;
-      await ref.set(newOperator);
-      return newOperator;
-    }
-
-    return null;
-  } catch (error) {
-    error("Error loading operator from AeroAPI", error);
-    return null;
-  }
-};
-
-export const loadAeroApiFlight = async function (carrier: string, flightNo: string, dateStr: string): Promise<AeroApiFlight | null> {
-  info(`Loading Aero API Flight ${carrier}${flightNo} on ${dateStr}`);
-  try {
-    // Access secret value at runtime, not at module load time
-    const AEROAPI_APIKEY = config.value().aeroapi.apikey;
-
-    const url = `https://aeroapi.flightaware.com/aeroapi/flights/${carrier}${flightNo}?start=${dateStr}&end=${dateStr}T23:59:59Z`;
     const response = await fetch(url, {
-      headers: {
-        "Accept": "application/json; charset=UTF-8",
-        "x-apikey": AEROAPI_APIKEY,
-      },
+      signal: AbortSignal.timeout(15000),
+      headers: headers(key),
     });
-    if (response.ok) {
-      const body = await response.json() as AeroAPIIdentResponse;
-      debug(`AeroAPI Response for ${carrier}${flightNo} on ${dateStr}: `, body);
-      return body.flights ? body.flights[0] : null;
-    } else {
-      warn(`AeroAPI Response is not ok: ${carrier}${flightNo} on ${dateStr} -> ${url}`, response);
+    if (!response.ok) {
+      throw new Error(`AeroAPI flight lookup failed (HTTP ${response.status}).`);
     }
-    return null;
-  } catch (error) {
-    error("Error loading AeroAPI flight", error);
-    return null;
+    const body = await response.json() as AeroAPIIdentResponse;
+    return Array.isArray(body.flights) ? body.flights : [];
+  } catch (err) {
+    error("Error loading AeroAPI flights", err);
+    throw err;
   }
 };
 
-export const loadAeroApiTrack = async function (faFlightId: string): Promise<AeroAPITrackResponse | null> {
+export const loadAeroApiTrack = async (
+  faFlightId: string,
+  includeEstimatedPositions: boolean,
+  now = new Date()
+): Promise<AeroAPITrackResponse> => {
+  const key = apiKey();
+  await guardAeroApiCall(budgetRoot(), key, "track", TRACK_COST, fetch, now);
+  const params = new URLSearchParams({
+    include_estimated_positions: String(includeEstimatedPositions),
+  });
+  const url = `https://aeroapi.flightaware.com/aeroapi/flights/${encodeURIComponent(faFlightId)}/track?${params}`;
   try {
-    // Access secret value at runtime, not at module load time
-    const AEROAPI_APIKEY = config.value().aeroapi.apikey;
-
-    const response = await fetch(`https://aeroapi.flightaware.com/aeroapi/flights/${faFlightId}/track?include_estimated_positions=true`, {
-      headers: {
-        "Accept": "application/json; charset=UTF-8",
-        "x-apikey": AEROAPI_APIKEY,
-      },
+    const response = await fetch(url, {
+      signal: AbortSignal.timeout(15000),
+      headers: headers(key),
     });
-    if (response.ok) {
-      return await response.json() as AeroAPITrackResponse;
+    if (!response.ok) {
+      throw new Error(`AeroAPI track lookup failed (HTTP ${response.status}).`);
     }
-    return null;
-  } catch (error) {
-    error("Error loading AeroAPI track", error);
-    return null;
+    const track = await response.json() as AeroAPITrackResponse;
+    return {
+      ...track,
+      positions: (track.positions || []).filter((position) =>
+        position.altitude > 0 &&
+        (includeEstimatedPositions || position.update_type !== "P")),
+    };
+  } catch (err) {
+    error("Error loading AeroAPI track", err);
+    throw err;
   }
 };

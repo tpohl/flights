@@ -13,19 +13,20 @@
       <h3 class="section-label">Data Accuracy</h3>
       <div class="status-grid">
         <div class="status-item">
-          <span class="status-label">Lufthansa API</span>
-          <mat-icon [class.success]="!!flight().lhApiFlight" [class.error]="!flight().lhApiFlight">
-            {{ !!flight().lhApiFlight ? 'check_circle' : 'cancel' }}
+          <span class="status-label">AeroAPI completion</span>
+          <mat-icon [class.success]="enrichmentClass(flight()) === 'success'"
+            [class.warning]="enrichmentClass(flight()) === 'warning'"
+            [class.error]="enrichmentClass(flight()) === 'error'"
+            [matTooltip]="flight().aeroApiEnrichment?.message || enrichmentLabel(flight())">
+            {{ enrichmentIcon(flight()) }}
           </mat-icon>
         </div>
         <div class="status-item">
-          <span class="status-label">Aero API</span>
-          <mat-icon [class.success]="!!flight().aeroApiFlight" [class.error]="!flight().aeroApiFlight">
-            {{ !!flight().aeroApiFlight ? 'check_circle' : 'cancel' }}
-          </mat-icon>
+          <span class="status-label">Flight data</span>
+          <span>{{ enrichmentLabel(flight()) }}</span>
         </div>
         <div class="status-item">
-          <span class="status-label">Aero API Track</span>
+          <span class="status-label">AeroAPI track</span>
           @if (track(); as trackVal) {
           <mat-icon [class.success]="trackVal.actual_distance > 0" [class.warning]="trackVal.actual_distance <= 0">
             {{ trackVal.actual_distance > 0 ? 'check_circle' : 'star_half' }}

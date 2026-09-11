@@ -1,86 +1,84 @@
-import "./test-setup";
-import { expect } from "chai";
-import * as sinon from "sinon";
-import * as admin from "firebase-admin";
-import * as functions from "firebase-functions/v1";
-import { computeDuration } from "../src/duration/index";
+import { strict as assert } from "node:assert";
+import proxyquire from "proxyquire";
+import { databaseTriggers, flightReference, logger } from "./helpers";
 
-// Mock flight data
-const mockFlightData = {
-    departureTime: "2023-10-27T10:00:00.000Z",
-    arrivalTime: "2023-10-27T12:00:00.000Z",
-};
+const duration = proxyquire.noCallThru()("../src/duration/index", {
+  "firebase-functions/v2/database": databaseTriggers,
+  "firebase-functions/logger": logger
+});
+const times = { departureTime: "2023-10-27T10:00:00Z", arrivalTime: "2023-10-27T12:00:00Z", note: "Keep" };
 
-describe("Duration Cloud Function", () => {
-    // Global mock of initializeApp is handled in test-setup.ts
-    // We only need to clean up other stubs if necessary
+describe("Duration transaction", () => {
+  it("calculates a positive duration without replacing other fields", async () => {
+    const ref = flightReference(times);
+    await duration.computeDuration(ref, "flight123", "user123");
+    assert.equal(ref.current.durationMilliseconds, 7200000);
+    assert.equal(ref.current.note, "Keep");
+    assert.equal(ref.transaction.callCount, 1);
+  });
 
-    it("should calculate duration correctly (2 hours)", async () => {
-        const setStub = sinon.stub().resolves();
+  it("handles explicit next-day arrival", async () => {
+    const ref = flightReference({ ...times, departureTime: "2023-10-27T23:00:00Z", arrivalTime: "2023-10-28T01:00:00Z" });
+    await duration.computeDuration(ref, "flight123", "user123");
+    assert.equal(ref.current.durationMilliseconds, 7200000);
+  });
 
-        // Mock the snapshot structure required by loadFlight and computeDuration
-        // loadFlight calls snapshot.ref.once('value') -> returns { val: () => flight }
-        // computeDuration calls snapshot.ref.parent -> which is the flightRef
-
-        // Structure:
-        // snapshot.ref.parent (flightRef)
-        //   .once('value') -> returns flight data
-        //   .child('durationMilliseconds')
-        //     .set(duration)
-
-        const flightRefStub = {
-            key: "flight123",
-            once: sinon.stub().resolves({
-                val: () => mockFlightData,
-                exists: () => true
-            }),
-            child: sinon.stub().returns({
-                set: setStub
-            })
-        };
-
-        const snapshotStub = {
-            ref: {
-                parent: flightRefStub
-            }
-        } as unknown as functions.database.DataSnapshot;
-
-        const context = {
-            params: { userId: "testUser", flightId: "flight123" }
-        } as unknown as functions.EventContext;
-
-        await computeDuration(snapshotStub, context);
-
-        // 2 hours = 7,200,000 ms
-        expect(setStub.calledOnce).to.be.true;
-        expect(setStub.firstCall.args[0]).to.equal(7200000);
+  for (const invalid of [
+    { arrivalTime: undefined }, { departureTime: undefined }, { arrivalTime: "" },
+    { arrivalTime: "invalid" }, { departureTime: null }, { departureTime: "2023-02-30T10:00:00Z" },
+    { arrivalTime: "2023-10-27T24:00:00Z" }, { arrivalTime: "2023-10-27T09:00:00Z" },
+    { arrivalTime: times.departureTime }, { arrivalTime: "2023-10-27" },
+    { arrivalTime: "2023-10-27T12:00:00" }, { departureTime: "2023-10-27T10:00:00" }
+  ]) {
+    it(`clears a stale duration for ${JSON.stringify(invalid)}`, async () => {
+      const ref = flightReference({ ...times, durationMilliseconds: 12345, ...invalid });
+      await duration.computeDuration(ref, "flight123", "user123");
+      assert.equal(ref.current.durationMilliseconds, undefined);
+      assert.equal(ref.current.note, "Keep");
     });
+  }
 
-    it("should not set duration if times are missing", async () => {
-        const setStub = sinon.stub().resolves();
-        const flightRefStub = {
-            key: "flight123",
-            once: sinon.stub().resolves({
-                val: () => ({ ...mockFlightData, arrivalTime: null }),
-                exists: () => true
-            }),
-            child: sinon.stub().returns({
-                set: setStub
-            })
-        };
+  it("recomputes against the latest times on a transaction retry", async () => {
+    const ref = flightReference(times);
+    ref.retryWith({ ...times, arrivalTime: "2023-10-27T13:00:00Z", note: "New note" });
+    await duration.computeDuration(ref, "flight123", "user123");
+    assert.equal(ref.current.durationMilliseconds, 10800000);
+    assert.equal(ref.current.note, "New note");
+  });
 
-        const snapshotStub = {
-            ref: {
-                parent: flightRefStub
-            }
-        } as unknown as functions.database.DataSnapshot;
+  it("clears a duration if a time was removed during the transaction", async () => {
+    const ref = flightReference(times);
+    ref.retryWith({ departureTime: times.departureTime, durationMilliseconds: 12345 });
+    await duration.computeDuration(ref, "flight123", "user123");
+    assert.equal(ref.current.durationMilliseconds, undefined);
+  });
 
-        const context = {
-            params: { userId: "testUser", flightId: "flight123" }
-        } as unknown as functions.EventContext;
-
-        await computeDuration(snapshotStub, context);
-
-        expect(setStub.called).to.be.false;
+  for (const current of [null, { ...times, _deleted: true }]) {
+    it(`does not change a ${current ? "deleted" : "missing"} record`, async () => {
+      const ref = flightReference(times);
+      ref.retryWith(current);
+      await duration.computeDuration(ref, "flight123", "user123");
+      assert.deepEqual(ref.current, current);
     });
+  }
+
+  it("handles Firebase's initially empty transaction cache", async () => {
+    const ref = flightReference(null);
+    ref.retryWith(times);
+    await duration.computeDuration(ref, "flight123", "user123");
+    assert.equal(ref.current.durationMilliseconds, 7200000);
+  });
+
+  for (const name of ["updatedDepartureTimeOnDelete", "updatedArrivalTimeOnDelete"]) {
+    it(`${name} invalidates duration when a time field is deleted`, async () => {
+      const ref = flightReference({ durationMilliseconds: 12345 });
+      await duration[name]({ data: { ref: { parent: ref } }, params: { flightId: "flight123", userId: "user123" } });
+      assert.equal(ref.current.durationMilliseconds, undefined);
+    });
+  }
+
+  it("does not rewrite an already correct duration", async () => {
+    const ref = flightReference({ ...times, durationMilliseconds: 7200000 });
+    assert.equal((await duration.computeDuration(ref, "flight123", "user123")).committed, false);
+  });
 });

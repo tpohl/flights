@@ -80,9 +80,9 @@ describe('FlightsService', () => {
     describe('filterInvalidFlights', () => {
         it('should filter out flights with valid data', () => {
             const flights: Partial<Flight>[] = [
-                { _id: '1', durationMilliseconds: 3600000, distance: 500 }, // Valid
-                { _id: '2', durationMilliseconds: -1, distance: 500 },      // Invalid
-                { _id: '3', durationMilliseconds: 3600000, distance: 0 }    // Invalid
+                { _id: '1', departureTime: '2024-01-01T10:00:00Z', durationMilliseconds: 3600000, distance: 500 }, // Valid
+                { _id: '2', departureTime: '2024-01-01T10:00:00Z', durationMilliseconds: -1, distance: 500 },      // Invalid
+                { _id: '3', departureTime: '2024-01-01T10:00:00Z', durationMilliseconds: 3600000, distance: 0 }    // Invalid
             ];
             const result = (service as any).filterInvalidFlights(flights as Flight[]);
             expect(result.length).toBe(2);
@@ -92,8 +92,8 @@ describe('FlightsService', () => {
 
         it('should filter out validated anomalies', () => {
             const flights: Partial<Flight>[] = [
-                { _id: '1', durationMilliseconds: -1, distance: 500, validatedAnomaly: true },
-                { _id: '2', durationMilliseconds: -1, distance: 500 }
+                { _id: '1', departureTime: '2024-01-01T10:00:00Z', durationMilliseconds: -1, distance: 500, validatedAnomaly: true },
+                { _id: '2', departureTime: '2024-01-01T10:00:00Z', durationMilliseconds: -1, distance: 500 }
             ];
             const result = (service as any).filterInvalidFlights(flights as Flight[]);
             expect(result.length).toBe(1);
@@ -124,7 +124,13 @@ describe('FlightsService', () => {
                 expect(success).toBeTrue();
                 expect(flight.durationMilliseconds).toBe(7200000); // 2 hours
                 expect(flight.distance).toBeCloseTo(765, -1);
-                expect(service.saveFlight).toHaveBeenCalledWith(flight);
+                expect(service.saveFlight).toHaveBeenCalledWith(flight, {
+                    durationMilliseconds: 7200000,
+                    distance: flight.distance
+                }, {
+                    flightno: undefined, date: '2024-01-01', from: 'VIE', to: 'HAM',
+                    departureTime: '2024-01-01T10:00:00Z', arrivalTime: '2024-01-01T12:00:00Z'
+                });
                 done();
             });
         });

@@ -10,10 +10,25 @@ export class Flight {
 
   departureTime!: string;
   arrivalTime!: string;
+  scheduledDepartureTime?: string;
+  estimatedDepartureTime?: string;
+  actualDepartureTime?: string;
+  scheduledTakeoffTime?: string;
+  estimatedTakeoffTime?: string;
+  actualTakeoffTime?: string;
+  scheduledLandingTime?: string;
+  estimatedLandingTime?: string;
+  actualLandingTime?: string;
+  scheduledArrivalTime?: string;
+  estimatedArrivalTime?: string;
+  actualArrivalTime?: string;
+  departureTimeSource?: FlightTimeSource;
+  arrivalTimeSource?: FlightTimeSource;
 
   durationMilliseconds!: number;
 
   distance!: number;
+  plannedDistance?: number;
 
   aircraftTypeCode!: string;
   aircraftType!: string;
@@ -40,11 +55,36 @@ export class Flight {
 
   needsAutocomplete!: boolean;
   errorMessage!: string;
+  aeroApiEnrichment?: AeroApiEnrichment;
+
+  manualOverrides?: Partial<Record<FlightManualField, boolean>>;
 
   validatedAnomaly!: boolean;
 
   _objectReference!: string;
   _deleted!: boolean;
+}
+
+export const FLIGHT_MANUAL_FIELDS = [
+  'from', 'to', 'departureTime', 'arrivalTime', 'aircraftTypeCode',
+  'aircraftType', 'aircraftRegistration', 'carrier', 'distance'
+] as const;
+
+export type FlightManualField = typeof FLIGHT_MANUAL_FIELDS[number];
+
+export type FlightTimeSource = 'manual' | 'actual' | 'estimated' | 'scheduled' | 'unknown';
+
+export type AeroApiEnrichmentState =
+  'scheduled' | 'partial' | 'final' | 'ambiguous' | 'not_found' |
+  'outside_window' | 'budget_blocked' | 'error';
+
+export interface AeroApiEnrichment {
+  state: AeroApiEnrichmentState;
+  candidateCount?: number;
+  lastAttemptAt: string;
+  nextRefreshAt?: string;
+  attempts?: number;
+  message?: string;
 }
 
 export interface ClassInfo {
