@@ -17,7 +17,7 @@
         <span matListItemTitle>Statistics</span>
       </a>
       <mat-divider></mat-divider>
-      <a mat-list-item [routerLink]="['/import', 'pohl.rocks']" (click)="closeSidenav()">
+      <a mat-list-item routerLink="/import" (click)="closeSidenav()">
         <mat-icon matListItemIcon>cloud_upload</mat-icon>
         <span matListItemTitle>Import Flights</span>
       </a>
@@ -62,7 +62,7 @@
           <mat-icon>bar_chart</mat-icon>
           Statistics
         </a>
-        <a mat-button [routerLink]="['/import', 'pohl.rocks']">
+        <a mat-button routerLink="/import">
           <mat-icon>cloud_upload</mat-icon>
           Import
         </a>

@@ -36,9 +36,14 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   {
-    path: 'import/pohl.rocks',
+    path: 'import',
     component: PohlRocksImporterComponent,
     canActivate: [authGuard]
+  },
+  {
+    path: 'import/pohl.rocks',
+    redirectTo: '/import',
+    pathMatch: 'full'
   },
   {
     path: 'export',

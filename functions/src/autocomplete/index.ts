@@ -330,6 +330,31 @@ export const autocompleteAircraftType = async (
 const triggerAutocomplete = (event: any) => autocompleteFlight(event.data.after?.ref.parent ||
   event.data.ref.parent, event.params);
 
+export const triggerAutocompleteOnCreate = async (event: any) => {
+  const flightRef = event.data.ref.parent;
+  if (!event.id) throw new Error("Flight-number create event is missing its event ID.");
+  const eventId = String(event.id);
+  const result = await flightRef.transaction((flight: Flight | null) => {
+    if (!flight) return flight;
+    const metadata = flight.importMetadata;
+    if (metadata?.suppressInitialEnrichment === true) {
+      return {
+        ...flight,
+        importMetadata: {
+          ...metadata,
+          suppressInitialEnrichment: false,
+          suppressedCreateEventId: eventId,
+        },
+      };
+    }
+    return undefined;
+  }, undefined, false);
+  const flight = result.snapshot.val() as Flight | null;
+  if (!flight) return null;
+  if (flight.importMetadata?.suppressedCreateEventId === eventId) return null;
+  return autocompleteFlight(flightRef, event.params);
+};
+
 // Export names are retained to avoid replacing deployed trigger resources.
 export const lufthansaApiAutocompletion = onValueUpdated(
   { ref: "/users/{userId}/flights/{flightId}/flightno", secrets: [config] },
@@ -337,7 +362,7 @@ export const lufthansaApiAutocompletion = onValueUpdated(
 );
 export const lufthansaApiAutocompletionOnCreate = onValueCreated(
   { ref: "/users/{userId}/flights/{flightId}/flightno", secrets: [config] },
-  triggerAutocomplete
+  triggerAutocompleteOnCreate
 );
 export const autocompletionRequested = onValueUpdated(
   { ref: "/users/{userId}/flights/{flightId}/needsAutocomplete", secrets: [config] },

@@ -63,6 +63,7 @@ export class Flight {
   aeroApiFlight: AeroApiFlight;
   flightAwareFlightId: string;
   aeroApiEnrichment?: AeroApiEnrichment;
+  importMetadata?: FlightImportMetadata;
 
   status: FlightStatus;
 }
@@ -78,6 +79,13 @@ export interface AeroApiEnrichment {
   nextRefreshAt?: string;
   attempts?: number;
   message?: string;
+}
+export interface FlightImportMetadata {
+  source: "myflightradar24";
+  sourceKey: string;
+  importedAt: string;
+  suppressInitialEnrichment?: boolean;
+  suppressedCreateEventId?: string;
 }
 export type FlightManualField =
   | "from"

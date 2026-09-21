@@ -49,6 +49,19 @@ textarea {
   font-size: $font-size-base;
 }
 
+input[type='file'] {
+  display: block;
+  margin: $spacing-md 0 $spacing-lg;
+}
+
+.error {
+  color: #b00020;
+}
+
+.success {
+  color: #116329;
+}
+
 /* Preview Section */
 .section-header {
   display: flex;

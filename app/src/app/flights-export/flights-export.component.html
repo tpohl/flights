@@ -9,12 +9,30 @@
       <mat-card-subtitle>Export all flights as JSON</mat-card-subtitle>
     </mat-card-header>
     <mat-card-content>
-      <pre class="code-block">{{ flights() | json }}</pre>
+      <pre class="code-block">{{ activeFlights() | json }}</pre>
     </mat-card-content>
     <mat-card-actions>
       <button mat-flat-button color="primary" (click)="flightsToClipbord()">
         <mat-icon>content_copy</mat-icon>
         Copy JSON
+      </button>
+    </mat-card-actions>
+  </mat-card>
+
+  <mat-card class="export-card glass-card">
+    <mat-card-header>
+      <mat-icon mat-card-avatar>table_view</mat-icon>
+      <mat-card-title>myFlightradar24 CSV</mat-card-title>
+      <mat-card-subtitle>Airport-local times in the myFlightradar24 import format</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      <p class="hint">Incomplete flights without resolvable local times or duration are skipped.</p>
+      @if (exportMessage()) { <p>{{ exportMessage() }}</p> }
+    </mat-card-content>
+    <mat-card-actions>
+      <button mat-flat-button color="primary" (click)="downloadMyFlightradar24()" [disabled]="exporting()">
+        <mat-icon>download</mat-icon>
+        {{ exporting() ? 'Preparing…' : 'Download CSV' }}
       </button>
     </mat-card-actions>
   </mat-card>
@@ -28,7 +46,7 @@
     </mat-card-header>
     <mat-card-content>
       <p class="hint">Declare a <code>$token</code> from FlightSearch in your shell before running.</p>
-      <pre class="code-block">{{ flightsForFlightSearch(flights()) }}</pre>
+      <pre class="code-block">{{ flightsForFlightSearch(activeFlights()) }}</pre>
     </mat-card-content>
     <mat-card-actions>
       <button mat-flat-button color="primary" (click)="flightSearchToClipbord()">

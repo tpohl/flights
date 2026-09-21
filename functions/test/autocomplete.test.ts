@@ -35,6 +35,9 @@ describe("AeroAPI autocomplete coordinator", () => {
   let autocompleteFlight: any;
   let autocompleteAircraftType: any;
   let processAeroApiRefreshQueue: any;
+  let triggerAutocompleteOnCreate: any;
+  let updateAutocompleteTrigger: any;
+  let requestedAutocompleteTrigger: any;
   let internalNode: any;
 
   beforeEach(() => {
@@ -84,6 +87,9 @@ describe("AeroAPI autocomplete coordinator", () => {
     autocompleteFlight = module.autocompleteFlight;
     autocompleteAircraftType = module.autocompleteAircraftType;
     processAeroApiRefreshQueue = module.processAeroApiRefreshQueue;
+    triggerAutocompleteOnCreate = module.triggerAutocompleteOnCreate;
+    updateAutocompleteTrigger = module.lufthansaApiAutocompletion;
+    requestedAutocompleteTrigger = module.autocompletionRequested;
   });
 
   afterEach(() => sinon.restore());
@@ -99,6 +105,91 @@ describe("AeroAPI autocomplete coordinator", () => {
     assert.equal(result.flight.aeroApiEnrichment.state, "scheduled");
     assert.equal(result.flight.needsAutocomplete, false);
     assert.equal(aero.loadAeroApiTrack.firstCall.args[1], true);
+  });
+
+  it("consumes imported-flight suppression once and skips redelivery of the same create event", async () => {
+    const ref = flightReference({
+      ...original,
+      needsAutocomplete: false,
+      importMetadata: {
+        source: "myflightradar24",
+        sourceKey: "myfr24-123",
+        importedAt: now.toISOString(),
+        suppressInitialEnrichment: true
+      }
+    });
+    const event = {
+      id: "create-event-1",
+      data: { ref: { parent: ref } },
+      params: { userId: "user123", flightId: "flight123" }
+    };
+    assert.equal(await triggerAutocompleteOnCreate(event), null);
+    assert.equal(ref.current.importMetadata.suppressInitialEnrichment, false);
+    assert.equal(ref.current.importMetadata.suppressedCreateEventId, "create-event-1");
+    assert.equal(await triggerAutocompleteOnCreate(event), null);
+    assert.equal(aero.loadAeroApiFlights.callCount, 0);
+  });
+
+  it("enriches a later recreated flight number after initial import suppression", async () => {
+    const ref = flightReference({
+      ...original,
+      importMetadata: {
+        source: "myflightradar24",
+        sourceKey: "myfr24-123",
+        importedAt: now.toISOString(),
+        suppressInitialEnrichment: false,
+        suppressedCreateEventId: "create-event-1"
+      }
+    });
+    await triggerAutocompleteOnCreate({
+      id: "create-event-2",
+      data: { ref: { parent: ref } },
+      params: { userId: "user123", flightId: "flight123" }
+    });
+    assert.equal(aero.loadAeroApiFlights.callCount, 1);
+  });
+
+  it("keeps normal create, update, and explicit enrichment behavior", async () => {
+    const createRef = flightReference(original);
+    await triggerAutocompleteOnCreate({
+      id: "normal-create",
+      data: { ref: { parent: createRef } },
+      params: { userId: "user123", flightId: "flight123" }
+    });
+    assert.equal(aero.loadAeroApiFlights.callCount, 1);
+
+    const updateRef = flightReference(original);
+    await updateAutocompleteTrigger({
+      data: { after: { ref: { parent: updateRef } } },
+      params: { userId: "user123", flightId: "flight123" }
+    });
+    assert.equal(aero.loadAeroApiFlights.callCount, 2);
+
+    const requestedRef = flightReference({
+      ...original,
+      needsAutocomplete: true,
+      importMetadata: {
+        source: "myflightradar24",
+        sourceKey: "myfr24-123",
+        importedAt: now.toISOString()
+      }
+    });
+    await requestedAutocompleteTrigger({
+      data: { after: { val: () => true, ref: { parent: requestedRef } } },
+      params: { userId: "user123", flightId: "flight123" }
+    });
+    assert.equal(aero.loadAeroApiFlights.callCount, 3);
+  });
+
+  it("fails closed when initial suppression cannot be consumed", async () => {
+    const ref = flightReference(original);
+    ref.transaction.rejects(new Error("database unavailable"));
+    await assert.rejects(triggerAutocompleteOnCreate({
+      id: "create-event-1",
+      data: { ref: { parent: ref } },
+      params: { userId: "user123", flightId: "flight123" }
+    }), /database unavailable/);
+    assert.equal(aero.loadAeroApiFlights.callCount, 0);
   });
 
   it("uses final non-estimated track and persists final state", async () => {

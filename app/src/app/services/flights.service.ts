@@ -1,4 +1,4 @@
-import { Injectable, inject, Injector, runInInjectionContext, Signal, signal } from '@angular/core';
+import { Injectable, InjectionToken, inject, Injector, runInInjectionContext, Signal, signal } from '@angular/core';
 import { toSignal, toObservable } from '@angular/core/rxjs-interop';
 import { BehaviorSubject, from, Observable, of, combineLatest, forkJoin, throwError } from 'rxjs';
 
@@ -15,12 +15,77 @@ import { Database, ref, set, push, update, get, runTransaction } from '@angular/
 import { Auth, authState, User } from '@angular/fire/auth';
 import { listVal, objectVal } from 'rxfire/database';
 import { mergeFlightChanges, flightWriteValues, flightWriteContext, FlightWriteContext } from './flight-write';
+import { flightsAreDuplicates } from './myflightradar24';
 
 export const enum SaveResultType { CREATED, UPDATED }
 
 export class SaveResult {
   flightId!: string;
   type!: SaveResultType;
+}
+
+export interface BulkImportResult {
+  imported: number;
+  skipped: number;
+  flightIds: string[];
+}
+
+export interface AllocatedImportFlight {
+  flight: Flight;
+  key: string;
+}
+
+interface MyFr24DatabaseOperations {
+  ref(database: Database, path: string): any;
+  push(reference: any): { key: string | null };
+  runTransaction(
+    reference: any,
+    update: (currentValue: any) => any,
+    options: { applyLocally: boolean }
+  ): Promise<{ committed: boolean; snapshot: { val(): any } }>;
+}
+
+export const MYFR24_DATABASE_OPERATIONS = new InjectionToken<MyFr24DatabaseOperations>('MYFR24_DATABASE_OPERATIONS', {
+  providedIn: 'root',
+  factory: () => ({ ref, push, runTransaction })
+});
+
+export function applyMyFr24ImportTransaction(
+  currentValue: any,
+  allocated: readonly AllocatedImportFlight[],
+  userId: string
+): any | undefined {
+  const current = currentValue || {};
+  const storedFlights = Object.values(current.flights || {}) as Flight[];
+  const imports = { ...(current.imports?.myflightradar24 || {}) };
+  const nextFlights = { ...(current.flights || {}) };
+  const accepted: Flight[] = [];
+
+  for (const item of allocated) {
+    const metadata = item.flight.importMetadata!;
+    if (imports[metadata.sourceKey]) continue;
+    if ([...storedFlights, ...accepted].some(existing =>
+      !existing._deleted && flightsAreDuplicates(item.flight, existing))) continue;
+
+    const importedAt = metadata.importedAt || new Date().toISOString();
+    const value = flightWriteValues({
+      ...item.flight,
+      _id: item.key,
+      user: userId,
+      created: importedAt as unknown as Date,
+      needsAutocomplete: false,
+      importMetadata: { ...metadata, importedAt, suppressInitialEnrichment: true }
+    }) as unknown as Flight;
+    nextFlights[item.key] = value;
+    imports[metadata.sourceKey] = { flightId: item.key, importedAt };
+    accepted.push(value);
+  }
+  if (!accepted.length) return;
+  return {
+    ...current,
+    flights: nextFlights,
+    imports: { ...(current.imports || {}), myflightradar24: imports }
+  };
 }
 
 @Injectable({
@@ -100,6 +165,7 @@ export class FlightsService {
   private auth = inject(Auth);
   private user = null as User | null;
   private db = inject(Database);
+  private myFr24Database = inject(MYFR24_DATABASE_OPERATIONS);
   private injector = inject(Injector);
 
   constructor() {
@@ -439,6 +505,7 @@ export class FlightsService {
     if (!user) {
       return throwError(() => new Error('Sign in before saving a flight.'));
     }
+
     return runInInjectionContext(this.injector, () => {
       if (flight._id) {
         const flightId = flight._id;
@@ -464,6 +531,38 @@ export class FlightsService {
           map(() => ({ flightId, type: SaveResultType.CREATED }))
         );
       }
+    });
+  }
+
+  bulkImportMyFlightradar24(flights: readonly Flight[]): Observable<BulkImportResult> {
+    const user = this.user;
+    if (!user) return throwError(() => new Error('Sign in before importing flights.'));
+    if (!flights.length) return of({ imported: 0, skipped: 0, flightIds: [] });
+    if (flights.some(flight => flight.importMetadata?.source !== 'myflightradar24' ||
+      !flight.importMetadata.sourceKey)) {
+      return throwError(() => new Error('Every imported flight needs myFlightradar24 source metadata.'));
+    }
+
+    return runInInjectionContext(this.injector, () => {
+      const userRef = this.myFr24Database.ref(this.db, `users/${user.uid}`);
+      const allocated = flights.map(flight => ({
+        flight,
+        key: this.myFr24Database.push(
+          this.myFr24Database.ref(this.db, `users/${user.uid}/flights`)
+        ).key!
+      }));
+      return from(this.myFr24Database.runTransaction(userRef,
+        currentValue => applyMyFr24ImportTransaction(currentValue, allocated, user.uid),
+        { applyLocally: false })).pipe(
+        map(result => {
+          if (!result.committed) return { imported: 0, skipped: flights.length, flightIds: [] };
+          const stored = result.snapshot.val()?.flights || {};
+          const flightIds = allocated
+            .filter(item => stored[item.key]?.importMetadata?.sourceKey === item.flight.importMetadata?.sourceKey)
+            .map(item => item.key);
+          return { imported: flightIds.length, skipped: flights.length - flightIds.length, flightIds };
+        })
+      );
     });
   }
 

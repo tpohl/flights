@@ -1,85 +1,77 @@
 <div class="import-container">
   <header class="import-header">
     <h1 class="page-title">Import Flights</h1>
-    <p class="subtitle">Paste your flight data JSON from <a href="https://flights-old.pohl.rocks"
-        target="_blank">flights-old.pohl.rocks</a></p>
+    <p class="subtitle">Import a myFlightradar24 CSV. Nothing is saved until you review the preview and click Import.</p>
   </header>
 
   <mat-card class="input-card glass-card">
     <mat-card-content>
+      <label>
+        <strong>CSV file</strong>
+        <input type="file" accept=".csv,text/csv" (change)="fileSelected($event)" [disabled]="parsing() || importing()">
+      </label>
       <mat-form-field appearance="outline" class="full-width">
-        <mat-label>JSON Data</mat-label>
-        <textarea matInput [(ngModel)]="importJson" rows="10"
-          placeholder='[{"from": "VIE", "to": "HAM", ...}]'></textarea>
-        <mat-hint>Paste the array of flight objects here.</mat-hint>
+        <mat-label>Or paste myFlightradar24 CSV</mat-label>
+        <textarea matInput [ngModel]="csvText()" (ngModelChange)="csvText.set($event); clearPreview()"
+          rows="7" [disabled]="parsing() || importing()"></textarea>
       </mat-form-field>
     </mat-card-content>
     <mat-card-actions align="end">
-      <button mat-flat-button color="primary" (click)="parseFlights()" [disabled]="!importJson()">
-        <mat-icon>code</mat-icon>
-        Parse Flights
+      <button mat-flat-button color="primary" (click)="parseFlights()"
+        [disabled]="!csvText() || parsing() || importing()">
+        <mat-icon>preview</mat-icon>
+        {{ parsing() ? 'Parsing…' : 'Preview Import' }}
       </button>
     </mat-card-actions>
   </mat-card>
 
-  @if (flights() && flights().length > 0) {
-  <section class="preview-section">
-    <div class="section-header">
-      <h2 class="section-title">Flights to Import ({{ flights().length }})</h2>
-      <div class="action-buttons">
-        <button mat-flat-button color="accent" (click)="importFlights()">
+  @if (error()) {
+    <mat-card class="flight-preview-card"><mat-card-content class="error">{{ error() }}</mat-card-content></mat-card>
+  }
+  @if (result()) {
+    <mat-card class="flight-preview-card"><mat-card-content class="success">{{ result() }}</mat-card-content></mat-card>
+  }
+
+  @if (preview(); as data) {
+    <section class="preview-section">
+      <div class="section-header">
+        <h2 class="section-title">Preview</h2>
+        <button mat-flat-button color="accent" (click)="importFlights()"
+          [disabled]="!data.summary.ready || parsing() || importing()">
           <mat-icon>cloud_upload</mat-icon>
-          Import Now
-        </button>
-        <button mat-stroked-button color="warn" (click)="removeDuplicateImports()">
-          <mat-icon>content_copy</mat-icon>
-          Remove Duplicates
-        </button>
-        <button mat-stroked-button color="warn" (click)="deleteAllMyFlights()"
-          matTooltip="This action might be disabled in code">
-          <mat-icon>delete_forever</mat-icon>
-          Clear All Existing
+          {{ importing() ? 'Importing…' : 'Import Ready Flights' }}
         </button>
       </div>
-    </div>
-
-    <div class="flights-grid">
-      @for (flight of flights(); track $index) {
-      <mat-card class="flight-preview-card glass-card">
+      <mat-card class="flight-preview-card">
         <mat-card-content>
-          <div class="flight-main">
-            <div class="route">
-              <span class="airport">{{ flight.from }}</span>
-              <mat-icon class="arrow">east</mat-icon>
-              <span class="airport">{{ flight.to }}</span>
-            </div>
-            <div class="flight-no">{{ flight.flightno }}</div>
-          </div>
-
-          <mat-divider></mat-divider>
-
-          <div class="flight-details">
-            <div class="detail-row">
-              <mat-icon>calendar_today</mat-icon>
-              <span>{{ flight.departureTime | date:'dd.MM.yyyy HH:mm' }}</span>
-            </div>
-            <div class="detail-row">
-              <mat-icon>straighten</mat-icon>
-              <span>{{ flight.distance | number : '1.0-0' }} km</span>
-            </div>
-            <div class="detail-row extra-info">
-              <mat-icon>info_outline</mat-icon>
-              <span>{{ flight.class }} · {{ flight.seat }} · {{ flight.carrier }}</span>
-            </div>
-            <div class="detail-row aircraft">
-              <mat-icon>flight</mat-icon>
-              <span>{{ flight.aircraftType }} · {{ flight.aircraftRegistration }}</span>
-            </div>
-          </div>
+          Total: {{ data.summary.total }} · Ready: {{ data.summary.ready }} ·
+          Duplicates: {{ data.summary.duplicate }} · Invalid: {{ data.summary.invalid }}
         </mat-card-content>
       </mat-card>
-      }
-    </div>
-  </section>
+
+      <div class="flights-grid">
+        @for (row of data.rows; track row.rowNumber) {
+          <mat-card class="flight-preview-card">
+            <mat-card-content>
+              <div class="flight-main">
+                <strong>CSV row {{ row.rowNumber }}</strong>
+                <span class="flight-no">{{ row.status }}</span>
+              </div>
+              @if (row.flight) {
+                <div class="route">
+                  <span class="airport">{{ row.flight.from }}</span>
+                  <mat-icon class="arrow">east</mat-icon>
+                  <span class="airport">{{ row.flight.to }}</span>
+                  <span>{{ row.flight.flightno }}</span>
+                </div>
+              }
+              @for (message of row.errors; track message) {
+                <p class="error">{{ message }}</p>
+              }
+            </mat-card-content>
+          </mat-card>
+        }
+      </div>
+    </section>
   }
 </div>

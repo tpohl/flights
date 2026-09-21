@@ -56,6 +56,7 @@ export class Flight {
   needsAutocomplete!: boolean;
   errorMessage!: string;
   aeroApiEnrichment?: AeroApiEnrichment;
+  importMetadata?: FlightImportMetadata;
 
   manualOverrides?: Partial<Record<FlightManualField, boolean>>;
 
@@ -87,6 +88,14 @@ export interface AeroApiEnrichment {
   message?: string;
 }
 
+export interface FlightImportMetadata {
+  source: 'myflightradar24';
+  sourceKey: string;
+  importedAt: string;
+  suppressInitialEnrichment?: boolean;
+  suppressedCreateEventId?: string;
+}
+
 export interface ClassInfo {
   key: string;
   short: string;
@@ -99,6 +108,7 @@ export const TRAVEL_CLASSES: Map<string, ClassInfo> = new Map(Object.entries({
   M: { key: 'M', short: 'ECO+', long: 'Premium Economy', cssClass: 'class-m' },
   C: { key: 'C', short: 'BIZ', long: 'Business', cssClass: 'class-c' },
   F: { key: 'F', short: '1ST', long: 'First Class', cssClass: 'class-f' },
+  V: { key: 'V', short: 'PVT', long: 'Private', cssClass: 'class-v' },
   J: { key: 'J', short: 'JMP', long: 'Jump Seat', cssClass: 'class-j' },
   P: { key: 'P', short: 'CPIT', long: 'Cockpit', cssClass: 'class-p' }
 }));

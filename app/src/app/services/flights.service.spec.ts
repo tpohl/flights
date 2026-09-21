@@ -1,5 +1,7 @@
 import { TestBed } from '@angular/core/testing';
-import { FlightsService } from './flights.service';
+import {
+    applyMyFr24ImportTransaction, FlightsService, MYFR24_DATABASE_OPERATIONS
+} from './flights.service';
 import { AirportService } from './airport.service';
 import { Auth } from '@angular/fire/auth';
 import { Database } from '@angular/fire/database';
@@ -11,6 +13,7 @@ describe('FlightsService', () => {
     let airportServiceMock: any;
     let authMock: any;
     let dbMock: any;
+    let importDatabaseMock: any;
 
     beforeEach(() => {
         airportServiceMock = jasmine.createSpyObj('AirportService', ['loadAirport']);
@@ -18,13 +21,19 @@ describe('FlightsService', () => {
             authState: of(null)
         };
         dbMock = {};
+        importDatabaseMock = {
+            ref: jasmine.createSpy('ref').and.callFake((_db: any, path: string) => ({ path })),
+            push: jasmine.createSpy('push').and.returnValue({ key: 'new-1' }),
+            runTransaction: jasmine.createSpy('runTransaction')
+        };
 
         TestBed.configureTestingModule({
             providers: [
                 FlightsService,
                 { provide: AirportService, useValue: airportServiceMock },
                 { provide: Auth, useValue: authMock },
-                { provide: Database, useValue: dbMock }
+                { provide: Database, useValue: dbMock },
+                { provide: MYFR24_DATABASE_OPERATIONS, useValue: importDatabaseMock }
             ]
         });
         service = TestBed.inject(FlightsService);
@@ -37,6 +46,71 @@ describe('FlightsService', () => {
             // Real distance is ~765 km
             const dist = (service as any).calculateHaversineDistance(48.1103, 16.5697, 53.6304, 9.9882);
             expect(dist).toBeCloseTo(765, -1); // Within 10km (Haversine is an approximation)
+        });
+
+        describe('myFlightradar24 atomic import transaction', () => {
+            const importedFlight = {
+                date: '2024-01-10', flightno: 'LH123', from: 'BER', to: 'LHR',
+                departureTime: '2024-01-10T09:00:00.000Z',
+                importMetadata: {
+                    source: 'myflightradar24', sourceKey: 'source-1',
+                    importedAt: '2026-09-11T12:00:00.000Z'
+                }
+            } as Flight;
+
+            it('writes the flight and idempotency marker in one user-node update', () => {
+                const result = applyMyFr24ImportTransaction({}, [{ flight: importedFlight, key: 'new-1' }], 'user-1');
+                expect(result.flights['new-1']._id).toBe('new-1');
+                expect(result.flights['new-1'].needsAutocomplete).toBeFalse();
+                expect(result.flights['new-1'].importMetadata.suppressInitialEnrichment).toBeTrue();
+                expect(result.imports.myflightradar24['source-1'].flightId).toBe('new-1');
+            });
+
+            it('does not write again when the source key is already claimed', () => {
+                const current = {
+                    imports: { myflightradar24: { 'source-1': { flightId: 'old' } } },
+                    flights: { old: { ...importedFlight, _id: 'old' } }
+                };
+                expect(applyMyFr24ImportTransaction(current, [{ flight: importedFlight, key: 'new-1' }], 'user-1'))
+                    .toBeUndefined();
+            });
+
+            it('rechecks active-flight duplicates but ignores deleted records', () => {
+                const duplicate = { ...importedFlight, _id: 'old', importMetadata: undefined };
+                expect(applyMyFr24ImportTransaction(
+                    { flights: { old: duplicate } }, [{ flight: importedFlight, key: 'new-1' }], 'user-1'
+                )).toBeUndefined();
+                const result = applyMyFr24ImportTransaction(
+                    { flights: { old: { ...duplicate, _deleted: true } } },
+                    [{ flight: importedFlight, key: 'new-1' }], 'user-1'
+                );
+                expect(result.flights['new-1']).toBeDefined();
+            });
+
+            it('uses one mocked Firebase user-node transaction and is idempotent on retry', (done) => {
+                (service as any).user = { uid: 'user-1' };
+                let serverValue: any = {};
+                importDatabaseMock.runTransaction.and.callFake((_ref: any, update: (value: any) => any) => {
+                    const next = update(serverValue);
+                    if (next === undefined) return Promise.resolve({
+                        committed: false, snapshot: { val: () => serverValue }
+                    });
+                    serverValue = next;
+                    return Promise.resolve({ committed: true, snapshot: { val: () => serverValue } });
+                });
+
+                service.bulkImportMyFlightradar24([importedFlight]).subscribe(first => {
+                    expect(first.imported).toBe(1);
+                    service.bulkImportMyFlightradar24([importedFlight]).subscribe(second => {
+                        expect(second).toEqual({ imported: 0, skipped: 1, flightIds: [] });
+                        expect(importDatabaseMock.runTransaction).toHaveBeenCalledTimes(2);
+                        expect(importDatabaseMock.runTransaction.calls.allArgs().every(
+                            (args: any[]) => args[0].path === 'users/user-1'
+                        )).toBeTrue();
+                        done();
+                    });
+                });
+            });
         });
 
         it('should return 0 for same point', () => {
