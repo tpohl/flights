@@ -11,6 +11,7 @@
     "logs": "firebase functions:log",
     "postinstall": "npx --yes @kie/lock-treatment-tool -s",
     "test": "mocha -r ts-node/register -r test/test-setup.ts 'test/**/*.test.ts'",
+    "history-cleanup-preview": "ts-node src/history-cleanup/cli.ts",
     "create-secret": "firebase functions:secrets:set FLIGHTS_CONFIG --project flights-159420"
   },
   "main": "lib/index.js",
