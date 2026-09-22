@@ -26,7 +26,7 @@
       <mat-card-subtitle>Airport-local times in the myFlightradar24 import format</mat-card-subtitle>
     </mat-card-header>
     <mat-card-content>
-      <p class="hint">Incomplete flights without resolvable local times or duration are skipped.</p>
+      <p class="hint">Flights that need missing or invalid export data fixed are listed on the Anomalies page.</p>
       @if (exportMessage()) { <p>{{ exportMessage() }}</p> }
     </mat-card-content>
     <mat-card-actions>

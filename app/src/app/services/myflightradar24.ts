@@ -1,6 +1,6 @@
 import { Airport } from '../models/airport';
 import { Flight } from '../models/flight';
-import { isFlightDate, localTimeOptions, storedLocalTime } from '../models/flight-times';
+import { hasExplicitTimezone, isFlightDate, localTimeOptions, storedLocalTime } from '../models/flight-times';
 
 export const MYFR24_HEADERS = [
   'Date', 'Flight number', 'From', 'To', 'Dep time', 'Arr time', 'Duration',
@@ -36,6 +36,14 @@ export interface MyFr24Export {
   csv: string;
   exported: number;
   skipped: number;
+}
+
+export interface MyFr24ExportAssessment {
+  eligible: boolean;
+  reasons: string[];
+  departure?: { date: string; time: string };
+  arrival?: { date: string; time: string };
+  durationMilliseconds?: number;
 }
 
 const DANGEROUS_CELL = /^\s*[=+\-@]/;
@@ -315,6 +323,53 @@ function formatDuration(milliseconds: number): string {
   return `${String(hours).padStart(2, '0')}:${String(Math.floor(seconds % 3600 / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`;
 }
 
+export function assessMyFlightradar24Export(
+  flight: Flight,
+  airports: ReadonlyMap<string, Airport>
+): MyFr24ExportAssessment {
+  const reasons: string[] = [];
+  const normalizedFlightNumber = normalizeFlightNumber(flight.flightno || '');
+  if (!normalizedFlightNumber) reasons.push('Enter a valid flight number.');
+  if (!flight.from) reasons.push('Add the origin airport.');
+  if (!flight.to) reasons.push('Add the destination airport.');
+
+  const fromAirport = flight.from ? airports.get(flight.from) : undefined;
+  const toAirport = flight.to ? airports.get(flight.to) : undefined;
+  if (flight.from && !fromAirport?.timezoneId) {
+    reasons.push(`Add timezone data for ${flight.from}.`);
+  }
+  if (flight.to && !toAirport?.timezoneId) {
+    reasons.push(`Add timezone data for ${flight.to}.`);
+  }
+
+  const departure = storedLocalTime(flight.departureTime, fromAirport?.timezoneId);
+  const arrival = storedLocalTime(flight.arrivalTime, toAirport?.timezoneId);
+  if (!hasExplicitTimezone(flight.departureTime) ||
+      (fromAirport?.timezoneId && !departure)) {
+    reasons.push('Add a valid departure time.');
+  }
+  if (!hasExplicitTimezone(flight.arrivalTime) ||
+      (toAirport?.timezoneId && !arrival)) {
+    reasons.push('Add a valid arrival time.');
+  }
+
+  const derivedDuration = flight.departureTime && flight.arrivalTime
+    ? Date.parse(flight.arrivalTime) - Date.parse(flight.departureTime)
+    : 0;
+  const durationMilliseconds = flight.durationMilliseconds || derivedDuration;
+  if (!Number.isFinite(durationMilliseconds) || durationMilliseconds <= 0) {
+    reasons.push('Add a valid positive duration.');
+  }
+
+  return {
+    eligible: reasons.length === 0,
+    reasons,
+    ...(departure ? { departure } : {}),
+    ...(arrival ? { arrival } : {}),
+    ...(durationMilliseconds > 0 && Number.isFinite(durationMilliseconds) ? { durationMilliseconds } : {})
+  };
+}
+
 export function exportMyFlightradar24(
   flights: readonly Flight[],
   airports: ReadonlyMap<string, Airport>
@@ -329,14 +384,14 @@ export function exportMyFlightradar24(
   for (const flight of active) {
     const fromAirport = airports.get(flight.from);
     const toAirport = airports.get(flight.to);
-    const dep = storedLocalTime(flight.departureTime, fromAirport?.timezoneId);
-    const arr = storedLocalTime(flight.arrivalTime, toAirport?.timezoneId);
-    const duration = flight.durationMilliseconds ||
-      (flight.departureTime && flight.arrivalTime ? Date.parse(flight.arrivalTime) - Date.parse(flight.departureTime) : 0);
-    if (!flight.flightno || !flight.from || !flight.to || !dep || !arr || duration <= 0) {
+    const assessment = assessMyFlightradar24Export(flight, airports);
+    if (!assessment.eligible) {
       skipped++;
       continue;
     }
+    const dep = assessment.departure!;
+    const arr = assessment.arrival!;
+    const duration = assessment.durationMilliseconds!;
     const seatTypes: Record<string, string> = { W: '1', M: '2', A: '3' };
     const classes: Record<string, string> = { Y: '1', C: '2', F: '3', M: '4', V: '5' };
     const reasons: Record<string, string> = { L: '1', B: '2', C: '3', O: '4' };

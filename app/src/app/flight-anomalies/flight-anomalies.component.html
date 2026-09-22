@@ -1,7 +1,7 @@
 <div class="flight-anomalies-container">
   <header class="page-header">
     <h1 class="page-title">Flight Anomalies</h1>
-    <span class="subtitle"> <strong>{{ totalAnomalies() }}</strong> Flights with unusual speeds that may contain data errors</span>
+    <span class="subtitle"><strong>{{ totalAnomalies() }}</strong> flights need review or missing data</span>
   </header>
 
   <div class="main-content">
@@ -20,6 +20,9 @@
         </mat-checkbox>
         <mat-checkbox [(ngModel)]="showIncomplete" color="warn">
           Incomplete ({{ incompleteFlights().length }})
+        </mat-checkbox>
+        <mat-checkbox [(ngModel)]="showMyFlightradar24" color="warn">
+          Not exportable to myFlightradar24 ({{ myFlightradar24Anomalies().length }})
         </mat-checkbox>
         <mat-checkbox [(ngModel)]="showValidated" color="primary">
           Validated ({{ totalValidated() }})
@@ -71,6 +74,11 @@
             <mat-icon>error_outline</mat-icon>
             <span>Incomplete</span>
           </div>
+          } @else if (getAnomalyType(flight) === 'myflightradar24') {
+          <div class="anomaly-badge export-incomplete">
+            <mat-icon>flight_takeoff</mat-icon>
+            <span>Not exportable to myFlightradar24</span>
+          </div>
           } @else if (getAnomalyType(flight) === 'invalid') {
           <div class="anomaly-badge invalid">
             <mat-icon>error</mat-icon>
@@ -87,7 +95,16 @@
 
           <div class="speed-info">
             <div class="info-metrics">
-              @if (isIncompleteAnomaly(flight)) {
+              @if (getAnomalyType(flight) === 'myflightradar24') {
+              <div class="metric export-issues">
+                <span class="label">Fix before export:</span>
+                <span class="value invalid">{{ myFlightradar24Issues(flight).join(' ') }}</span>
+              </div>
+              <div class="metric">
+                <span class="label">Action:</span>
+                <span class="value">Open this flight and complete the highlighted data.</span>
+              </div>
+              } @else if (isIncompleteAnomaly(flight)) {
               <div class="metric incomplete-info">
                 <span class="label">Missing Data:</span>
                 <span class="value invalid">
@@ -123,7 +140,9 @@
             </span>
             }
 
-            @if (isIncompleteAnomaly(flight)) {
+            @if (getAnomalyType(flight) === 'myflightradar24') {
+            <mat-icon matTooltip="Open this flight to fix export data">edit</mat-icon>
+            } @else if (isIncompleteAnomaly(flight)) {
             <button mat-icon-button color="warn" class="delete-btn"
               (click)="deleteFlight(flight); $event.stopPropagation(); $event.preventDefault()"
               [disabled]="deletingFlightId() === flight._id" matTooltip="Delete Incomplete Flight">

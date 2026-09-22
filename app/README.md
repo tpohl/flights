@@ -81,3 +81,7 @@ IANA timezone. Ambiguous timestamps, conflicting provider data, possible
 duplicates, and contradictory aircraft mappings are listed for manual review.
 The generated artifact remains under the ignored `data/` directory and is not
 an automatic import or migration.
+
+Flights that cannot be represented in the myFlightradar24 export are listed on
+the Anomalies page with the exact missing or invalid fields. Opening the flight
+from that list allows the data to be corrected before exporting again.

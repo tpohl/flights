@@ -50,7 +50,7 @@ export class FlightsExportComponent {
         link.download = `myflightradar24-flights-${dayjs().format('YYYY-MM-DD')}.csv`;
         link.click();
         URL.revokeObjectURL(url);
-        this.exportMessage.set(`Exported ${result.exported} flights; skipped ${result.skipped} incomplete flights.`);
+        this.exportMessage.set(`Exported ${result.exported} flights; ${result.skipped} need fixes on the Anomalies page.`);
       },
       error: () => this.exportMessage.set('Airport data could not be loaded, so the CSV was not created.')
     });

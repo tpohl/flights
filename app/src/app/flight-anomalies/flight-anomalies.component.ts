@@ -1,4 +1,5 @@
 import { Component, computed, inject, signal } from '@angular/core';
+import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -6,6 +7,10 @@ import { Flight } from '../models/flight';
 import { FlightsService } from '../services/flights.service';
 import { FlightTileComponent } from '../flight-tile/flight-tile.component';
 import { FlightCardComponent } from '../flight-card/flight-card.component';
+import { Airport } from '../models/airport';
+import { AirportService } from '../services/airport.service';
+import { assessMyFlightradar24Export } from '../services/myflightradar24';
+import { forkJoin, map, of, switchMap, take } from 'rxjs';
 
 // Angular Material
 import { MatCardModule } from '@angular/material/card';
@@ -37,12 +42,37 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 })
 export class FlightAnomaliesComponent {
   private flightsService = inject(FlightsService);
+  private airportService = inject(AirportService);
 
   tooSlowFlights = this.flightsService.tooSlowFlights;
   tooFastFlights = this.flightsService.tooFastFlights;
   invalidFlights = this.flightsService.invalidFlights;
   incompleteFlights = this.flightsService.incompleteFlights;
   validatedAnomalies = this.flightsService.validatedAnomalies;
+  myFlightradar24Anomalies = toSignal(
+    toObservable(this.flightsService.allFlightsIncludingInvalidAndDeleted).pipe(
+      switchMap(flights => {
+        const active = flights.filter(flight => !flight._deleted);
+        const codes = [...new Set(active.flatMap(flight => [flight.from, flight.to]).filter(Boolean))];
+        const airports$ = codes.length
+          ? forkJoin(codes.map(code => this.airportService.loadAirport(code).pipe(
+            take(1),
+            map(airport => [code, airport] as const)
+          )))
+          : of([]);
+        return airports$.pipe(map(entries => {
+          const airportEntries = entries as readonly (readonly [string, Airport | null])[];
+          const airports = new Map(airportEntries.filter(
+            (entry): entry is readonly [string, Airport] => !!entry[1]
+          ));
+          return active
+            .map(flight => ({ flight, assessment: assessMyFlightradar24Export(flight, airports) }))
+            .filter(item => !item.assessment.eligible);
+        }));
+      })
+    ),
+    { initialValue: [] }
+  );
 
   // Filter states - using model for 2-way binding support if needed, 
   // though model() is typically for component inputs.
@@ -56,6 +86,7 @@ export class FlightAnomaliesComponent {
   showTooFast = signal(true);
   showInvalid = signal(true);
   showIncomplete = signal(false);
+  showMyFlightradar24 = signal(true);
   showValidated = signal(false);
   recalculatingFlightId = signal<string | null>(null);
   deletingFlightId = signal<string | null>(null);
@@ -80,15 +111,23 @@ export class FlightAnomaliesComponent {
       flights = [...flights, ...this.incompleteFlights()];
     }
 
+    if (this.showMyFlightradar24()) {
+      flights = [...flights, ...this.myFlightradar24Anomalies().map(item => item.flight)];
+    }
+
     if (this.showValidated()) {
       flights = [...flights, ...this.validatedAnomalies()];
     }
 
     // Sort by date descending (newest first)
-    return flights.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    return [...new Map(flights.map(flight => [flight._id, flight])).values()]
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   });
 
-  totalAnomalies = computed(() => this.tooSlowFlights().length + this.tooFastFlights().length + this.invalidFlights().length + this.incompleteFlights().length);
+  totalAnomalies = computed(() => new Set([
+    ...this.tooSlowFlights(), ...this.tooFastFlights(), ...this.invalidFlights(),
+    ...this.incompleteFlights(), ...this.myFlightradar24Anomalies().map(item => item.flight)
+  ].map(flight => flight._id)).size);
   totalValidated = computed(() => this.validatedAnomalies().length);
 
   calculateAverageSpeed(flight: Flight): number {
@@ -111,7 +150,15 @@ export class FlightAnomaliesComponent {
     return !flight.departureTime || !flight.from || !flight.to;
   }
 
-  getAnomalyType(flight: Flight): 'slow' | 'fast' | 'invalid' | 'incomplete' | 'validated' {
+  myFlightradar24Issues(flight: Flight): string[] {
+    return this.myFlightradar24Anomalies()
+      .find(item => item.flight._id === flight._id)?.assessment.reasons ?? [];
+  }
+
+  getAnomalyType(flight: Flight): 'slow' | 'fast' | 'invalid' | 'incomplete' | 'myflightradar24' | 'validated' {
+    if (this.myFlightradar24Anomalies().some(item => item.flight._id === flight._id)) {
+      return 'myflightradar24';
+    }
     if (this.validatedAnomalies().some(f => f._id === flight._id)) {
       return 'validated';
     }

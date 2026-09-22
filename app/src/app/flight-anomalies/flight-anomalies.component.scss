@@ -178,6 +178,12 @@
     color: $color-warning-orange;
     border: 1px solid rgba($color-warning-orange, 0.2);
   }
+
+  &.export-incomplete {
+    background: rgba($color-warning-orange, 0.15);
+    color: $color-warning-orange;
+    border: 1px solid rgba($color-warning-orange, 0.2);
+  }
 }
 
 .speed-info {
@@ -214,6 +220,10 @@
     justify-content: space-between;
     align-items: center;
     gap: $spacing-md;
+  }
+
+  .export-issues {
+    align-items: flex-start;
   }
 
   .badge-and-actions {

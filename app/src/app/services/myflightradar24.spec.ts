@@ -1,7 +1,7 @@
 import { Airport } from '../models/airport';
 import { Flight } from '../models/flight';
 import {
-  exportMyFlightradar24, extractAirportIata, MYFR24_HEADERS, MYFR24_HEADER_LINE, parseCsv,
+  assessMyFlightradar24Export, exportMyFlightradar24, extractAirportIata, MYFR24_HEADERS, MYFR24_HEADER_LINE, parseCsv,
   previewMyFlightradar24Import, writeCsv
 } from './myflightradar24';
 
@@ -182,5 +182,33 @@ describe('myFlightradar24 CSV', () => {
     const flight = previewMyFlightradar24Import(csv(), airports, []).rows[0].flight!;
     const result = exportMyFlightradar24([{ ...flight, durationMilliseconds: 90061000 }], airports);
     expect(result.csv).toContain('25:01:01');
+  });
+
+  it('reports the exact reasons a flight cannot be exported', () => {
+    const assessment = assessMyFlightradar24Export({
+      flightno: 'bad!',
+      from: 'XXX',
+      to: 'LHR',
+      departureTime: '',
+      arrivalTime: '',
+      durationMilliseconds: 0
+    } as Flight, airports);
+    expect(assessment.eligible).toBeFalse();
+    expect(assessment.reasons).toEqual([
+      'Enter a valid flight number.',
+      'Add timezone data for XXX.',
+      'Add a valid departure time.',
+      'Add a valid arrival time.',
+      'Add a valid positive duration.'
+    ]);
+  });
+
+  it('uses the same readiness assessment as export', () => {
+    const flight = previewMyFlightradar24Import(csv(), airports, []).rows[0].flight!;
+    expect(assessMyFlightradar24Export(flight, airports).eligible).toBeTrue();
+    expect(exportMyFlightradar24([flight], airports)).toEqual(jasmine.objectContaining({
+      exported: 1,
+      skipped: 0
+    }));
   });
 });
