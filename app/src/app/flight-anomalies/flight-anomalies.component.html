@@ -93,6 +93,25 @@
 
           <app-flight-tile [flight]="flight"></app-flight-tile>
 
+          <div class="adjacent-flights">
+            @if (previousFlight(flight); as previous) {
+            <div class="adjacent-flight">
+              <span class="adjacent-label">Previous flight</span>
+              <strong>{{ previous.flightno || '-' }}</strong>
+              <span>{{ previous.date | date: 'mediumDate' }}</span>
+              <span>{{ previous.from || '-' }} to {{ previous.to || '-' }}</span>
+            </div>
+            }
+            @if (nextFlight(flight); as next) {
+            <div class="adjacent-flight">
+              <span class="adjacent-label">Next flight</span>
+              <strong>{{ next.flightno || '-' }}</strong>
+              <span>{{ next.date | date: 'mediumDate' }}</span>
+              <span>{{ next.from || '-' }} to {{ next.to || '-' }}</span>
+            </div>
+            }
+          </div>
+
           <div class="speed-info">
             <div class="info-metrics">
               @if (getAnomalyType(flight) === 'myflightradar24') {
@@ -140,18 +159,18 @@
             </span>
             }
 
-            @if (getAnomalyType(flight) === 'myflightradar24') {
-            <mat-icon matTooltip="Open this flight to fix export data">edit</mat-icon>
-            } @else if (isIncompleteAnomaly(flight)) {
             <button mat-icon-button color="warn" class="delete-btn"
               (click)="deleteFlight(flight); $event.stopPropagation(); $event.preventDefault()"
-              [disabled]="deletingFlightId() === flight._id" matTooltip="Delete Incomplete Flight">
+              [disabled]="deletingFlightId() === flight._id" matTooltip="Delete Flight">
               @if (deletingFlightId() === flight._id) {
               <mat-progress-spinner diameter="20" mode="indeterminate"></mat-progress-spinner>
               } @else {
               <mat-icon>delete</mat-icon>
               }
             </button>
+
+            @if (getAnomalyType(flight) === 'myflightradar24') {
+            <mat-icon matTooltip="Open this flight to fix export data">edit</mat-icon>
             } @else if (isMissingData(flight)) {
             <button mat-icon-button color="primary" class="recalculate-btn"
               (click)="recalculate(flight); $event.stopPropagation(); $event.preventDefault()"
@@ -163,6 +182,17 @@
               }
             </button>
             }
+
+            <button mat-icon-button color="primary" class="autocomplete-btn"
+              (click)="autocomplete(flight); $event.stopPropagation(); $event.preventDefault()"
+              [disabled]="autocompletingFlightId() === flight._id"
+              matTooltip="Extract missing data from available flight and track data">
+              @if (autocompletingFlightId() === flight._id) {
+              <mat-progress-spinner diameter="20" mode="indeterminate"></mat-progress-spinner>
+              } @else {
+              <mat-icon>auto_fix_high</mat-icon>
+              }
+            </button>
           </div>
         </div>
   </div>

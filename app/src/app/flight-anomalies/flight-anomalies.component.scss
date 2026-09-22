@@ -125,6 +125,36 @@
   @include flights-grid;
 }
 
+.adjacent-flights {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: $spacing-md;
+}
+
+.adjacent-flight {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: $spacing-xs $spacing-sm;
+  padding: $spacing-sm $spacing-md;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: $radius-md;
+  color: $text-secondary;
+  font-size: $font-size-sm;
+
+  strong {
+    color: $text-primary;
+  }
+}
+
+.adjacent-label {
+  flex-basis: 100%;
+  color: $text-secondary;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-semibold;
+  text-transform: uppercase;
+}
+
 
 
 ::ng-deep .mat-mdc-card {
@@ -257,6 +287,31 @@
     }
   }
 
+  .autocomplete-btn {
+    width: 32px !important;
+    height: 32px !important;
+    line-height: 32px !important;
+    padding: 0 !important;
+    border-radius: $radius-full !important;
+    background: rgba($primary-color, 0.1) !important;
+    @include transition;
+
+    &:hover:not([disabled]) {
+      background: rgba($primary-color, 0.2) !important;
+      transform: scale(1.1);
+    }
+
+    mat-icon {
+      font-size: 1.25rem;
+      width: 1.25rem;
+      height: 1.25rem;
+    }
+
+    mat-progress-spinner {
+      margin: 0 auto;
+    }
+  }
+
   .delete-btn {
     width: 32px !important;
     height: 32px !important;
@@ -360,6 +415,10 @@
   }
 
   .flights-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .adjacent-flights {
     grid-template-columns: 1fr;
   }
 

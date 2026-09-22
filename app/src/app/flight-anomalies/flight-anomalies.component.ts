@@ -10,7 +10,7 @@ import { FlightCardComponent } from '../flight-card/flight-card.component';
 import { Airport } from '../models/airport';
 import { AirportService } from '../services/airport.service';
 import { assessMyFlightradar24Export } from '../services/myflightradar24';
-import { forkJoin, map, of, switchMap, take } from 'rxjs';
+import { forkJoin, map, of, switchMap, take, timeout, finalize } from 'rxjs';
 
 // Angular Material
 import { MatCardModule } from '@angular/material/card';
@@ -89,8 +89,13 @@ export class FlightAnomaliesComponent {
   showMyFlightradar24 = signal(true);
   showValidated = signal(false);
   recalculatingFlightId = signal<string | null>(null);
+  autocompletingFlightId = signal<string | null>(null);
   deletingFlightId = signal<string | null>(null);
   deletingAllIncomplete = signal(false);
+
+  databaseFlights = computed(() => [...this.flightsService.allFlightsIncludingInvalidAndDeleted()]
+    .filter(flight => !flight._deleted)
+    .sort((a, b) => this.flightDate(b) - this.flightDate(a)));
 
   displayedFlights = computed(() => {
     let flights: Flight[] = [];
@@ -129,6 +134,23 @@ export class FlightAnomaliesComponent {
     ...this.incompleteFlights(), ...this.myFlightradar24Anomalies().map(item => item.flight)
   ].map(flight => flight._id)).size);
   totalValidated = computed(() => this.validatedAnomalies().length);
+
+  previousFlight(flight: Flight): Flight | null {
+    const flights = this.databaseFlights();
+    const index = flights.findIndex(item => item._id === flight._id);
+    return index >= 0 && index < flights.length - 1 ? flights[index + 1] : null;
+  }
+
+  nextFlight(flight: Flight): Flight | null {
+    const flights = this.databaseFlights();
+    const index = flights.findIndex(item => item._id === flight._id);
+    return index > 0 ? flights[index - 1] : null;
+  }
+
+  private flightDate(flight: Flight): number {
+    const value = flight.departureTime || flight.date;
+    return value ? new Date(value).getTime() : Number.MIN_SAFE_INTEGER;
+  }
 
   calculateAverageSpeed(flight: Flight): number {
     return this.flightsService.getAverageSpeed(flight);
@@ -188,8 +210,33 @@ export class FlightAnomaliesComponent {
     }
   }
 
+  autocomplete(flight: Flight) {
+    if (!flight._id || this.autocompletingFlightId() === flight._id) {
+      return;
+    }
+
+    const flightId = flight._id;
+    const resetQueuedRequest = flight.needsAutocomplete
+      ? this.flightsService.saveFlight(flight, { needsAutocomplete: false })
+      : of(null);
+
+    this.autocompletingFlightId.set(flightId);
+    resetQueuedRequest.pipe(
+      switchMap(() => {
+        flight.needsAutocomplete = true;
+        return this.flightsService.saveFlight(flight, { needsAutocomplete: true });
+      }),
+      timeout({ first: 30_000 }),
+      finalize(() => this.autocompletingFlightId.set(null))
+    ).subscribe({
+      error: () => {
+        flight.needsAutocomplete = false;
+      }
+    });
+  }
+
   deleteFlight(flight: Flight) {
-    if (flight._id && confirm('Are you sure you want to permanently delete this incomplete flight?')) {
+    if (flight._id && confirm('Are you sure you want to permanently delete this flight?')) {
       this.deletingFlightId.set(flight._id);
       this.flightsService.deleteFlight(flight).subscribe({
         next: () => this.deletingFlightId.set(null),

@@ -305,8 +305,9 @@ export class FlightEditComponent implements OnDestroy {
   }
 
   autocomplete(): void {
-    if (this.isSaving() || this.flight()?.needsAutocomplete) return;
-    this.updateField('needsAutocomplete', true);
+    const flight = this.flight();
+    if (this.isSaving() || this.isRecalculating() || !flight) return;
+    this.updateField('needsAutocomplete', !flight.needsAutocomplete);
     this.save();
   }
 

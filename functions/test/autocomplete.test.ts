@@ -104,6 +104,7 @@ describe("AeroAPI autocomplete coordinator", () => {
     assert.equal(result.flight.departureTimeSource, "scheduled");
     assert.equal(result.flight.aeroApiEnrichment.state, "scheduled");
     assert.equal(result.flight.needsAutocomplete, false);
+    assert.equal("message" in result.flight.aeroApiEnrichment, false);
     assert.equal(aero.loadAeroApiTrack.firstCall.args[1], true);
   });
 
@@ -121,7 +122,7 @@ describe("AeroAPI autocomplete coordinator", () => {
     const event = {
       id: "create-event-1",
       data: { ref: { parent: ref } },
-      params: { userId: "user123", flightId: "flight123" }
+      params: { userId: "user123", flightId: "flight123", now }
     };
     assert.equal(await triggerAutocompleteOnCreate(event), null);
     assert.equal(ref.current.importMetadata.suppressInitialEnrichment, false);
@@ -144,7 +145,7 @@ describe("AeroAPI autocomplete coordinator", () => {
     await triggerAutocompleteOnCreate({
       id: "create-event-2",
       data: { ref: { parent: ref } },
-      params: { userId: "user123", flightId: "flight123" }
+      params: { userId: "user123", flightId: "flight123", now }
     });
     assert.equal(aero.loadAeroApiFlights.callCount, 1);
   });
@@ -154,14 +155,14 @@ describe("AeroAPI autocomplete coordinator", () => {
     await triggerAutocompleteOnCreate({
       id: "normal-create",
       data: { ref: { parent: createRef } },
-      params: { userId: "user123", flightId: "flight123" }
+      params: { userId: "user123", flightId: "flight123", now }
     });
     assert.equal(aero.loadAeroApiFlights.callCount, 1);
 
     const updateRef = flightReference(original);
     await updateAutocompleteTrigger({
       data: { after: { ref: { parent: updateRef } } },
-      params: { userId: "user123", flightId: "flight123" }
+      params: { userId: "user123", flightId: "flight123", now }
     });
     assert.equal(aero.loadAeroApiFlights.callCount, 2);
 
@@ -176,7 +177,7 @@ describe("AeroAPI autocomplete coordinator", () => {
     });
     await requestedAutocompleteTrigger({
       data: { after: { val: () => true, ref: { parent: requestedRef } } },
-      params: { userId: "user123", flightId: "flight123" }
+      params: { userId: "user123", flightId: "flight123", now }
     });
     assert.equal(aero.loadAeroApiFlights.callCount, 3);
   });
@@ -251,6 +252,41 @@ describe("AeroAPI autocomplete coordinator", () => {
       assert.equal(result.flight.errorMessage, error.message);
       aero.loadAeroApiFlights.resetBehavior();
     }
+  });
+
+  it("uses stored AeroAPI data for historical flights without provider calls", async () => {
+    const stored = candidate({
+      actual_out: "2020-01-11T10:10:00Z",
+      actual_in: "2020-01-11T17:55:00Z",
+      fa_flight_id: "fa-stored"
+    });
+    const result = await autocompleteFlight(flightReference({
+      ...original,
+      date: "2020-01-11",
+      aeroApiFlight: stored,
+      flightAwareFlightId: "fa-stored"
+    }), { now });
+    assert.equal(result.status, "saved");
+    assert.equal(result.flight.flightAwareFlightId, "fa-stored");
+    assert.equal(result.flight.departureTime, stored.actual_out);
+    assert.equal(result.flight.aeroApiEnrichment.state, "partial");
+    assert.equal(aero.loadAeroApiFlights.callCount, 0);
+    assert.equal(aero.loadAeroApiTrack.callCount, 0);
+  });
+
+  it("clears the request for an old flight without stored provider data", async () => {
+    aero.loadAeroApiFlights.rejects(
+      new FlightDateOutsideAeroApiWindowError("Outside recent window.")
+    );
+    const result = await autocompleteFlight(flightReference({
+      ...original,
+      date: "2020-01-11",
+      needsAutocomplete: true
+    }), { now });
+    assert.equal(result.flight.aeroApiEnrichment.state, "outside_window");
+    assert.equal(result.flight.needsAutocomplete, false);
+    assert.equal(aero.loadAeroApiFlights.callCount, 0);
+    assert.equal(aero.loadAeroApiTrack.callCount, 0);
   });
 
   it("preserves an unrelated existing error", async () => {

@@ -101,9 +101,9 @@
             <mat-icon matSuffix>flight</mat-icon>
           </mat-form-field>
           <button mat-icon-button (click)="autocomplete()" [class.loading]="f.needsAutocomplete"
-            [disabled]="isSaving() || isRecalculating() || f.needsAutocomplete || recordUnavailable()"
-            matTooltip="Auto-complete flight info">
-            <mat-icon>auto_fix_high</mat-icon>
+            [disabled]="isSaving() || isRecalculating() || recordUnavailable()"
+            [matTooltip]="f.needsAutocomplete ? 'Cancel autocomplete request' : 'Auto-complete flight info'">
+            <mat-icon>{{ f.needsAutocomplete ? 'close' : 'auto_fix_high' }}</mat-icon>
           </button>
         </div>
 

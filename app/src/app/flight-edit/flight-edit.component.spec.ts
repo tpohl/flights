@@ -163,6 +163,16 @@ describe('FlightEditComponent', () => {
     expect(component.flight()?.note).toBe('My draft');
   });
 
+  it('cancels a pending autocomplete request when clicked again', () => {
+    component.autocomplete();
+    expect(flightsService.saveFlight.calls.mostRecent().args[1].needsAutocomplete).toBeTrue();
+    expect(component.flight()?.needsAutocomplete).toBeTrue();
+
+    component.autocomplete();
+    expect(flightsService.saveFlight.calls.mostRecent().args[1].needsAutocomplete).toBeFalse();
+    expect(component.flight()?.needsAutocomplete).toBeFalse();
+  });
+
   it('does not turn missing times into midnight when saving other fields', async () => {
     server.next({ ...original, departureTime: '', arrivalTime: '', durationMilliseconds: 0 });
     fixture.detectChanges();

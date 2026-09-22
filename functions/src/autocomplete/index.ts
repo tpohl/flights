@@ -20,6 +20,7 @@ import {
   FlightDateOutsideAeroApiWindowError,
   InvalidFlightNumberError,
   aeroApiFlightMatchesDesignator,
+  buildFlightSearchWindow,
   matchAeroApiFlight,
   normalizeFlightNumber,
 } from "./aero-api/matcher";
@@ -78,7 +79,10 @@ const saveOutcome = async (
   const flight = { ...original };
   setEnrichmentError(flight, message);
   flight.aeroApiEnrichment = {
-    state, candidateCount, lastAttemptAt: now.toISOString(), message,
+    state,
+    lastAttemptAt: now.toISOString(),
+    ...(candidateCount === undefined ? {} : { candidateCount }),
+    ...(message === undefined ? {} : { message }),
   };
   flight.needsAutocomplete = false;
   return saveFlightAndReturnIt(ref, original, flight);
@@ -170,19 +174,37 @@ const autocompleteUnlocked = async (
     message: string;
     candidateCount?: number;
   } | undefined;
+  let usingStoredCandidate = false;
   try {
-    const candidates = await loadAeroApiFlights(normalized, original.date, now);
     const storedProviderMatches = aeroApiFlightMatchesDesignator(
       original.aeroApiFlight, normalized
     );
+    let candidates: AeroApiFlight[];
+    if (storedProviderMatches) {
+      try {
+        buildFlightSearchWindow(original.date, now);
+        candidates = await loadAeroApiFlights(normalized, original.date, now);
+      } catch (err) {
+        if (!(err instanceof FlightDateOutsideAeroApiWindowError)) {
+          throw err;
+        }
+        candidates = [original.aeroApiFlight];
+        usingStoredCandidate = true;
+      }
+    } else {
+      buildFlightSearchWindow(original.date, now);
+      candidates = await loadAeroApiFlights(normalized, original.date, now);
+    }
     const routeIsInitialOrCurrent = storedProviderMatches ||
       (!original.flightAwareFlightId && !original.aeroApiFlight);
-    const match = matchAeroApiFlight(normalized, original.date, candidates, {
-      from: routeIsInitialOrCurrent ||
-        original.manualOverrides?.from === true ? original.from : undefined,
-      to: routeIsInitialOrCurrent ||
-        original.manualOverrides?.to === true ? original.to : undefined,
-    });
+    const match = usingStoredCandidate ?
+      { state: "matched" as const, flight: original.aeroApiFlight, candidateCount: 1 } :
+      matchAeroApiFlight(normalized, original.date, candidates, {
+        from: routeIsInitialOrCurrent ||
+          original.manualOverrides?.from === true ? original.from : undefined,
+        to: routeIsInitialOrCurrent ||
+          original.manualOverrides?.to === true ? original.to : undefined,
+      });
     candidateCount = match.candidateCount;
     if (match.state === "not_found") {
       simpleOutcome = {
@@ -197,12 +219,12 @@ const autocompleteUnlocked = async (
       };
     } else {
       candidate = match.flight;
-      track = candidate.fa_flight_id === original.flightAwareFlightId ?
+      track = (usingStoredCandidate || candidate.fa_flight_id === original.flightAwareFlightId) ?
         await readTrack(flightRef, candidate.fa_flight_id) :
         null;
       const cachedFinal = Boolean(candidate.actual_in && track && track.actual_distance > 0 &&
         !(track.positions || []).some((position) => position.update_type === "P"));
-      if (!cachedFinal) {
+      if (!cachedFinal && !usingStoredCandidate) {
         try {
           track = await loadAeroApiTrack(candidate.fa_flight_id, !candidate.actual_in, now);
         } catch (err) {
@@ -257,8 +279,8 @@ const autocompleteUnlocked = async (
     candidateCount,
     lastAttemptAt: now.toISOString(),
     attempts: context.attempts || 0,
-    nextRefreshAt: nextJob?.nextAttemptAt,
-    message: trackProblem?.message,
+    ...(nextJob?.nextAttemptAt ? { nextRefreshAt: nextJob.nextAttemptAt } : {}),
+    ...(trackProblem?.message ? { message: trackProblem.message } : {}),
   };
   const enriched = applyAeroApiFlight(original, candidate, track, enrichment);
   if (trackProblem &&
